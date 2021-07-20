@@ -129,6 +129,7 @@ module Search =
                 ]
             ]
         ]
+
     let createSearchPanel model dispatch =
         Bulma.columns [
             Bulma.column [
@@ -192,6 +193,61 @@ let safeSearchNavBar =
         ]
     ]
 
+open Feliz.AgGrid
+open Fable.Core.JsInterop
+
+let resultsGrid (results:PropertyResult list) =
+    Html.div [
+        prop.className ThemeClass.Alpine
+        prop.children [
+            AgGrid.grid [
+                AgGrid.rowData (List.toArray results)
+                AgGrid.pagination true
+                AgGrid.defaultColDef [
+                    ColumnDef.resizable true
+                    ColumnDef.sortable true
+                    ColumnDef.editable (fun _ -> false)
+                ]
+                AgGrid.domLayout AutoHeight
+                AgGrid.columnDefs [
+                    ColumnDef.create<DateTime> [
+                        ColumnDef.filter Date
+                        ColumnDef.headerName "Date"
+                        ColumnDef.valueGetter (fun x -> x.DateOfTransfer)
+                        ColumnDef.valueFormatter (fun x _ -> x.ToShortDateString())
+                    ]
+                    ColumnDef.create<int> [
+                        ColumnDef.headerName "Price"
+                        ColumnDef.filter Number
+                        ColumnDef.valueGetter (fun x -> x.Price)
+                        ColumnDef.columnType NumericColumn
+                        ColumnDef.valueFormatter (fun value _ -> $"£{value?toLocaleString()}")
+                    ]
+                    ColumnDef.create<string> [
+                        ColumnDef.filter Text
+                        ColumnDef.headerName "Street"
+                        ColumnDef.valueGetter (fun x -> x.Address.Street |> Option.toObj)
+                    ]
+                    ColumnDef.create<string> [
+                        ColumnDef.filter Text
+                        ColumnDef.headerName "Town"
+                        ColumnDef.valueGetter (fun x -> x.Address.TownCity)
+                    ]
+                    ColumnDef.create<string> [
+                        ColumnDef.filter Text
+                        ColumnDef.headerName "County"
+                        ColumnDef.valueGetter (fun x -> x.Address.County)
+                    ]
+                    ColumnDef.create<string> [
+                        ColumnDef.filter Text
+                        ColumnDef.headerName "Postcode"
+                        ColumnDef.valueGetter (fun x -> x.Address.PostCode |> Option.toObj)
+                    ]
+                ]
+            ]
+        ]
+    ]
+
 let view model dispatch =
     Html.div [
         safeSearchNavBar
@@ -202,6 +258,11 @@ let view model dispatch =
                     Heading.title
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
+                    match model.Properties with
+                    | Resolved [] | HasNotStarted | InProgress ->
+                        ()
+                    | Resolved results ->
+                        resultsGrid results
                 ]
             ]
         ]

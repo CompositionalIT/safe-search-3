@@ -4,6 +4,7 @@ storage: none
 
 nuget Azure.Search.Documents
 nuget Fable.Remoting.Giraffe
+nuget Feliz.AgGrid
 nuget FSharp.Data
 nuget Microsoft.Azure.Core.Spatial
 nuget Microsoft.Spatial
