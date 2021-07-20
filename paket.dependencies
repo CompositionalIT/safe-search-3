@@ -2,8 +2,11 @@ source https://api.nuget.org/v3/index.json
 framework: net5.0
 storage: none
 
+nuget Azure.Search.Documents
 nuget Fable.Remoting.Giraffe
 nuget FSharp.Data
+nuget Microsoft.Azure.Core.Spatial
+nuget Microsoft.Spatial
 nuget Saturn
 nuget Expecto
 

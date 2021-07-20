@@ -2,56 +2,45 @@ module Server
 
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
+open Microsoft.AspNetCore.Http
+open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.Logging
+open Microsoft.AspNetCore.Hosting
 open Saturn
 
 open Shared
 
-type Storage() =
-    let todos = ResizeArray<_>()
+type Foo = { Name : string }
 
-    member __.GetTodos() = List.ofSeq todos
-
-    member __.AddTodo(todo: Todo) =
-        if Todo.isValid todo.Description then
-            todos.Add todo
-            Ok()
-        else
-            Error "Invalid todo"
-
-let storage = Storage()
-
-storage.AddTodo(Todo.create "Create new SAFE project")
-|> ignore
-
-storage.AddTodo(Todo.create "Write your app")
-|> ignore
-
-storage.AddTodo(Todo.create "Ship it !!!")
-|> ignore
-
-let todosApi =
-    { getTodos = fun () -> async { return storage.GetTodos() }
-      addTodo =
-          fun todo ->
-              async {
-                  match storage.AddTodo todo with
-                  | Ok () -> return todo
-                  | Error e -> return failwith e
-              } }
+let searchApi (context:HttpContext) =
+    let config = context.GetService<IConfiguration>()
+    let logger = context.GetService<ILogger<ISearchApi>>()
+    {
+        Search = fun request -> async {
+            logger.LogInformation $"""Searching for '{request.Text}' on index '{config.["search-name"]}'"""
+            let results = Search.searchProperties request.Text config.["search-name"] config.["search-key"]
+            return results
+        }
+    }
 
 let webApp =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.fromValue todosApi
+    |> Remoting.withErrorHandler (fun ex _ -> printfn "%O" ex; Ignore)
+    |> Remoting.fromContext searchApi
     |> Remoting.buildHttpHandler
 
 let app =
     application {
         url "http://0.0.0.0:8085"
-        use_router webApp
+        logging (fun logging -> logging.AddConsole() |> ignore)
+        webhost_config (fun config ->
+            config.ConfigureAppConfiguration(fun c -> c.AddUserSecrets<Foo>() |> ignore)
+        )
         memory_cache
         use_static "public"
         use_gzip
+        use_router webApp
     }
 
 run app

@@ -5,6 +5,8 @@ open Fable.Remoting.Client
 open Shared
 open System
 
+type AsyncOperation<'T> = Start | Complete of 'T
+type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
 type CannotSearchReason = NoSearchText | InvalidPostcode
 type SearchKind = StandardSearch | LocationSearch
 type SearchState = Searching | CannotSearch of CannotSearchReason | CanSearch
@@ -12,30 +14,41 @@ type Model =
     {
         SearchText : string
         SelectedSearchKind : SearchKind
+        Properties : Deferred<PropertyResult list>
     }
     member this.SearchState =
         if String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
+        elif this.Properties = InProgress then Searching
         else CanSearch
 
 type Msg =
     | SearchTextChanged of string
-    | StartSearch
     | SearchKindSelected of SearchKind
+    | Search of AsyncOperation<PropertyResult list>
+    | AppError of exn
 
-let todosApi =
+let searchApi =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<ITodosApi>
+    |> Remoting.buildProxy<ISearchApi>
 
 let init () =
-    let model = { SearchText = ""; SelectedSearchKind = StandardSearch }
+    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted }
     model, Cmd.none
 
 let update msg model =
     match msg with
-    | SearchTextChanged value -> { model with SearchText = value }, Cmd.none
-    | StartSearch -> model, Cmd.none
-    | SearchKindSelected kind -> { model with SelectedSearchKind = kind }, Cmd.none
+    | SearchTextChanged value ->
+        { model with SearchText = value }, Cmd.none
+    | SearchKindSelected kind ->
+        { model with SelectedSearchKind = kind }, Cmd.none
+    | Search operation ->
+        match operation with
+        | Start -> { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.Search { Text = Option.ofObj model.SearchText } (Complete >> Search) AppError
+        | Complete properties -> { model with Properties = Resolved properties }, Cmd.none
+    | AppError ex ->
+        Browser.Dom.console.log ex
+        model, Cmd.none
 
 open Feliz
 open Feliz.Bulma
@@ -102,7 +115,7 @@ module Search =
             | Searching ->
                 button.isLoading
             | CanSearch ->
-                prop.onClick(fun _ -> dispatch StartSearch)
+                prop.onClick(fun _ -> dispatch (Search Start))
             prop.children [
                 Bulma.icon [
                     prop.children [

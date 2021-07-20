@@ -55,3 +55,17 @@ let x =
 x
 |> encode
 |> System.Text.Json.JsonSerializer.Serialize
+
+
+
+#r "nuget:Azure.Search.Documents"
+
+open Azure
+open Azure.Search.Documents.Indexes
+open System
+
+let siClient = SearchIndexClient(Uri "", AzureKeyCredential "")
+let searchClient = siClient.GetSearchClient "properties"
+let resp = searchClient.Search<obj> "london"
+let results = resp.Value.GetResults() |> Seq.toArray
+results.[0]
