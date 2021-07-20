@@ -20,6 +20,10 @@ type Model =
         if String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
         elif this.Properties = InProgress then Searching
         else CanSearch
+    member this.HasProperties =
+        match this.Properties with
+        | Resolved [] | InProgress | HasNotStarted -> false
+        | Resolved _ -> true
 
 type Msg =
     | SearchTextChanged of string
@@ -248,21 +252,19 @@ let resultsGrid (results:PropertyResult list) =
         ]
     ]
 
-let view model dispatch =
+let view (model:Model) dispatch =
     Html.div [
         safeSearchNavBar
         Bulma.section [
-            section.isLarge
+            if not model.HasProperties then section.isLarge
             prop.children [
                 Bulma.container [
                     Heading.title
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
                     match model.Properties with
-                    | Resolved [] | HasNotStarted | InProgress ->
-                        ()
-                    | Resolved results ->
-                        resultsGrid results
+                    | Resolved [] | HasNotStarted | InProgress -> ()
+                    | Resolved results -> resultsGrid results
                 ]
             ]
         ]
