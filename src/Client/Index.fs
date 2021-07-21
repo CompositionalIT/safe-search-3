@@ -7,14 +7,17 @@ open System
 
 type AsyncOperation<'T> = Start | Complete of 'T
 type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
+
 type CannotSearchReason = NoSearchText | InvalidPostcode
 type SearchKind = StandardSearch | LocationSearch
 type SearchState = Searching | CannotSearch of CannotSearchReason | CanSearch
+
 type Model =
     {
         SearchText : string
         SelectedSearchKind : SearchKind
         Properties : Deferred<PropertyResult list>
+        SelectedProperty : PropertyResult option
     }
     member this.SearchState =
         if String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
@@ -30,6 +33,8 @@ type Msg =
     | SearchKindSelected of SearchKind
     | Search of AsyncOperation<PropertyResult list>
     | AppError of exn
+    | ViewProperty of PropertyResult
+    | CloseProperty
 
 let searchApi =
     Remoting.createApi ()
@@ -37,7 +42,7 @@ let searchApi =
     |> Remoting.buildProxy<ISearchApi>
 
 let init () =
-    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted }
+    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted; SelectedProperty = None }
     model, Cmd.none
 
 let update msg model =
@@ -50,6 +55,10 @@ let update msg model =
         match operation with
         | Start -> { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.Search { Text = Option.ofObj model.SearchText } (Complete >> Search) AppError
         | Complete properties -> { model with Properties = Resolved properties }, Cmd.none
+    | ViewProperty property ->
+        { model with SelectedProperty = Some property }, Cmd.none
+    | CloseProperty ->
+        { model with SelectedProperty = None }, Cmd.none
     | AppError ex ->
         Browser.Dom.console.log ex
         model, Cmd.none
@@ -200,7 +209,7 @@ let safeSearchNavBar =
 open Feliz.AgGrid
 open Fable.Core.JsInterop
 
-let resultsGrid (results:PropertyResult list) =
+let resultsGrid dispatch (results:PropertyResult list) =
     Html.div [
         prop.className ThemeClass.Alpine
         prop.children [
@@ -214,6 +223,10 @@ let resultsGrid (results:PropertyResult list) =
                 ]
                 AgGrid.domLayout AutoHeight
                 AgGrid.columnDefs [
+                    ColumnDef.create<string> [
+                        ColumnDef.onCellClicked (fun _ row -> dispatch (ViewProperty row))
+                        ColumnDef.cellRendererFramework (fun _ _ -> Html.a [ Html.text "View" ])
+                    ]
                     ColumnDef.create<DateTime> [
                         ColumnDef.filter Date
                         ColumnDef.headerName "Date"
@@ -264,8 +277,56 @@ let view (model:Model) dispatch =
                     Search.createSearchPanel model dispatch
                     match model.Properties with
                     | Resolved [] | HasNotStarted | InProgress -> ()
-                    | Resolved results -> resultsGrid results
+                    | Resolved results -> resultsGrid dispatch results
                 ]
+                match model.SelectedProperty with
+                | None ->
+                    ()
+                | Some property ->
+                    Bulma.modal [
+                        modal.isActive
+                        prop.children [
+                            Bulma.modalBackground [
+                                prop.onClick (fun _ -> dispatch CloseProperty)
+                            ]
+                            Bulma.modalContent [
+                                Bulma.box [
+                                    let makeLine text fields =
+                                        Bulma.field.div [
+                                            field.isHorizontal
+                                            prop.children [
+                                                Bulma.fieldLabel [
+                                                    fieldLabel.isNormal
+                                                    prop.text (text:string)
+                                                ]
+                                                Bulma.fieldBody [
+                                                    for (field:string) in fields do
+                                                        Bulma.field.div [
+                                                            Bulma.control.p [
+                                                                Bulma.input.text [
+                                                                    prop.readOnly true
+                                                                    prop.value field
+                                                                ]
+                                                            ]
+                                                        ]
+                                                ]
+                                            ]
+                                        ]
+
+                                    makeLine "Street" [ $"{property.Address.Building}, {property.Address.Street |> Option.toObj}" ]
+                                    makeLine "Town" [ property.Address.District; property.Address.County ]
+                                    makeLine "Price" [ $"£{property.Price?toLocaleString()}" ]
+                                    makeLine "Date" [ property.DateOfTransfer.ToShortDateString() ]
+                                    makeLine "Build" [ property.BuildDetails.Build.Description; property.BuildDetails.Contract.Description; property.BuildDetails.PropertyType |> Option.map(fun p -> p.Description) |> Option.toObj ]
+                                ]
+                            ]
+                            Bulma.modalClose [
+                                modalClose.isLarge
+                                prop.ariaLabel "close"
+                                prop.onClick (fun _ -> dispatch CloseProperty)
+                            ]
+                        ]
+                    ]
             ]
         ]
     ]
