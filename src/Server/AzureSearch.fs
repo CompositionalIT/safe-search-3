@@ -3,11 +3,13 @@ module Search
 open Azure
 open Azure.Search.Documents
 open Azure.Search.Documents.Indexes
+open Kibalta
 open Shared
 open System
 open Microsoft.Spatial
 open System.Text.Json.Serialization
 open Azure.Core.Serialization
+open System.Collections.Generic
 
 [<CLIMutable>]
 type SearchableProperty =
@@ -25,14 +27,33 @@ type SearchableProperty =
         [<SearchableField(IsSortable = true)>] Town : string
         [<SearchableField>] District : string
         [<SearchableField>] County : string
-        [<SimpleField (IsSortable = true)>]
-        [<JsonConverter(typeof<MicrosoftSpatialGeoJsonConverter>)>] Geo : GeographyPoint }
+        [<SimpleField (IsSortable = true); JsonConverter(typeof<MicrosoftSpatialGeoJsonConverter>)>] Geo : GeographyPoint
+    }
 
-let search<'T> indexName keyword serviceName key =
-    let indexClient = SearchIndexClient(Uri $"https://%s{serviceName}.search.windows.net", AzureKeyCredential key)
-    let searchClient = indexClient.GetSearchClient indexName
-    let response = searchClient.Search<'T> (Option.toObj keyword, SearchOptions(Size = 20))
-    response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList
+module AzureInterop =
+    open Filters
+
+    let private buildClient indexName serviceName key =
+        let indexClient = SearchIndexClient(Uri $"https://%s{serviceName}.search.windows.net", AzureKeyCredential key)
+        indexClient.GetSearchClient indexName
+
+    let private getResults keyword options (searchClient:SearchClient) =
+        let response = searchClient.Search<'T> (keyword, options)
+        response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList
+
+    let search<'T> indexName keyword serviceName key =
+        buildClient indexName serviceName key
+        |> getResults (Option.toObj keyword) (SearchOptions (Size = 20))
+
+    let searchByLocation<'T> indexName (long, lat) serviceName key =
+        let options =
+            SearchOptions (
+                Size = 20,
+                Filter = (whereGeoDistance "Geo" (long, lat) Lt 20. |> eval)
+            )
+        options.OrderBy.Add((ByDistance ("Geo", long, lat, Ascending) ).StringValue)
+        buildClient indexName serviceName key
+        |> getResults null options
 
 let private toPropertyResult result  =
     {
@@ -64,6 +85,10 @@ let private toPropertyResult result  =
             |> Option.ofNullable
             |> Option.defaultValue DateTime.MinValue }
 
-let searchProperties keyword index key =
-    search<SearchableProperty> "properties" keyword index key
+let freeTextSearch keyword index key =
+    AzureInterop.search "properties" keyword index key
+    |> List.map toPropertyResult
+
+let locationSearch (long, lat) index key =
+    AzureInterop.searchByLocation "properties" (long, lat) index key
     |> List.map toPropertyResult

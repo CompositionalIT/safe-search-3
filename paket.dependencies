@@ -2,6 +2,7 @@ source https://api.nuget.org/v3/index.json
 framework: net5.0
 storage: none
 
+nuget Azure.Data.Tables
 nuget Azure.Search.Documents
 nuget Fable.Remoting.Giraffe
 nuget Feliz.AgGrid

@@ -16,10 +16,22 @@ let searchApi (context:HttpContext) =
     let config = context.GetService<IConfiguration>()
     let logger = context.GetService<ILogger<ISearchApi>>()
     {
-        Search = fun request -> async {
+        FreeText = fun request -> async {
             logger.LogInformation $"""Searching for '{request.Text}' on index '{config.["search-name"]}'"""
-            let results = Search.searchProperties request.Text config.["search-name"] config.["search-key"]
+            let results = Search.freeTextSearch request.Text config.["search-name"] config.["search-key"]
             return results
+        }
+        ByLocation = fun request -> async {
+            logger.LogInformation $"""Searching for '{request.Postcode}' on index '{config.["search-name"]}'"""
+            let! geoLookupResult = GeoLookup.tryGetGeo config.["storage-connection-string"] request.Postcode |> Async.AwaitTask
+            return
+                match geoLookupResult with
+                | Some geo ->
+                    logger.LogInformation $"{request.Postcode} => {geo}."
+                    let results = Search.locationSearch (geo.Long, geo.Lat) config.["search-name"] config.["search-key"]
+                    Ok results
+                | None ->
+                    Error "Invalid postcode"
         }
     }
 

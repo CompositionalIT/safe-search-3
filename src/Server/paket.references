@@ -4,3 +4,4 @@ FSharp.Data
 Azure.Search.Documents
 Microsoft.Spatial
 Microsoft.Azure.Core.Spatial
+Azure.Data.Tables

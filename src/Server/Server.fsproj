@@ -7,6 +7,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="GeoLookup.fs" />
+    <Compile Include="Kibalta.fs" />
     <Compile Include="AzureSearch.fs" />
     <Compile Include="Transaction.fs" />
     <Compile Include="Server.fs" />

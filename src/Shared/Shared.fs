@@ -88,9 +88,11 @@ type PropertyResult =
         DateOfTransfer : DateTime
     }
 
-type FindGenericRequest = { Text : string option }
+type FreeTextSearchRequest = { Text : string option }
+type LocationSearchRequest = { Postcode : string }
 
 type ISearchApi =
     {
-        Search : FindGenericRequest -> Async<PropertyResult list>
+        FreeText : FreeTextSearchRequest -> Async<PropertyResult list>
+        ByLocation : LocationSearchRequest -> Async<Result<PropertyResult list, string>>
     }

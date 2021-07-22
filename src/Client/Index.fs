@@ -18,6 +18,7 @@ type Model =
         SelectedSearchKind : SearchKind
         Properties : Deferred<PropertyResult list>
         SelectedProperty : PropertyResult option
+        HasLoadedSomeData : Boolean
     }
     member this.SearchState =
         if String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
@@ -31,7 +32,8 @@ type Model =
 type Msg =
     | SearchTextChanged of string
     | SearchKindSelected of SearchKind
-    | Search of AsyncOperation<PropertyResult list>
+    | FreeTextSearch of AsyncOperation<PropertyResult list>
+    | LocationSearch of AsyncOperation<Result<PropertyResult list, string>>
     | AppError of exn
     | ViewProperty of PropertyResult
     | CloseProperty
@@ -42,7 +44,7 @@ let searchApi =
     |> Remoting.buildProxy<ISearchApi>
 
 let init () =
-    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted; SelectedProperty = None }
+    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted; SelectedProperty = None; HasLoadedSomeData = false }
     model, Cmd.none
 
 let update msg model =
@@ -51,10 +53,21 @@ let update msg model =
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
         { model with SelectedSearchKind = kind }, Cmd.none
-    | Search operation ->
+    | FreeTextSearch operation ->
         match operation with
-        | Start -> { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.Search { Text = Option.ofObj model.SearchText } (Complete >> Search) AppError
-        | Complete properties -> { model with Properties = Resolved properties }, Cmd.none
+        | Start ->
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = Option.ofObj model.SearchText } (Complete >> FreeTextSearch) AppError
+        | Complete properties ->
+            { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
+    | LocationSearch operation ->
+        match operation with
+        | Start ->
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText } (Complete >> LocationSearch) AppError
+        | Complete (Ok properties) ->
+            { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
+        | Complete (Error message) ->
+            Browser.Dom.console.log message
+            model, Cmd.none
     | ViewProperty property ->
         { model with SelectedProperty = Some property }, Cmd.none
     | CloseProperty ->
@@ -128,7 +141,9 @@ module Search =
             | Searching ->
                 button.isLoading
             | CanSearch ->
-                prop.onClick(fun _ -> dispatch (Search Start))
+                match model.SelectedSearchKind with
+                | SearchKind.StandardSearch -> prop.onClick(fun _ -> dispatch (FreeTextSearch Start))
+                | SearchKind.LocationSearch -> prop.onClick(fun _ -> dispatch (LocationSearch Start))
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -162,7 +177,7 @@ module Search =
                             Bulma.select [
                                 prop.onChange (function
                                     | "1" -> dispatch (SearchKindSelected StandardSearch)
-                                    | _ -> dispatch (SearchKindSelected LocationSearch)
+                                    | _ -> dispatch (SearchKindSelected SearchKind.LocationSearch)
                                 )
                                 prop.children [
                                     Html.option [ prop.text "Standard Search"; prop.value "1" ]
@@ -177,7 +192,7 @@ module Search =
                                         let iconName =
                                             match model.SelectedSearchKind with
                                             | StandardSearch -> "search"
-                                            | LocationSearch -> "location-arrow"
+                                            | SearchKind.LocationSearch -> "location-arrow"
                                         prop.className $"fas fa-{iconName}"
                                     ]
                                 ]
@@ -269,15 +284,19 @@ let view (model:Model) dispatch =
     Html.div [
         safeSearchNavBar
         Bulma.section [
-            if not model.HasProperties then section.isLarge
+            if not model.HasProperties && not model.HasLoadedSomeData then section.isLarge
             prop.children [
                 Bulma.container [
                     Heading.title
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
                     match model.Properties with
-                    | Resolved [] | HasNotStarted | InProgress -> ()
-                    | Resolved results -> resultsGrid dispatch results
+                    | Resolved []
+                    | HasNotStarted
+                    | InProgress ->
+                        ()
+                    | Resolved results ->
+                        resultsGrid dispatch results
                 ]
                 match model.SelectedProperty with
                 | None ->
@@ -314,7 +333,7 @@ let view (model:Model) dispatch =
                                         ]
 
                                     makeLine "Street" [ $"{property.Address.Building}, {property.Address.Street |> Option.toObj}" ]
-                                    makeLine "Town" [ property.Address.District; property.Address.County ]
+                                    makeLine "Town" [ property.Address.District; property.Address.County; (Option.toObj property.Address.PostCode) ]
                                     makeLine "Price" [ $"£{property.Price?toLocaleString()}" ]
                                     makeLine "Date" [ property.DateOfTransfer.ToShortDateString() ]
                                     makeLine "Build" [ property.BuildDetails.Build.Description; property.BuildDetails.Contract.Description; property.BuildDetails.PropertyType |> Option.map(fun p -> p.Description) |> Option.toObj ]
