@@ -8,7 +8,12 @@ open System
 type AsyncOperation<'T, 'Q> = Start of 'T | Complete of 'Q
 type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
 
-type SearchTextError = NoSearchText | InvalidPostcode
+type SearchTextError =
+    | NoSearchText | InvalidPostcode
+    member this.Description =
+        match this with
+        | NoSearchText -> "No search term supplied."
+        | InvalidPostcode -> "This is an invalid postcode."
 
 type SearchKind =
     | FreeTextSearch | LocationSearch
@@ -26,7 +31,8 @@ type Model =
         HasLoadedSomeData : Boolean
     }
     member this.SearchTextError =
-        if String.IsNullOrWhiteSpace this.SearchText then Some NoSearchText
+        if String.IsNullOrEmpty this.SearchText then
+            Some NoSearchText
         else
             match this.SelectedSearchKind with
             | LocationSearch ->
@@ -35,12 +41,6 @@ type Model =
             | FreeTextSearch ->
                 None
 
-    // member this.SearchState =
-    //     if this.Properties = InProgress then Searching
-    //     else
-    //         match this.SearchTextError with
-    //         | Some error -> CannotSearch error
-    //         | None -> CanSearch this.SearchText
     member this.HasProperties =
         match this.Properties with
         | Resolved [] | InProgress | HasNotStarted -> false
@@ -96,9 +96,9 @@ let update msg model =
         { model with SelectedProperty = None }, Cmd.none
     | DoPostcodeSearch postCode ->
         let commands = [
+            SearchKindSelected LocationSearch
             SearchTextChanged postCode
             Search (ByLocation (Start postCode))
-            SearchKindSelected LocationSearch
         ]
         model, Cmd.batch (List.map Cmd.ofMsg commands)
     | AppError ex ->
@@ -137,6 +137,7 @@ module Search =
             prop.children [
                 Bulma.input.search [
                     prop.onChange (SearchTextChanged >> dispatch)
+
                     match model.SearchTextError, model.Properties with
                     | Some NoSearchText, _ ->
                         color.isPrimary
@@ -158,6 +159,14 @@ module Search =
                         ]
                     ]
                 ]
+                match model.SearchTextError with
+                | Some error ->
+                    Bulma.help [
+                        color.isDanger
+                        prop.text error.Description
+                    ]
+                | None ->
+                    ()
             ]
         ]
     let searchButton (model:Model) dispatch =
