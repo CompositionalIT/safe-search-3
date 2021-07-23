@@ -8,6 +8,9 @@ open System
 type AsyncOperation<'T, 'Q> = Start of 'T | Complete of 'Q
 type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
 
+let (|IsLoading|IsNotLoading|) = function HasNotStarted | Resolved _ -> IsNotLoading | InProgress -> IsLoading
+let (|NonEmpty|_|) = function (_::_) as items -> Some (NonEmpty items) | _ -> None
+
 type SearchTextError =
     | NoSearchText | InvalidPostcode
     member this.Description =
@@ -134,6 +137,10 @@ module Search =
     let searchInput (model:Model) dispatch =
         Bulma.control.div [
             control.hasIconsLeft
+            match model.Properties with
+            | IsLoading -> control.isLoading
+            | IsNotLoading -> ()
+
             prop.children [
                 Bulma.input.search [
                     prop.onChange (SearchTextChanged >> dispatch)
@@ -144,11 +151,11 @@ module Search =
                         prop.placeholder "Enter your search term here."
                     | Some InvalidPostcode, _ ->
                         color.isDanger
-                    | None, InProgress ->
-                        prop.disabled true
-                    | None, (HasNotStarted | Resolved _) ->
+                    | None, IsNotLoading ->
                         prop.valueOrDefault model.SearchText
                         color.isPrimary
+                    | None, IsLoading ->
+                        ()
                 ]
                 Bulma.icon [
                     icon.isSmall
@@ -171,14 +178,13 @@ module Search =
         ]
     let searchButton (model:Model) dispatch =
         Bulma.button.a [
-            button.isFullWidth
             color.isPrimary
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
                 prop.disabled true
-            | None, InProgress ->
+            | None, IsLoading ->
                 button.isLoading
-            | None, (HasNotStarted | Resolved _) ->
+            | None, IsNotLoading ->
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
                 | LocationSearch -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
@@ -199,47 +205,47 @@ module Search =
     let createSearchPanel model dispatch =
         Bulma.columns [
             Bulma.column [
-                column.is8
+                column.isThreeQuarters
                 prop.children [ searchInput model dispatch ]
             ]
             Bulma.column [
-                column.is2
-                prop.children [
-                    Bulma.control.div [
-                        control.hasIconsLeft
-                        prop.children [
-                            Bulma.select [
-                                prop.disabled (model.Properties = InProgress)
-                                prop.onChange (function
-                                    | "1" -> dispatch (SearchKindSelected FreeTextSearch)
-                                    | _ -> dispatch (SearchKindSelected LocationSearch)
-                                )
-                                prop.children [
-                                    for kind in [ FreeTextSearch; LocationSearch ] do
-                                        Html.option [ prop.text kind.Description; prop.value kind.Value ]
+                Bulma.level [
+                    Bulma.levelItem [
+                        Bulma.control.div [
+                            control.hasIconsLeft
+                            prop.children [
+                                Bulma.select [
+                                    prop.disabled (model.Properties = InProgress)
+                                    prop.onChange (function
+                                        | "1" -> dispatch (SearchKindSelected FreeTextSearch)
+                                        | _ -> dispatch (SearchKindSelected LocationSearch)
+                                    )
+                                    prop.children [
+                                        for kind in [ FreeTextSearch; LocationSearch ] do
+                                            Html.option [ prop.text kind.Description; prop.value kind.Value ]
+                                    ]
+                                    prop.valueOrDefault model.SelectedSearchKind.Value
                                 ]
-                                prop.valueOrDefault model.SelectedSearchKind.Value
-                            ]
-                            Bulma.icon [
-                                icon.isSmall
-                                icon.isLeft
-                                prop.children [
-                                    Html.i [
-                                        let iconName =
-                                            match model.SelectedSearchKind with
-                                            | FreeTextSearch -> "search"
-                                            | LocationSearch -> "location-arrow"
-                                        prop.className $"fas fa-{iconName}"
+                                Bulma.icon [
+                                    icon.isSmall
+                                    icon.isLeft
+                                    prop.children [
+                                        Html.i [
+                                            let iconName =
+                                                match model.SelectedSearchKind with
+                                                | FreeTextSearch -> "search"
+                                                | LocationSearch -> "location-arrow"
+                                            prop.className $"fas fa-{iconName}"
+                                        ]
                                     ]
                                 ]
                             ]
                         ]
                     ]
+                    Bulma.levelItem [
+                        searchButton model dispatch
+                    ]
                 ]
-            ]
-            Bulma.column [
-                column.is2
-                prop.children [ searchButton model dispatch ]
             ]
         ]
 
@@ -336,12 +342,10 @@ let view (model:Model) dispatch =
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
                     match model.Properties with
-                    | Resolved []
-                    | HasNotStarted
-                    | InProgress ->
-                        ()
-                    | Resolved results ->
+                    | Resolved (NonEmpty results) ->
                         resultsGrid dispatch model.SelectedSearchKind results
+                    | _ ->
+                        ()
                 ]
                 match model.SelectedProperty with
                 | None ->
