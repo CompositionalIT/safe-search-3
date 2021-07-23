@@ -96,3 +96,18 @@ type ISearchApi =
         FreeText : FreeTextSearchRequest -> Async<PropertyResult list>
         ByLocation : LocationSearchRequest -> Async<Result<PropertyResult list, string>>
     }
+
+
+/// Provides validation on data. Shared across both client and server.
+module Validation =
+    open System.Text.RegularExpressions
+
+    let isValidPostcode postcode =
+        Regex.IsMatch
+            (postcode,
+             @"([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z]))))\s?[0-9][A-Za-z]{2})")
+
+[<AutoOpen>]
+module Extensions =
+    type Result<'T,'TError> with
+        member this.IsError = match this with Error _ -> true | Ok _ -> false

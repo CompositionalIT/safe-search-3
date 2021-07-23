@@ -8,13 +8,14 @@ open System
 type AsyncOperation<'T, 'Q> = Start of 'T | Complete of 'Q
 type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
 
-type CannotSearchReason = NoSearchText | InvalidPostcode
+type SearchTextError = NoSearchText | InvalidPostcode
+
 type SearchKind =
     | FreeTextSearch | LocationSearch
     member this.Value = match this with FreeTextSearch -> 1 | LocationSearch -> 2
     member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch -> "Post Code"
 
-type SearchState = Searching | CannotSearch of CannotSearchReason | CanSearch
+type SearchState = Searching | CannotSearch of SearchTextError | CanSearch of string
 
 type Model =
     {
@@ -24,10 +25,22 @@ type Model =
         SelectedProperty : PropertyResult option
         HasLoadedSomeData : Boolean
     }
-    member this.SearchState =
-        if this.Properties = InProgress then Searching
-        elif String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
-        else CanSearch
+    member this.SearchTextError =
+        if String.IsNullOrWhiteSpace this.SearchText then Some NoSearchText
+        else
+            match this.SelectedSearchKind with
+            | LocationSearch ->
+                if Validation.isValidPostcode this.SearchText then None
+                else Some InvalidPostcode
+            | FreeTextSearch ->
+                None
+
+    // member this.SearchState =
+    //     if this.Properties = InProgress then Searching
+    //     else
+    //         match this.SearchTextError with
+    //         | Some error -> CannotSearch error
+    //         | None -> CanSearch this.SearchText
     member this.HasProperties =
         match this.Properties with
         | Resolved [] | InProgress | HasNotStarted -> false
@@ -60,7 +73,9 @@ let update msg model =
     | SearchTextChanged value ->
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
-        { model with SelectedSearchKind = kind; Properties = HasNotStarted }, Cmd.none
+        { model with
+            SelectedSearchKind = kind
+            Properties = HasNotStarted }, Cmd.none
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
@@ -116,22 +131,22 @@ module Heading =
         ]
 
 module Search =
-    let searchInput model dispatch =
+    let searchInput (model:Model) dispatch =
         Bulma.control.div [
             control.hasIconsLeft
             prop.children [
                 Bulma.input.search [
                     prop.onChange (SearchTextChanged >> dispatch)
-                    prop.value model.SearchText
-                    match model.SearchState with
-                    | CannotSearch NoSearchText ->
+                    match model.SearchTextError, model.Properties with
+                    | Some NoSearchText, _ ->
                         color.isPrimary
                         prop.placeholder "Enter your search term here."
-                    | CannotSearch InvalidPostcode ->
+                    | Some InvalidPostcode, _ ->
                         color.isDanger
-                    | Searching ->
+                    | None, InProgress ->
                         prop.disabled true
-                    | CanSearch ->
+                    | None, (HasNotStarted | Resolved _) ->
+                        prop.valueOrDefault model.SearchText
                         color.isPrimary
                 ]
                 Bulma.icon [
@@ -149,12 +164,12 @@ module Search =
         Bulma.button.a [
             button.isFullWidth
             color.isPrimary
-            match model.SearchState with
-            | CannotSearch _ ->
+            match model.SearchTextError, model.Properties with
+            | Some _, _ ->
                 prop.disabled true
-            | Searching ->
+            | None, InProgress ->
                 button.isLoading
-            | CanSearch ->
+            | None, (HasNotStarted | Resolved _) ->
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
                 | LocationSearch -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
@@ -185,7 +200,7 @@ module Search =
                         control.hasIconsLeft
                         prop.children [
                             Bulma.select [
-                                prop.disabled (model.SearchState = Searching)
+                                prop.disabled (model.Properties = InProgress)
                                 prop.onChange (function
                                     | "1" -> dispatch (SearchKindSelected FreeTextSearch)
                                     | _ -> dispatch (SearchKindSelected LocationSearch)
