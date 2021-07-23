@@ -88,7 +88,7 @@ type PropertyResult =
         DateOfTransfer : DateTime
     }
 
-type FreeTextSearchRequest = { Text : string option }
+type FreeTextSearchRequest = { Text : string }
 type LocationSearchRequest = { Postcode : string }
 
 type ISearchApi =

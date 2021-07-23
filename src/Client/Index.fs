@@ -5,11 +5,15 @@ open Fable.Remoting.Client
 open Shared
 open System
 
-type AsyncOperation<'T> = Start | Complete of 'T
+type AsyncOperation<'T, 'Q> = Start of 'T | Complete of 'Q
 type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
 
 type CannotSearchReason = NoSearchText | InvalidPostcode
-type SearchKind = StandardSearch | LocationSearch
+type SearchKind =
+    | FreeTextSearch | LocationSearch
+    member this.Value = match this with FreeTextSearch -> 1 | LocationSearch -> 2
+    member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch -> "Post Code"
+
 type SearchState = Searching | CannotSearch of CannotSearchReason | CanSearch
 
 type Model =
@@ -21,20 +25,24 @@ type Model =
         HasLoadedSomeData : Boolean
     }
     member this.SearchState =
-        if String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
-        elif this.Properties = InProgress then Searching
+        if this.Properties = InProgress then Searching
+        elif String.IsNullOrWhiteSpace this.SearchText then CannotSearch NoSearchText
         else CanSearch
     member this.HasProperties =
         match this.Properties with
         | Resolved [] | InProgress | HasNotStarted -> false
         | Resolved _ -> true
 
+type SearchMsg =
+    | ByFreeText of AsyncOperation<string, PropertyResult list>
+    | ByLocation of AsyncOperation<string, Result<PropertyResult list, string>>
+
 type Msg =
     | SearchTextChanged of string
     | SearchKindSelected of SearchKind
-    | FreeTextSearch of AsyncOperation<PropertyResult list>
-    | LocationSearch of AsyncOperation<Result<PropertyResult list, string>>
-    | AppError of exn
+    | DoPostcodeSearch of string
+    | Search of SearchMsg
+    | AppError of string
     | ViewProperty of PropertyResult
     | CloseProperty
 
@@ -44,7 +52,7 @@ let searchApi =
     |> Remoting.buildProxy<ISearchApi>
 
 let init () =
-    let model = { SearchText = ""; SelectedSearchKind = StandardSearch; Properties = HasNotStarted; SelectedProperty = None; HasLoadedSomeData = false }
+    let model = { SearchText = ""; SelectedSearchKind = FreeTextSearch; Properties = HasNotStarted; SelectedProperty = None; HasLoadedSomeData = false }
     model, Cmd.none
 
 let update msg model =
@@ -52,26 +60,32 @@ let update msg model =
     | SearchTextChanged value ->
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
-        { model with SelectedSearchKind = kind }, Cmd.none
-    | FreeTextSearch operation ->
+        { model with SelectedSearchKind = kind; Properties = HasNotStarted }, Cmd.none
+    | Search (ByFreeText operation) ->
         match operation with
-        | Start ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = Option.ofObj model.SearchText } (Complete >> FreeTextSearch) AppError
+        | Start text ->
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete properties ->
             { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
-    | LocationSearch operation ->
+    | Search (ByLocation operation) ->
         match operation with
-        | Start ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText } (Complete >> LocationSearch) AppError
+        | Start postcode ->
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok properties) ->
             { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
         | Complete (Error message) ->
-            Browser.Dom.console.log message
-            model, Cmd.none
+            model, Cmd.ofMsg (AppError message)
     | ViewProperty property ->
         { model with SelectedProperty = Some property }, Cmd.none
     | CloseProperty ->
         { model with SelectedProperty = None }, Cmd.none
+    | DoPostcodeSearch postCode ->
+        let commands = [
+            SearchTextChanged postCode
+            Search (ByLocation (Start postCode))
+            SearchKindSelected LocationSearch
+        ]
+        model, Cmd.batch (List.map Cmd.ofMsg commands)
     | AppError ex ->
         Browser.Dom.console.log ex
         model, Cmd.none
@@ -105,10 +119,10 @@ module Search =
     let searchInput model dispatch =
         Bulma.control.div [
             control.hasIconsLeft
-            prop.value model.SearchText
-            prop.onChange (SearchTextChanged >> dispatch)
             prop.children [
                 Bulma.input.search [
+                    prop.onChange (SearchTextChanged >> dispatch)
+                    prop.value model.SearchText
                     match model.SearchState with
                     | CannotSearch NoSearchText ->
                         color.isPrimary
@@ -142,8 +156,8 @@ module Search =
                 button.isLoading
             | CanSearch ->
                 match model.SelectedSearchKind with
-                | SearchKind.StandardSearch -> prop.onClick(fun _ -> dispatch (FreeTextSearch Start))
-                | SearchKind.LocationSearch -> prop.onClick(fun _ -> dispatch (LocationSearch Start))
+                | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
+                | LocationSearch -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -161,28 +175,26 @@ module Search =
     let createSearchPanel model dispatch =
         Bulma.columns [
             Bulma.column [
-                column.isThreeFifths
+                column.is8
                 prop.children [ searchInput model dispatch ]
             ]
             Bulma.column [
-                column.isOneFifth
-                prop.children [ searchButton model dispatch ]
-            ]
-            Bulma.column [
-                column.isOneFifth
+                column.is2
                 prop.children [
                     Bulma.control.div [
                         control.hasIconsLeft
                         prop.children [
                             Bulma.select [
+                                prop.disabled (model.SearchState = Searching)
                                 prop.onChange (function
-                                    | "1" -> dispatch (SearchKindSelected StandardSearch)
-                                    | _ -> dispatch (SearchKindSelected SearchKind.LocationSearch)
+                                    | "1" -> dispatch (SearchKindSelected FreeTextSearch)
+                                    | _ -> dispatch (SearchKindSelected LocationSearch)
                                 )
                                 prop.children [
-                                    Html.option [ prop.text "Standard Search"; prop.value "1" ]
-                                    Html.option [ prop.text "Location Search"; prop.value "2" ]
+                                    for kind in [ FreeTextSearch; LocationSearch ] do
+                                        Html.option [ prop.text kind.Description; prop.value kind.Value ]
                                 ]
+                                prop.valueOrDefault model.SelectedSearchKind.Value
                             ]
                             Bulma.icon [
                                 icon.isSmall
@@ -191,8 +203,8 @@ module Search =
                                     Html.i [
                                         let iconName =
                                             match model.SelectedSearchKind with
-                                            | StandardSearch -> "search"
-                                            | SearchKind.LocationSearch -> "location-arrow"
+                                            | FreeTextSearch -> "search"
+                                            | LocationSearch -> "location-arrow"
                                         prop.className $"fas fa-{iconName}"
                                     ]
                                 ]
@@ -200,6 +212,10 @@ module Search =
                         ]
                     ]
                 ]
+            ]
+            Bulma.column [
+                column.is2
+                prop.children [ searchButton model dispatch ]
             ]
         ]
 
@@ -224,7 +240,7 @@ let safeSearchNavBar =
 open Feliz.AgGrid
 open Fable.Core.JsInterop
 
-let resultsGrid dispatch (results:PropertyResult list) =
+let resultsGrid dispatch searchKind (results:PropertyResult list) =
     Html.div [
         prop.className ThemeClass.Alpine
         prop.children [
@@ -273,7 +289,12 @@ let resultsGrid dispatch (results:PropertyResult list) =
                     ColumnDef.create<string> [
                         ColumnDef.filter Text
                         ColumnDef.headerName "Postcode"
-                        ColumnDef.valueGetter (fun x -> x.Address.PostCode |> Option.toObj)
+                        match searchKind with
+                        | FreeTextSearch ->
+                            ColumnDef.onCellClicked (fun _ row -> dispatch (DoPostcodeSearch (Option.toObj row.Address.PostCode)))
+                            ColumnDef.cellRendererFramework (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
+                        | LocationSearch ->
+                            ColumnDef.valueGetter (fun x -> Option.toObj x.Address.PostCode)
                     ]
                 ]
             ]
@@ -296,7 +317,7 @@ let view (model:Model) dispatch =
                     | InProgress ->
                         ()
                     | Resolved results ->
-                        resultsGrid dispatch results
+                        resultsGrid dispatch model.SelectedSearchKind results
                 ]
                 match model.SelectedProperty with
                 | None ->

@@ -1,15 +1,14 @@
 module Search
 
 open Azure
+open Azure.Core.Serialization
 open Azure.Search.Documents
 open Azure.Search.Documents.Indexes
 open Kibalta
+open Microsoft.Spatial
 open Shared
 open System
-open Microsoft.Spatial
 open System.Text.Json.Serialization
-open Azure.Core.Serialization
-open System.Collections.Generic
 
 [<CLIMutable>]
 type SearchableProperty =
@@ -43,7 +42,7 @@ module AzureInterop =
 
     let search<'T> indexName keyword serviceName key =
         buildClient indexName serviceName key
-        |> getResults (Option.toObj keyword) (SearchOptions (Size = 20))
+        |> getResults keyword (SearchOptions (Size = 20))
 
     let searchByLocation<'T> indexName (long, lat) serviceName key =
         let options =
