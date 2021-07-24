@@ -110,6 +110,10 @@ let update msg model =
 
 open Feliz
 open Feliz.Bulma
+open Feliz.PigeonMaps
+open Feliz.Tippy
+open Feliz.AgGrid
+open Fable.Core.JsInterop
 
 module Heading =
     let title =
@@ -267,9 +271,6 @@ let safeSearchNavBar =
         ]
     ]
 
-open Feliz.AgGrid
-open Fable.Core.JsInterop
-
 let resultsGrid dispatch searchKind (results:PropertyResult list) =
     Html.div [
         prop.className ThemeClass.Alpine
@@ -381,11 +382,59 @@ let view (model:Model) dispatch =
                                             ]
                                         ]
 
-                                    makeLine "Street" [ $"{property.Address.Building}, {property.Address.Street |> Option.toObj}" ]
+                                    let street = $"{property.Address.Building}, {property.Address.Street |> Option.toObj}"
+
+                                    makeLine "Street" [ street ]
                                     makeLine "Town" [ property.Address.District; property.Address.County; (Option.toObj property.Address.PostCode) ]
                                     makeLine "Price" [ $"£{property.Price?toLocaleString()}" ]
                                     makeLine "Date" [ property.DateOfTransfer.ToShortDateString() ]
                                     makeLine "Build" [ property.BuildDetails.Build.Description; property.BuildDetails.Contract.Description; property.BuildDetails.PropertyType |> Option.map(fun p -> p.Description) |> Option.toObj ]
+
+                                    match property.Address.GeoLocation with
+                                    | Some geoLocation ->
+                                        PigeonMaps.map [
+                                            map.center (geoLocation.Lat, geoLocation.Long)
+                                            map.zoom 16
+                                            map.height 350
+                                            map.markers [
+                                                PigeonMaps.marker [
+                                                    marker.anchor (geoLocation.Lat, geoLocation.Long)
+                                                    marker.offsetLeft 15
+                                                    marker.offsetTop 30
+                                                    marker.render (fun marker -> [
+                                                        Tippy.create [
+                                                            Tippy.plugins [|
+                                                                Plugins.followCursor
+                                                                Plugins.animateFill
+                                                                Plugins.inlinePositioning |]
+                                                            Tippy.placement Auto
+                                                            Tippy.animateFill
+                                                            Tippy.interactive
+                                                            Tippy.content (
+                                                                Html.div [
+                                                                    prop.text street
+                                                                    prop.style [
+                                                                        style.color.lightGreen
+                                                                    ]
+                                                                ]
+                                                            )
+                                                            prop.children [
+                                                                Html.i [
+                                                                    let icon =
+                                                                        match property.BuildDetails.PropertyType with
+                                                                        | Some (Terraced | Detached | SemiDetached) -> "home"
+                                                                        | Some (FlatsMaisonettes | Other) -> "building"
+                                                                        | None -> "map-marker"
+                                                                    prop.className [ "fa"; $"fa-{icon}" ]
+                                                                ]
+                                                            ]
+                                                        ]
+                                                    ])
+                                                ]
+                                            ]
+                                        ]
+                                    | None ->
+                                        ()
                                 ]
                             ]
                             Bulma.modalClose [

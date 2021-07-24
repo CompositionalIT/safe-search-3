@@ -27,7 +27,7 @@ let searchApi (context:HttpContext) =
             return
                 match geoLookupResult with
                 | Some geo ->
-                    logger.LogInformation $"{request.Postcode} => {geo}."
+                    logger.LogInformation $"{request.Postcode} => {(geo.Long, geo.Lat)}."
                     let results = Search.locationSearch (geo.Long, geo.Lat) config.["search-name"] config.["search-key"]
                     Ok results
                 | None ->

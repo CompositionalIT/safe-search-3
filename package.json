@@ -22,7 +22,9 @@
         "webpack-dev-server": "^3.8.2"
     },
     "dependencies": {
+        "@tippyjs/react": "^4.2.5",
         "ag-grid-community": "^25.3.0",
-        "ag-grid-react": "^25.3.0"
+        "ag-grid-react": "^25.3.0",
+        "pigeon-maps": "^0.19.7"
     }
 }
