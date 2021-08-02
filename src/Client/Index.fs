@@ -18,10 +18,12 @@ type SearchTextError =
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
 
+type LocationTab = ResultsGrid | Map
+
 type SearchKind =
-    | FreeTextSearch | LocationSearch
-    member this.Value = match this with FreeTextSearch -> 1 | LocationSearch -> 2
-    member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch -> "Post Code"
+    | FreeTextSearch | LocationSearch of LocationTab
+    member this.Value = match this with FreeTextSearch -> 1 | LocationSearch _ -> 2
+    member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch _ -> "Post Code"
 
 type SearchState = Searching | CannotSearch of SearchTextError | CanSearch of string
 
@@ -38,7 +40,7 @@ type Model =
             Some NoSearchText
         else
             match this.SelectedSearchKind with
-            | LocationSearch ->
+            | LocationSearch _ ->
                 if Validation.isValidPostcode this.SearchText then None
                 else Some InvalidPostcode
             | FreeTextSearch ->
@@ -76,9 +78,16 @@ let update msg model =
     | SearchTextChanged value ->
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
-        { model with
-            SelectedSearchKind = kind
-            Properties = HasNotStarted }, Cmd.none
+        match model.SelectedSearchKind, kind with
+        | LocationSearch _, LocationSearch _
+        | FreeTextSearch, FreeTextSearch ->
+            { model with SelectedSearchKind = kind }, Cmd.none
+        | LocationSearch _, FreeTextSearch
+        | FreeTextSearch, LocationSearch _ ->
+            // If we change search type completely, remove all loaded properties
+            { model with
+                SelectedSearchKind = kind
+                Properties = HasNotStarted }, Cmd.none
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
@@ -99,7 +108,7 @@ let update msg model =
         { model with SelectedProperty = None }, Cmd.none
     | DoPostcodeSearch postCode ->
         let commands = [
-            SearchKindSelected LocationSearch
+            SearchKindSelected (LocationSearch ResultsGrid)
             SearchTextChanged postCode
             Search (ByLocation (Start postCode))
         ]
@@ -191,7 +200,7 @@ module Search =
             | None, IsNotLoading ->
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
-                | LocationSearch -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
+                | LocationSearch _ -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -222,10 +231,10 @@ module Search =
                                     prop.disabled (model.Properties = InProgress)
                                     prop.onChange (function
                                         | "1" -> dispatch (SearchKindSelected FreeTextSearch)
-                                        | _ -> dispatch (SearchKindSelected LocationSearch)
+                                        | _ -> dispatch (SearchKindSelected (LocationSearch ResultsGrid))
                                     )
                                     prop.children [
-                                        for kind in [ FreeTextSearch; LocationSearch ] do
+                                        for kind in [ FreeTextSearch; (LocationSearch ResultsGrid) ] do
                                             Html.option [ prop.text kind.Description; prop.value kind.Value ]
                                     ]
                                     prop.valueOrDefault model.SelectedSearchKind.Value
@@ -238,7 +247,7 @@ module Search =
                                             let iconName =
                                                 match model.SelectedSearchKind with
                                                 | FreeTextSearch -> "search"
-                                                | LocationSearch -> "location-arrow"
+                                                | LocationSearch _ -> "location-arrow"
                                             prop.className $"fas fa-{iconName}"
                                         ]
                                     ]
@@ -324,10 +333,108 @@ let resultsGrid dispatch searchKind (results:PropertyResult list) =
                         | FreeTextSearch ->
                             ColumnDef.onCellClicked (fun _ row -> dispatch (DoPostcodeSearch (Option.toObj row.Address.PostCode)))
                             ColumnDef.cellRendererFramework (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
-                        | LocationSearch ->
+                        | LocationSearch _ ->
                             ColumnDef.valueGetter (fun x -> Option.toObj x.Address.PostCode)
                     ]
                 ]
+            ]
+        ]
+    ]
+
+type MapSize = Full | Modal
+
+let drawMap geoLocation mapSize properties =
+    PigeonMaps.map [
+        map.center (geoLocation.Lat, geoLocation.Long)
+        map.zoom 16
+        map.height (match mapSize with Full -> 700 | Modal -> 350)
+        map.markers [
+            for geo, property in properties |> Seq.choose(fun p -> p.Address.GeoLocation |> Option.map(fun geo -> geo, p)) do
+                PigeonMaps.marker [
+                    marker.anchor (geo.Lat, geo.Long)
+                    marker.offsetLeft 15
+                    marker.offsetTop 30
+                    marker.render (fun _ -> [
+                        Tippy.create [
+                            Tippy.plugins [|
+                                Plugins.followCursor
+                                Plugins.animateFill
+                                Plugins.inlinePositioning |]
+                            Tippy.placement Auto
+                            Tippy.animateFill
+                            Tippy.interactive
+                            Tippy.content (
+                                Html.div [
+                                    prop.text $"{property.Address.Building}, {property.Address.Street |> Option.toObj} (£{property.Price?toLocaleString()})"
+                                    prop.style [
+                                        style.color.lightGreen
+                                    ]
+                                ]
+                            )
+                            prop.children [
+                                Html.i [
+                                    let icon =
+                                        match property.BuildDetails.PropertyType with
+                                        | Some (Terraced | Detached | SemiDetached) -> "home"
+                                        | Some (FlatsMaisonettes | Other) -> "building"
+                                        | None -> "map-marker"
+                                    prop.className [ "fa"; $"fa-{icon}" ]
+                                ]
+                            ]
+                        ]
+                    ])
+                ]
+        ]
+    ]
+
+let modalView dispatch property =
+    let makeLine text fields =
+        Bulma.field.div [
+            field.isHorizontal
+            prop.children [
+                Bulma.fieldLabel [
+                    fieldLabel.isNormal
+                    prop.text (text:string)
+                ]
+                Bulma.fieldBody [
+                    for (field:string) in fields do
+                        Bulma.field.div [
+                            Bulma.control.p [
+                                Bulma.input.text [
+                                    prop.readOnly true
+                                    prop.value field
+                                ]
+                            ]
+                        ]
+                ]
+            ]
+        ]
+
+    Bulma.modal [
+        modal.isActive
+        prop.children [
+            Bulma.modalBackground [
+                prop.onClick (fun _ -> dispatch CloseProperty)
+            ]
+            Bulma.modalContent [
+                Bulma.box [
+                    makeLine "Street" [ $"{property.Address.Building}, {property.Address.Street |> Option.toObj}" ]
+                    makeLine "Town" [ property.Address.District; property.Address.County; (Option.toObj property.Address.PostCode) ]
+                    makeLine "Price" [ $"£{property.Price?toLocaleString()}" ]
+                    makeLine "Date" [ property.DateOfTransfer.ToShortDateString() ]
+                    makeLine "Build" [ property.BuildDetails.Build.Description; property.BuildDetails.Contract.Description; property.BuildDetails.PropertyType |> Option.map(fun p -> p.Description) |> Option.toObj ]
+
+                    match property.Address.GeoLocation with
+                    | Some geoLocation ->
+                        drawMap geoLocation Modal [ property ]
+                    | None ->
+                        ()
+                ]
+            ]
+            Bulma.modalClose [
+                modalClose.isLarge
+                prop.ariaLabel "close"
+                prop.onClick (fun _ -> dispatch CloseProperty)
             ]
         ]
     ]
@@ -344,106 +451,52 @@ let view (model:Model) dispatch =
                     Search.createSearchPanel model dispatch
                     match model.Properties with
                     | Resolved (NonEmpty results) ->
-                        resultsGrid dispatch model.SelectedSearchKind results
+                        match model.SelectedSearchKind with
+                        | LocationSearch locationTab ->
+                            Bulma.tabs [
+                                let makeTab searchKind (text:string) faIcon =
+                                    Bulma.tab [
+                                        if (searchKind = locationTab) then tab.isActive
+                                        prop.children [
+                                            Html.a [
+                                                prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
+                                                prop.children [
+                                                    Bulma.icon [
+                                                        icon.isSmall
+                                                        prop.children [
+                                                            Html.i [ prop.className $"fas fa-{faIcon}" ]
+                                                        ]
+                                                    ]
+                                                    Html.text text
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                Html.ul [
+                                    makeTab ResultsGrid "Results Grid" "table"
+                                    makeTab Map "Map" "map"
+                                ]
+                            ]
+                            match locationTab with
+                            | ResultsGrid ->
+                                resultsGrid dispatch (LocationSearch ResultsGrid) results
+                            | Map ->
+                                match results |> List.tryPick (fun r -> r.Address.GeoLocation) with
+                                | Some geoLocation ->
+                                    Bulma.box [
+                                        drawMap geoLocation Full results
+                                    ]
+                                | None ->
+                                    ()
+                        | FreeTextSearch ->
+                            resultsGrid dispatch FreeTextSearch results
                     | _ ->
                         ()
                 ]
-                match model.SelectedProperty with
-                | None ->
-                    ()
-                | Some property ->
-                    Bulma.modal [
-                        modal.isActive
-                        prop.children [
-                            Bulma.modalBackground [
-                                prop.onClick (fun _ -> dispatch CloseProperty)
-                            ]
-                            Bulma.modalContent [
-                                Bulma.box [
-                                    let makeLine text fields =
-                                        Bulma.field.div [
-                                            field.isHorizontal
-                                            prop.children [
-                                                Bulma.fieldLabel [
-                                                    fieldLabel.isNormal
-                                                    prop.text (text:string)
-                                                ]
-                                                Bulma.fieldBody [
-                                                    for (field:string) in fields do
-                                                        Bulma.field.div [
-                                                            Bulma.control.p [
-                                                                Bulma.input.text [
-                                                                    prop.readOnly true
-                                                                    prop.value field
-                                                                ]
-                                                            ]
-                                                        ]
-                                                ]
-                                            ]
-                                        ]
-
-                                    let street = $"{property.Address.Building}, {property.Address.Street |> Option.toObj}"
-
-                                    makeLine "Street" [ street ]
-                                    makeLine "Town" [ property.Address.District; property.Address.County; (Option.toObj property.Address.PostCode) ]
-                                    makeLine "Price" [ $"£{property.Price?toLocaleString()}" ]
-                                    makeLine "Date" [ property.DateOfTransfer.ToShortDateString() ]
-                                    makeLine "Build" [ property.BuildDetails.Build.Description; property.BuildDetails.Contract.Description; property.BuildDetails.PropertyType |> Option.map(fun p -> p.Description) |> Option.toObj ]
-
-                                    match property.Address.GeoLocation with
-                                    | Some geoLocation ->
-                                        PigeonMaps.map [
-                                            map.center (geoLocation.Lat, geoLocation.Long)
-                                            map.zoom 16
-                                            map.height 350
-                                            map.markers [
-                                                PigeonMaps.marker [
-                                                    marker.anchor (geoLocation.Lat, geoLocation.Long)
-                                                    marker.offsetLeft 15
-                                                    marker.offsetTop 30
-                                                    marker.render (fun marker -> [
-                                                        Tippy.create [
-                                                            Tippy.plugins [|
-                                                                Plugins.followCursor
-                                                                Plugins.animateFill
-                                                                Plugins.inlinePositioning |]
-                                                            Tippy.placement Auto
-                                                            Tippy.animateFill
-                                                            Tippy.interactive
-                                                            Tippy.content (
-                                                                Html.div [
-                                                                    prop.text street
-                                                                    prop.style [
-                                                                        style.color.lightGreen
-                                                                    ]
-                                                                ]
-                                                            )
-                                                            prop.children [
-                                                                Html.i [
-                                                                    let icon =
-                                                                        match property.BuildDetails.PropertyType with
-                                                                        | Some (Terraced | Detached | SemiDetached) -> "home"
-                                                                        | Some (FlatsMaisonettes | Other) -> "building"
-                                                                        | None -> "map-marker"
-                                                                    prop.className [ "fa"; $"fa-{icon}" ]
-                                                                ]
-                                                            ]
-                                                        ]
-                                                    ])
-                                                ]
-                                            ]
-                                        ]
-                                    | None ->
-                                        ()
-                                ]
-                            ]
-                            Bulma.modalClose [
-                                modalClose.isLarge
-                                prop.ariaLabel "close"
-                                prop.onClick (fun _ -> dispatch CloseProperty)
-                            ]
-                        ]
-                    ]
+                yield!
+                    model.SelectedProperty
+                    |> Option.map (modalView dispatch)
+                    |> Option.toList
             ]
         ]
     ]

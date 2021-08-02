@@ -60,7 +60,8 @@ let private toPropertyResult result  =
             {
                 PropertyType = result.PropertyType |> PropertyType.Parse
                 Build = result.Build |> BuildType.Parse
-                Contract = result.Contract |> ContractType.Parse }
+                Contract = result.Contract |> ContractType.Parse
+            }
         Address =
             {
                 Building = result.Building
@@ -82,7 +83,8 @@ let private toPropertyResult result  =
         DateOfTransfer =
             result.DateOfTransfer
             |> Option.ofNullable
-            |> Option.defaultValue DateTime.MinValue }
+            |> Option.defaultValue DateTime.MinValue
+    }
 
 let freeTextSearch keyword index key =
     AzureInterop.search "properties" keyword index key
