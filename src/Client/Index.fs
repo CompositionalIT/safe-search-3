@@ -5,28 +5,18 @@ open Fable.Remoting.Client
 open Shared
 open System
 
-type AsyncOperation<'T, 'Q> = Start of 'T | Complete of 'Q
-type Deferred<'T> = HasNotStarted | InProgress | Resolved of 'T
-
-let (|IsLoading|IsNotLoading|) = function HasNotStarted | Resolved _ -> IsNotLoading | InProgress -> IsLoading
-let (|NonEmpty|_|) = function (_::_) as items -> Some (NonEmpty items) | _ -> None
-
 type SearchTextError =
-    | NoSearchText | InvalidPostcode
+    NoSearchText | InvalidPostcode
     member this.Description =
         match this with
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
-
 type LocationTab = ResultsGrid | Map
-
 type SearchKind =
-    | FreeTextSearch | LocationSearch of LocationTab
+    FreeTextSearch | LocationSearch of LocationTab
     member this.Value = match this with FreeTextSearch -> 1 | LocationSearch _ -> 2
     member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch _ -> "Post Code"
-
 type SearchState = Searching | CannotSearch of SearchTextError | CanSearch of string
-
 type Model =
     {
         SearchText : string
@@ -141,9 +131,7 @@ module Heading =
         ]
     let subtitle =
         Bulma.subtitle.h5 [
-            prop.children [
-                Html.text "Find your unaffordable property in the UK!"
-            ]
+            Html.text "Find your unaffordable property in the UK!"
         ]
 
 module Search =
@@ -234,8 +222,11 @@ module Search =
                                         | _ -> dispatch (SearchKindSelected (LocationSearch ResultsGrid))
                                     )
                                     prop.children [
-                                        for kind in [ FreeTextSearch; (LocationSearch ResultsGrid) ] do
-                                            Html.option [ prop.text kind.Description; prop.value kind.Value ]
+                                        for kind in [ FreeTextSearch; LocationSearch ResultsGrid ] do
+                                            Html.option [
+                                                prop.text kind.Description
+                                                prop.value kind.Value
+                                            ]
                                     ]
                                     prop.valueOrDefault model.SelectedSearchKind.Value
                                 ]
@@ -349,7 +340,13 @@ let drawMap geoLocation mapSize properties =
         map.zoom 16
         map.height (match mapSize with Full -> 700 | Modal -> 350)
         map.markers [
-            for geo, property in properties |> Seq.choose(fun p -> p.Address.GeoLocation |> Option.map(fun geo -> geo, p)) do
+            let propertiesWithGeo = [
+                for property in properties do
+                    match property.Address.GeoLocation with
+                    | Some geo -> geo, property
+                    | None -> ()
+            ]
+            for geo, property in propertiesWithGeo do
                 PigeonMaps.marker [
                     marker.anchor (geo.Lat, geo.Long)
                     marker.offsetLeft 15
@@ -359,7 +356,8 @@ let drawMap geoLocation mapSize properties =
                             Tippy.plugins [|
                                 Plugins.followCursor
                                 Plugins.animateFill
-                                Plugins.inlinePositioning |]
+                                Plugins.inlinePositioning
+                            |]
                             Tippy.placement Auto
                             Tippy.animateFill
                             Tippy.interactive
@@ -453,25 +451,25 @@ let view (model:Model) dispatch =
                     | Resolved (NonEmpty results) ->
                         match model.SelectedSearchKind with
                         | LocationSearch locationTab ->
-                            Bulma.tabs [
-                                let makeTab searchKind (text:string) faIcon =
-                                    Bulma.tab [
-                                        if (searchKind = locationTab) then tab.isActive
-                                        prop.children [
-                                            Html.a [
-                                                prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
-                                                prop.children [
-                                                    Bulma.icon [
-                                                        icon.isSmall
-                                                        prop.children [
-                                                            Html.i [ prop.className $"fas fa-{faIcon}" ]
-                                                        ]
+                            let makeTab searchKind (text:string) faIcon =
+                                Bulma.tab [
+                                    if (searchKind = locationTab) then tab.isActive
+                                    prop.children [
+                                        Html.a [
+                                            prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
+                                            prop.children [
+                                                Bulma.icon [
+                                                    icon.isSmall
+                                                    prop.children [
+                                                        Html.i [ prop.className $"fas fa-{faIcon}" ]
                                                     ]
-                                                    Html.text text
                                                 ]
+                                                Html.text text
                                             ]
                                         ]
                                     ]
+                                ]
+                            Bulma.tabs [
                                 Html.ul [
                                     makeTab ResultsGrid "Results Grid" "table"
                                     makeTab Map "Map" "map"
