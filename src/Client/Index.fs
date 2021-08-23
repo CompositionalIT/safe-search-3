@@ -12,18 +12,23 @@ type SearchTextError =
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
 type LocationTab = ResultsGrid | Map
+
 type SearchKind =
     FreeTextSearch | LocationSearch of LocationTab
     member this.Value = match this with FreeTextSearch -> 1 | LocationSearch _ -> 2
     member this.Description = match this with FreeTextSearch -> "Free Text" | LocationSearch _ -> "Post Code"
+
 type SearchState = Searching | CannotSearch of SearchTextError | CanSearch of string
+
 type Model =
     {
         SearchText : string
         SelectedSearchKind : SearchKind
         Properties : Deferred<PropertyResult list>
         SelectedProperty : PropertyResult option
-        HasLoadedSomeData : Boolean
+        HasLoadedSomeData : bool
+        Facets : Facets
+        SelectedFacet: (string * string) option
     }
     member this.SearchTextError =
         if String.IsNullOrEmpty this.SearchText then
@@ -42,8 +47,8 @@ type Model =
         | Resolved _ -> true
 
 type SearchMsg =
-    | ByFreeText of AsyncOperation<string, PropertyResult list>
-    | ByLocation of AsyncOperation<string, Result<PropertyResult list, string>>
+    | ByFreeText of AsyncOperation<string, SearchResponse>
+    | ByLocation of AsyncOperation<string, Result<SearchResponse, string>>
 
 type Msg =
     | SearchTextChanged of string
@@ -53,6 +58,8 @@ type Msg =
     | AppError of string
     | ViewProperty of PropertyResult
     | CloseProperty
+    | SelectFacet of string * string
+    | RemoveFacet
 
 let searchApi =
     Remoting.createApi ()
@@ -60,7 +67,25 @@ let searchApi =
     |> Remoting.buildProxy<ISearchApi>
 
 let init () =
-    let model = { SearchText = ""; SelectedSearchKind = FreeTextSearch; Properties = HasNotStarted; SelectedProperty = None; HasLoadedSomeData = false }
+    let facets =
+        {
+            Towns = []
+            Localities = []
+            Districts = []
+            Counties = []
+            Prices = []
+        }
+
+    let model =
+        {
+            SearchText = ""
+            SelectedSearchKind = FreeTextSearch
+            Properties = HasNotStarted
+            SelectedProperty = None
+            HasLoadedSomeData = false
+            Facets = facets
+            SelectedFacet = None
+        }
     model, Cmd.none
 
 let update msg model =
@@ -81,15 +106,15 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text } (Complete >> ByFreeText >> Search) (string >> AppError)
-        | Complete properties ->
-            { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filter = None } (Complete >> ByFreeText >> Search) (string >> AppError)
+        | Complete searchResponse ->
+            { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode } (Complete >> ByLocation >> Search) (string >> AppError)
-        | Complete (Ok properties) ->
-            { model with Properties = Resolved properties; HasLoadedSomeData = true }, Cmd.none
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filter = None } (Complete >> ByLocation >> Search) (string >> AppError)
+        | Complete (Ok searchResponse) ->
+            { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
             model, Cmd.ofMsg (AppError message)
     | ViewProperty property ->
@@ -106,6 +131,25 @@ let update msg model =
     | AppError ex ->
         Browser.Dom.console.log ex
         model, Cmd.none
+    | SelectFacet (facetKey, facetValue) ->
+        let cmd =
+            match model.SelectedSearchKind with
+            | LocationSearch _ ->
+                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filter = Some (facetKey, facetValue) } (Complete >> ByLocation >> Search) (string >> AppError)
+            | FreeTextSearch ->
+                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filter = Some (facetKey, facetValue) } (Complete >> ByFreeText >> Search) (string >> AppError)
+
+        { model with SelectedFacet = Some (facetKey, facetValue) }, cmd
+    | RemoveFacet ->
+        let cmd =
+            match model.SelectedSearchKind with
+            | LocationSearch _ ->
+                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filter = None } (Complete >> ByLocation >> Search) (string >> AppError)
+            | FreeTextSearch ->
+                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filter = None } (Complete >> ByFreeText >> Search) (string >> AppError)
+
+        { model with SelectedFacet = None }, cmd
+
 
 open Feliz
 open Feliz.Bulma
@@ -269,6 +313,80 @@ let safeSearchNavBar =
                 ]
             ]
         ]
+    ]
+
+let FacetBox (label: string) facets selectedFacet dispatch =
+    let fromPluralToSingular = function
+        | "Counties" -> "County"
+        | "Districts" -> "District"
+        | "Localities" -> "Locality"
+        | "Towns" -> "Town"
+        | _ -> failwith "Invalid facet name"
+
+    Bulma.box [
+        Bulma.level [
+            Bulma.levelLeft [
+                Bulma.levelItem [
+                    Bulma.label [
+                        prop.style [ style.color.gray ]
+                        prop.text label
+                    ]
+                ]
+            ]
+            Bulma.levelRight [
+                Bulma.levelItem [
+                    Html.i [
+                        prop.style [ style.color.gray ]
+                        prop.onClick (fun _ -> ())
+                        prop.className ($"""fas fa-caret-{if true then "up" else "down"}""")
+                    ]
+                ]
+            ]
+        ]
+
+        for (facet: string) in facets do
+            let selected =
+                selectedFacet
+                |> Option.map ((=) (fromPluralToSingular label, facet))
+                |> Option.defaultValue false
+
+            Bulma.columns [
+                columns.isCentered
+                prop.children [
+                    Bulma.column [
+                        column.is1
+                        prop.children [
+                            Bulma.input.checkbox [
+                                prop.isChecked selected
+                                prop.onChange (fun (isChecked: bool) ->
+                                    if isChecked then
+                                        (fromPluralToSingular label, facet) |> SelectFacet |> dispatch
+                                    else
+                                        RemoveFacet |> dispatch
+                                )
+                            ]
+                        ]
+                    ]
+                    Bulma.column [
+                        Html.div [
+                            prop.text (facet.ToLower())
+                            prop.style [
+                                if selected then style.fontWeight.bolder
+                                style.textTransform.capitalize
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+    ]
+
+let facetsBoxes (facets: Facets) selectedFacets dispatch =
+    Html.div [
+        FacetBox "Counties" facets.Counties selectedFacets dispatch
+        FacetBox "Districts" facets.Districts selectedFacets dispatch
+        FacetBox "Localities" facets.Localities selectedFacets dispatch
+        FacetBox "Towns" facets.Towns selectedFacets dispatch
+        // PriceFacetBox facets.Prices dispatch
     ]
 
 let resultsGrid dispatch searchKind (results:PropertyResult list) =
@@ -449,45 +567,57 @@ let view (model:Model) dispatch =
                     Search.createSearchPanel model dispatch
                     match model.Properties with
                     | Resolved (NonEmpty results) ->
-                        match model.SelectedSearchKind with
-                        | LocationSearch locationTab ->
-                            let makeTab searchKind (text:string) faIcon =
-                                Bulma.tab [
-                                    if (searchKind = locationTab) then tab.isActive
-                                    prop.children [
-                                        Html.a [
-                                            prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
-                                            prop.children [
-                                                Bulma.icon [
-                                                    icon.isSmall
-                                                    prop.children [
-                                                        Html.i [ prop.className $"fas fa-{faIcon}" ]
-                                                    ]
-                                                ]
-                                                Html.text text
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            Bulma.tabs [
-                                Html.ul [
-                                    makeTab ResultsGrid "Results Grid" "table"
-                                    makeTab Map "Map" "map"
+                        Bulma.columns [
+                            Bulma.column [
+                                column.isOneFifth
+                                prop.children [
+                                    facetsBoxes model.Facets model.SelectedFacet dispatch
                                 ]
                             ]
-                            match locationTab with
-                            | ResultsGrid ->
-                                resultsGrid dispatch (LocationSearch ResultsGrid) results
-                            | Map ->
-                                match results |> List.tryPick (fun r -> r.Address.GeoLocation) with
-                                | Some geoLocation ->
-                                    Bulma.box [
-                                        drawMap geoLocation Full results
-                                    ]
-                                | None ->
-                                    ()
-                        | FreeTextSearch ->
-                            resultsGrid dispatch FreeTextSearch results
+                            Bulma.column [
+                                Bulma.container [
+                                    match model.SelectedSearchKind with
+                                    | LocationSearch locationTab ->
+                                        let makeTab searchKind (text:string) faIcon =
+                                            Bulma.tab [
+                                                if (searchKind = locationTab) then tab.isActive
+                                                prop.children [
+                                                    Html.a [
+                                                        prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
+                                                        prop.children [
+                                                            Bulma.icon [
+                                                                icon.isSmall
+                                                                prop.children [
+                                                                    Html.i [ prop.className $"fas fa-{faIcon}" ]
+                                                                ]
+                                                            ]
+                                                            Html.text text
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                        Bulma.tabs [
+                                            Html.ul [
+                                                makeTab ResultsGrid "Results Grid" "table"
+                                                makeTab Map "Map" "map"
+                                            ]
+                                        ]
+                                        match locationTab with
+                                        | ResultsGrid ->
+                                            resultsGrid dispatch (LocationSearch ResultsGrid) results
+                                        | Map ->
+                                            match results |> List.tryPick (fun r -> r.Address.GeoLocation) with
+                                            | Some geoLocation ->
+                                                Bulma.box [
+                                                    drawMap geoLocation Full results
+                                                ]
+                                            | None ->
+                                                ()
+                                    | FreeTextSearch ->
+                                        resultsGrid dispatch FreeTextSearch results
+                                ]
+                            ]
+                        ]
                     | _ ->
                         ()
                 ]

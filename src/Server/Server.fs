@@ -18,7 +18,7 @@ let searchApi (context:HttpContext) =
     {
         FreeText = fun request -> async {
             logger.LogInformation $"""Searching for '{request.Text}' on index '{config.["search-name"]}'"""
-            let results = Search.freeTextSearch request.Text config.["search-name"] config.["search-key"]
+            let results = Search.freeTextSearch request.Text request.Filter config.["search-name"] config.["search-key"]
             return results
         }
         ByLocation = fun request -> async {

@@ -4,28 +4,30 @@ open Azure
 open Azure.Core.Serialization
 open Azure.Search.Documents
 open Azure.Search.Documents.Indexes
+open Azure.Search.Documents.Models
 open Kibalta
 open Microsoft.Spatial
 open Shared
 open System
 open System.Text.Json.Serialization
+open System.Collections.Generic
 
 [<CLIMutable>]
 type SearchableProperty =
     {
         [<SimpleField(IsKey = true)>] TransactionId : string
-        [<SimpleField(IsSortable = true)>] Price : int Nullable
+        [<SimpleField(IsSortable = true, IsFacetable = true, IsFilterable = true)>] Price : int Nullable
         [<SimpleField(IsSortable = true)>] DateOfTransfer : DateTime Nullable
         [<SearchableField(IsSortable = true)>] PostCode : string
-        [<SimpleField>] PropertyType : string
-        [<SimpleField>] Build : string
-        [<SimpleField>] Contract : string
+        [<SimpleField(IsFacetable = true, IsFilterable = true)>] PropertyType : string
+        [<SimpleField(IsFacetable = true, IsFilterable = true)>] Build : string
+        [<SimpleField(IsFacetable = true, IsFilterable = true)>] Contract : string
         [<SimpleField (IsSortable = true)>] Building : string
         [<SearchableField(IsSortable = true)>] Street : string
-        [<SearchableField>] Locality : string
-        [<SearchableField(IsSortable = true)>] Town : string
-        [<SearchableField>] District : string
-        [<SearchableField>] County : string
+        [<SearchableField(IsFacetable = true, IsFilterable = true)>] Locality : string
+        [<SearchableField(IsSortable = true, IsFacetable = true)>] Town : string
+        [<SearchableField(IsFacetable = true, IsFilterable = true)>] District : string
+        [<SearchableField(IsFacetable = true, IsFilterable = true)>] County : string
         [<SimpleField (IsSortable = true); JsonConverter(typeof<MicrosoftSpatialGeoJsonConverter>)>] Geo : GeographyPoint
     }
 
@@ -38,11 +40,15 @@ module AzureInterop =
 
     let private getResults keyword options (searchClient:SearchClient) =
         let response = searchClient.Search<'T> (keyword, options)
-        response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList
+        response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList,
+        response.Value.Facets
 
-    let search<'T> indexName keyword serviceName key =
+    let search<'T> indexName keyword (filter: (string * string) option) serviceName key =
+        let options =
+            SearchOptions (Size = 20, Filter = (filter |> Option.map (fun (facetName, facetValue) -> (facetName, box facetValue) |> whereEq |> eval) |> Option.defaultValue ""))
+        Facets.All |> List.iter options.Facets.Add
         buildClient indexName serviceName key
-        |> getResults keyword (SearchOptions (Size = 20))
+        |> getResults keyword options
 
     let searchByLocation<'T> indexName (long, lat) serviceName key =
         let options =
@@ -50,6 +56,7 @@ module AzureInterop =
                 Size = 20,
                 Filter = (whereGeoDistance "Geo" (long, lat) Lt 20. |> eval)
             )
+        Facets.All |> List.iter options.Facets.Add
         options.OrderBy.Add((ByDistance ("Geo", long, lat, Ascending) ).StringValue)
         buildClient indexName serviceName key
         |> getResults null options
@@ -86,10 +93,36 @@ let private toPropertyResult result  =
             |> Option.defaultValue DateTime.MinValue
     }
 
-let freeTextSearch keyword index key =
-    AzureInterop.search "properties" keyword index key
-    |> List.map toPropertyResult
+let getFacets (facetResults: IDictionary<string, IList<FacetResult>>) facetName =
+    match facetResults.TryGetValue facetName with
+    | true, facets ->
+        facets
+        |> Seq.toList
+        |> List.map (fun facet ->
+                string facet.Value
+            )
+        |> Some
+    | false, x -> None
+    |> Option.defaultValue []
+let private toFacetResult (facets: IDictionary<string, IList<FacetResult>>) =
+    let getFacets = getFacets facets
+    {
+        Towns = getFacets "Town"
+        Localities = getFacets "Locality"
+        Districts = getFacets "District"
+        Counties = getFacets "County"
+        Prices = getFacets "Price"
+    }
+
+let private toSearchResponse (searchableProperties, facets) =
+    {
+        Results = searchableProperties |> List.map toPropertyResult
+        Facets = facets |> toFacetResult
+    }
+let freeTextSearch keyword filter index key =
+    AzureInterop.search "properties" keyword filter index key
+    |> toSearchResponse
 
 let locationSearch (long, lat) index key =
     AzureInterop.searchByLocation "properties" (long, lat) index key
-    |> List.map toPropertyResult
+    |> toSearchResponse
