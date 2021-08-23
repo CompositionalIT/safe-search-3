@@ -44,17 +44,30 @@ module AzureInterop =
         response.Value.Facets
 
     let search<'T> indexName keyword (filter: (string * string) option) serviceName key =
+        let filterParam =
+            filter
+            |> Option.map (fun (facetName, facetValue) ->
+                (facetName, box facetValue)
+                |> whereEq
+                |> eval)
+            |> Option.defaultValue ""
         let options =
-            SearchOptions (Size = 20, Filter = (filter |> Option.map (fun (facetName, facetValue) -> (facetName, box facetValue) |> whereEq |> eval) |> Option.defaultValue ""))
+            SearchOptions (Size = 20, Filter = filterParam)
         Facets.All |> List.iter options.Facets.Add
         buildClient indexName serviceName key
         |> getResults keyword options
 
-    let searchByLocation<'T> indexName (long, lat) serviceName key =
+    let searchByLocation<'T> indexName (long, lat) (filter: (string * string) option) serviceName key =
+        let filterParam =
+            filter
+            |> Option.map (fun (facetName, facetValue) ->
+                (facetName, box facetValue)
+                |> whereEq)
+            |> Option.defaultValue (ConstantFilter true)
         let options =
             SearchOptions (
                 Size = 20,
-                Filter = (whereGeoDistance "Geo" (long, lat) Lt 20. |> eval)
+                Filter = ((whereGeoDistance "Geo" (long, lat) Lt 20.) |> (+) filterParam |> eval)
             )
         Facets.All |> List.iter options.Facets.Add
         options.OrderBy.Add((ByDistance ("Geo", long, lat, Ascending) ).StringValue)
@@ -123,6 +136,6 @@ let freeTextSearch keyword filter index key =
     AzureInterop.search "properties" keyword filter index key
     |> toSearchResponse
 
-let locationSearch (long, lat) index key =
-    AzureInterop.searchByLocation "properties" (long, lat) index key
+let locationSearch (long, lat) filter index key =
+    AzureInterop.searchByLocation "properties" (long, lat) filter index key
     |> toSearchResponse

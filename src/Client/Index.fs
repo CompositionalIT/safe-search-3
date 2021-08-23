@@ -315,7 +315,7 @@ let safeSearchNavBar =
         ]
     ]
 
-let FacetBox (label: string) facets selectedFacet dispatch =
+let facetBox (label: string) facets selectedFacet dispatch =
     let fromPluralToSingular = function
         | "Counties" -> "County"
         | "Districts" -> "District"
@@ -345,9 +345,12 @@ let FacetBox (label: string) facets selectedFacet dispatch =
         ]
 
         for (facet: string) in facets do
-            let selected =
+
+            let facetKeyValue  = fromPluralToSingular label, facet
+
+            let isSelected =
                 selectedFacet
-                |> Option.map ((=) (fromPluralToSingular label, facet))
+                |> Option.map ((=) facetKeyValue)
                 |> Option.defaultValue false
 
             Bulma.columns [
@@ -357,10 +360,12 @@ let FacetBox (label: string) facets selectedFacet dispatch =
                         column.is1
                         prop.children [
                             Bulma.input.checkbox [
-                                prop.isChecked selected
+                                prop.isChecked isSelected
                                 prop.onChange (fun (isChecked: bool) ->
                                     if isChecked then
-                                        (fromPluralToSingular label, facet) |> SelectFacet |> dispatch
+                                        facetKeyValue
+                                        |> SelectFacet
+                                        |> dispatch
                                     else
                                         RemoveFacet |> dispatch
                                 )
@@ -371,7 +376,7 @@ let FacetBox (label: string) facets selectedFacet dispatch =
                         Html.div [
                             prop.text (facet.ToLower())
                             prop.style [
-                                if selected then style.fontWeight.bolder
+                                if isSelected then style.fontWeight.bolder
                                 style.textTransform.capitalize
                             ]
                         ]
@@ -382,10 +387,10 @@ let FacetBox (label: string) facets selectedFacet dispatch =
 
 let facetsBoxes (facets: Facets) selectedFacets dispatch =
     Html.div [
-        FacetBox "Counties" facets.Counties selectedFacets dispatch
-        FacetBox "Districts" facets.Districts selectedFacets dispatch
-        FacetBox "Localities" facets.Localities selectedFacets dispatch
-        FacetBox "Towns" facets.Towns selectedFacets dispatch
+        facetBox "Counties" facets.Counties selectedFacets dispatch
+        facetBox "Districts" facets.Districts selectedFacets dispatch
+        facetBox "Localities" facets.Localities selectedFacets dispatch
+        facetBox "Towns" facets.Towns selectedFacets dispatch
         // PriceFacetBox facets.Prices dispatch
     ]
 
