@@ -395,8 +395,10 @@ let facetBox (label: string) facets selectedFacets dispatch =
 
     Bulma.panel [
             panelColour
+            prop.style [ style.borderRadius 0; style.marginBottom 0 ]
             prop.children [
             Bulma.panelHeading [
+                prop.style [ style.borderRadius 0 ]
                 prop.text label
             ]
             if facets |> List.isEmpty |> not then
@@ -631,15 +633,9 @@ let loadingSkeleton =
             helpers.isHiddenTouch
             column.isOneQuarter
             prop.children [
-                for _ in [0..2] do
-                    Html.div [
-                        prop.style [ style.marginBottom 20]
-                        prop.children [
-                            Skeleton.skeleton [
-                                Skeleton.height 500
-                            ]
-                        ]
-                    ]
+                Skeleton.skeleton [
+                    Skeleton.height 800
+                ]
             ]
         ]
         Bulma.column [
@@ -663,9 +659,7 @@ let view (model:Model) dispatch =
                     Bulma.delete [ prop.onClick (fun _ -> dispatch CloseFilterMenu) ]
                 ]
                 QuickView.body [
-                    Bulma.section [
-                        facetsBoxes model.Facets model.SelectedFacets dispatch
-                    ]
+                    facetsBoxes model.Facets model.SelectedFacets dispatch
                 ]
             ]
         ]
