@@ -10,6 +10,7 @@ nuget Feliz.Bulma.QuickView
 nuget Feliz.Bulma.Slider
 nuget Feliz.PigeonMaps
 nuget Feliz.ReactLoadingSkeleton
+nuget Feliz.Recharts
 nuget Feliz.Tippy
 nuget FSharp.Data
 nuget Microsoft.Azure.Core.Spatial

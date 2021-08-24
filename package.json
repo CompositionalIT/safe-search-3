@@ -29,6 +29,7 @@
         "pigeon-maps": "^0.19.7",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
-        "react-loading-skeleton": "^2.2.0"
+        "react-loading-skeleton": "^2.2.0",
+        "recharts": "^2.1.2"
     }
 }

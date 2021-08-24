@@ -172,6 +172,7 @@ open Feliz.PigeonMaps
 open Feliz.Tippy
 open Feliz.AgGrid
 open Fable.Core.JsInterop
+open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
 
 importAll "./styles.sass"
@@ -721,6 +722,36 @@ let view (model:Model) dispatch =
                                                 ]
                                             | None ->
                                                 ()
+                                        | Crime crimeIncidents ->
+                                            let cleanData =
+                                                crimeIncidents
+                                                |> Array.map (fun c ->
+                                                    { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+
+                                            Recharts.barChart [
+                                                barChart.layout.vertical
+                                                barChart.data cleanData
+                                                barChart.width 600
+                                                barChart.height 500
+                                                barChart.children [
+                                                    Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                                                    Recharts.xAxis [ xAxis.number ]
+                                                    Recharts.yAxis [
+                                                        yAxis.dataKey (fun point -> point.Crime)
+                                                        yAxis.width 200
+                                                        yAxis.category ]
+                                                    Recharts.tooltip []
+                                                    Recharts.bar [
+                                                        bar.legendType.star
+                                                        bar.isAnimationActive true
+                                                        bar.animationEasing.ease
+                                                        bar.dataKey (fun point -> point.Incidents)
+                                                        bar.fill "#8884d8"
+                                                    ]
+                                                ]
+                                            ]
+
+
                                     | FreeTextSearch ->
                                         resultsGrid dispatch FreeTextSearch results
                                 ]
