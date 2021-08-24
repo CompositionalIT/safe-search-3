@@ -110,13 +110,13 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = [] }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete searchResponse ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = [] }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
