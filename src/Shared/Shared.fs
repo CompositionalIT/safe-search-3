@@ -114,8 +114,15 @@ type SearchResponse =
         Facets : Facets
     }
 
+type CrimeResponse =
+    {
+        Crime : string
+        Incidents : int
+    }
+
 type FreeTextSearchRequest = { Text : string; Filters: (string * string) list }
 type LocationSearchRequest = { Postcode : string; Filters: (string * string) list }
+
 
 type ISearchApi =
     {

@@ -11,7 +11,7 @@ type SearchTextError =
         match this with
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
-type LocationTab = ResultsGrid | Map
+type LocationTab = ResultsGrid | Map | Crime of CrimeResponse array
 
 type SearchKind =
     FreeTextSearch | LocationSearch of LocationTab
@@ -395,7 +395,7 @@ let facetBox (label: string) facets selectedFacets dispatch =
 
     Bulma.panel [
             panelColour
-            prop.style [ style.borderRadius 0; style.marginBottom 0 ]
+            prop.style [ style.borderRadius 0 ]
             prop.children [
             Bulma.panelHeading [
                 prop.style [ style.borderRadius 0 ]
@@ -634,14 +634,16 @@ let loadingSkeleton =
             column.isOneQuarter
             prop.children [
                 Skeleton.skeleton [
-                    Skeleton.height 800
+                    Skeleton.count 3
+                    Skeleton.height 500
                 ]
             ]
         ]
         Bulma.column [
             Bulma.container [
                 Skeleton.skeleton [
-                    Skeleton.height 800
+                    Skeleton.count 15
+                    Skeleton.height 50
                 ]
             ]
         ]
