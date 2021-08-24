@@ -11,7 +11,7 @@ type SearchTextError =
         match this with
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
-type LocationTab = ResultsGrid | Map
+type LocationTab = ResultsGrid | Map | Crime of Geo
 
 type SearchKind =
     FreeTextSearch | LocationSearch of LocationTab
@@ -30,6 +30,7 @@ type Model =
         Facets : Facets
         SelectedFacets: (string * string) list
         FilterMenuOpen : bool
+        CrimeIncidents: Deferred<CrimeResponse array>
     }
     member this.SearchTextError =
         if String.IsNullOrEmpty this.SearchText then
@@ -63,6 +64,7 @@ type Msg =
     | RemoveFacet of string * string
     | OpenFilterMenu
     | CloseFilterMenu
+    | LoadCrimeIncidents of CrimeResponse array
 
 let searchApi =
     Remoting.createApi ()
@@ -89,6 +91,7 @@ let init () =
             Facets = facets
             SelectedFacets = []
             FilterMenuOpen = false
+            CrimeIncidents = HasNotStarted
         }
     model, Cmd.none
 
@@ -98,7 +101,11 @@ let update msg model =
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
         match model.SelectedSearchKind, kind with
-        | LocationSearch _, LocationSearch _
+        | LocationSearch _, LocationSearch tab ->
+            match tab with
+            | Crime geo ->
+                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress }, Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
+            | _ -> { model with SelectedSearchKind = kind }, Cmd.none
         | FreeTextSearch, FreeTextSearch ->
             { model with SelectedSearchKind = kind }, Cmd.none
         | LocationSearch _, FreeTextSearch
@@ -116,7 +123,7 @@ let update msg model =
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress; SelectedFacets = [] }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = []; SelectedSearchKind = LocationSearch ResultsGrid }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
@@ -164,6 +171,9 @@ let update msg model =
         { model with FilterMenuOpen = true }, Cmd.none
     | CloseFilterMenu ->
         { model with FilterMenuOpen = false }, Cmd.none
+    | LoadCrimeIncidents crimeIncidents ->
+        { model with CrimeIncidents = Resolved crimeIncidents }, Cmd.none
+
 
 
 open Feliz
@@ -172,6 +182,7 @@ open Feliz.PigeonMaps
 open Feliz.Tippy
 open Feliz.AgGrid
 open Fable.Core.JsInterop
+open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
 
 importAll "./styles.sass"
@@ -395,7 +406,7 @@ let facetBox (label: string) facets selectedFacets dispatch =
 
     Bulma.panel [
             panelColour
-            prop.style [ style.borderRadius 0; style.marginBottom 0 ]
+            prop.style [ style.borderRadius 0 ]
             prop.children [
             Bulma.panelHeading [
                 prop.style [ style.borderRadius 0 ]
@@ -634,14 +645,16 @@ let loadingSkeleton =
             column.isOneQuarter
             prop.children [
                 Skeleton.skeleton [
-                    Skeleton.height 800
+                    Skeleton.count 3
+                    Skeleton.height 500
                 ]
             ]
         ]
         Bulma.column [
             Bulma.container [
                 Skeleton.skeleton [
-                    Skeleton.height 800
+                    Skeleton.count 15
+                    Skeleton.height 50
                 ]
             ]
         ]
@@ -702,23 +715,77 @@ let view (model:Model) dispatch =
                                                     ]
                                                 ]
                                             ]
+                                        let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
                                         Bulma.tabs [
                                             Html.ul [
                                                 makeTab ResultsGrid "Results Grid" "table"
                                                 makeTab Map "Map" "map"
+                                                yield!
+                                                    geoLocationOpt
+                                                    |> Option.toList
+                                                    |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
                                             ]
                                         ]
                                         match locationTab with
                                         | ResultsGrid ->
                                             resultsGrid dispatch (LocationSearch ResultsGrid) results
                                         | Map ->
-                                            match results |> List.tryPick (fun r -> r.Address.GeoLocation) with
+                                            match geoLocationOpt with
                                             | Some geoLocation ->
                                                 Bulma.box [
                                                     drawMap geoLocation Full results
                                                 ]
                                             | None ->
                                                 ()
+                                        | Crime _ ->
+                                            Bulma.box [
+                                                Bulma.columns [
+                                                    columns.isCentered
+                                                    columns.isVCentered
+                                                    prop.children [
+                                                        Bulma.column [
+                                                            column.isHalf
+                                                            prop.style [
+                                                                style.display.flex
+                                                                style.justifyContent.center
+                                                                style.alignItems.center
+                                                                style.height 520]
+                                                            prop.children [
+                                                                match model.CrimeIncidents with
+                                                                | Resolved incidents ->
+                                                                    let cleanData =
+                                                                        incidents
+                                                                        |> Array.map (fun c ->
+                                                                            { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+                                                                    Recharts.barChart [
+                                                                        barChart.layout.vertical
+                                                                        barChart.data cleanData
+                                                                        barChart.width 600
+                                                                        barChart.height 500
+                                                                        barChart.children [
+                                                                            Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                                                                            Recharts.xAxis [ xAxis.number ]
+                                                                            Recharts.yAxis [
+                                                                                yAxis.dataKey (fun point -> point.Crime)
+                                                                                yAxis.width 200
+                                                                                yAxis.category ]
+                                                                            Recharts.tooltip []
+                                                                            Recharts.bar [
+                                                                                bar.legendType.star
+                                                                                bar.isAnimationActive true
+                                                                                bar.animationEasing.ease
+                                                                                bar.dataKey (fun point -> point.Incidents)
+                                                                                bar.fill "#3298dc"
+                                                                            ]
+                                                                        ]
+                                                                    ]
+                                                                | _ ->
+                                                                    Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
                                     | FreeTextSearch ->
                                         resultsGrid dispatch FreeTextSearch results
                                 ]
