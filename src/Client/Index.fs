@@ -184,8 +184,6 @@ open Feliz.AgGrid
 open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
-open Feliz.styleModule
-open Feliz.styleModule
 
 importAll "./styles.sass"
 
@@ -782,7 +780,7 @@ let view (model:Model) dispatch =
                                                                         ]
                                                                     ]
                                                                 | _ ->
-                                                                        Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
+                                                                    Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
                                                             ]
                                                         ]
                                                     ]
