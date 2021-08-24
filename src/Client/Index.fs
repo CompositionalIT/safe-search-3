@@ -28,7 +28,8 @@ type Model =
         SelectedProperty : PropertyResult option
         HasLoadedSomeData : bool
         Facets : Facets
-        SelectedFacet: (string * string) option
+        SelectedFacets: (string * string) list
+        FilterMenuOpen : bool
     }
     member this.SearchTextError =
         if String.IsNullOrEmpty this.SearchText then
@@ -59,7 +60,9 @@ type Msg =
     | ViewProperty of PropertyResult
     | CloseProperty
     | SelectFacet of string * string
-    | RemoveFacet
+    | RemoveFacet of string * string
+    | OpenFilterMenu
+    | CloseFilterMenu
 
 let searchApi =
     Remoting.createApi ()
@@ -84,7 +87,8 @@ let init () =
             SelectedProperty = None
             HasLoadedSomeData = false
             Facets = facets
-            SelectedFacet = None
+            SelectedFacets = []
+            FilterMenuOpen = false
         }
     model, Cmd.none
 
@@ -106,13 +110,13 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filter = None } (Complete >> ByFreeText >> Search) (string >> AppError)
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete searchResponse ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filter = None } (Complete >> ByLocation >> Search) (string >> AppError)
+            { model with Properties = InProgress }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
@@ -132,23 +136,34 @@ let update msg model =
         Browser.Dom.console.log ex
         model, Cmd.none
     | SelectFacet (facetKey, facetValue) ->
+        let selectedFacets =
+            match model.SelectedFacets with
+            | [] -> [(facetKey, facetValue)]
+            | tail -> ((facetKey, facetValue) :: tail)
         let cmd =
             match model.SelectedSearchKind with
             | LocationSearch _ ->
-                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filter = Some (facetKey, facetValue) } (Complete >> ByLocation >> Search) (string >> AppError)
+                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filters = selectedFacets } (Complete >> ByLocation >> Search) (string >> AppError)
             | FreeTextSearch ->
-                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filter = Some (facetKey, facetValue) } (Complete >> ByFreeText >> Search) (string >> AppError)
+                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filters = selectedFacets } (Complete >> ByFreeText >> Search) (string >> AppError)
 
-        { model with SelectedFacet = Some (facetKey, facetValue) }, cmd
-    | RemoveFacet ->
+        { model with SelectedFacets = selectedFacets }, cmd
+    | RemoveFacet (facetKey, facetValue) ->
+        let updatedFacets =
+            model.SelectedFacets
+            |> List.filter ((<>) (facetKey, facetValue))
         let cmd =
             match model.SelectedSearchKind with
             | LocationSearch _ ->
-                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filter = None } (Complete >> ByLocation >> Search) (string >> AppError)
+                Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filters = updatedFacets } (Complete >> ByLocation >> Search) (string >> AppError)
             | FreeTextSearch ->
-                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filter = None } (Complete >> ByFreeText >> Search) (string >> AppError)
+                Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filters = updatedFacets } (Complete >> ByFreeText >> Search) (string >> AppError)
 
-        { model with SelectedFacet = None }, cmd
+        { model with SelectedFacets = updatedFacets }, cmd
+    | OpenFilterMenu ->
+        { model with FilterMenuOpen = true }, Cmd.none
+    | CloseFilterMenu ->
+        { model with FilterMenuOpen = false }, Cmd.none
 
 
 open Feliz
@@ -157,6 +172,9 @@ open Feliz.PigeonMaps
 open Feliz.Tippy
 open Feliz.AgGrid
 open Fable.Core.JsInterop
+open Feliz.ReactLoadingSkeleton
+
+importAll "./styles.sass"
 
 module Heading =
     let title =
@@ -221,8 +239,10 @@ module Search =
                     ()
             ]
         ]
+
     let searchButton (model:Model) dispatch =
         Bulma.button.a [
+            button.isFullWidth
             color.isPrimary
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
@@ -247,53 +267,86 @@ module Search =
             ]
         ]
 
+    let filterButton (model:Model) dispatch =
+        Bulma.button.a [
+            helpers.isHiddenDesktop
+            button.isFullWidth
+            color.isPrimary
+            match model.SearchTextError, model.Properties with
+            | Some _, _ ->
+                prop.disabled true
+            | None, IsLoading ->
+                button.isLoading
+            | None, IsNotLoading ->
+                prop.onClick (fun _ -> dispatch OpenFilterMenu)
+            prop.children [
+                Bulma.icon [
+                    prop.children [
+                        Html.i [
+                            prop.className "fas fa-filter"
+                        ]
+                    ]
+                ]
+                Html.span [
+                    Html.text "Filter"
+                ]
+            ]
+        ]
+
     let createSearchPanel model dispatch =
         Bulma.columns [
             Bulma.column [
-                column.isThreeQuarters
+                column.isThreeFifths
                 prop.children [ searchInput model dispatch ]
             ]
             Bulma.column [
-                Bulma.level [
-                    Bulma.levelItem [
-                        Bulma.control.div [
-                            control.hasIconsLeft
-                            prop.children [
-                                Bulma.select [
-                                    prop.disabled (model.Properties = InProgress)
-                                    prop.onChange (function
-                                        | "1" -> dispatch (SearchKindSelected FreeTextSearch)
-                                        | _ -> dispatch (SearchKindSelected (LocationSearch ResultsGrid))
-                                    )
-                                    prop.children [
-                                        for kind in [ FreeTextSearch; LocationSearch ResultsGrid ] do
-                                            Html.option [
-                                                prop.text kind.Description
-                                                prop.value kind.Value
-                                            ]
-                                    ]
-                                    prop.valueOrDefault model.SelectedSearchKind.Value
-                                ]
-                                Bulma.icon [
-                                    icon.isSmall
-                                    icon.isLeft
-                                    prop.children [
-                                        Html.i [
-                                            let iconName =
-                                                match model.SelectedSearchKind with
-                                                | FreeTextSearch -> "search"
-                                                | LocationSearch _ -> "location-arrow"
-                                            prop.className $"fas fa-{iconName}"
+                column.isOneFifth
+                prop.children [
+                    Bulma.control.div [
+                        control.hasIconsLeft
+                        prop.children [
+                            Bulma.select [
+                                select.isFullWidth
+                                prop.style [ style.width (length.percent 100)]
+                                prop.disabled (model.Properties = InProgress)
+                                prop.onChange (function
+                                    | "1" -> dispatch (SearchKindSelected FreeTextSearch)
+                                    | _ -> dispatch (SearchKindSelected (LocationSearch ResultsGrid))
+                                )
+                                prop.children [
+                                    for kind in [ FreeTextSearch; LocationSearch ResultsGrid ] do
+                                        Html.option [
+                                            prop.text kind.Description
+                                            prop.value kind.Value
                                         ]
+                                ]
+                                prop.valueOrDefault model.SelectedSearchKind.Value
+                            ]
+                            Bulma.icon [
+                                icon.isSmall
+                                icon.isLeft
+                                prop.children [
+                                    Html.i [
+                                        let iconName =
+                                            match model.SelectedSearchKind with
+                                            | FreeTextSearch -> "search"
+                                            | LocationSearch _ -> "location-arrow"
+                                        prop.className $"fas fa-{iconName}"
                                     ]
                                 ]
                             ]
                         ]
                     ]
-                    Bulma.levelItem [
-                        searchButton model dispatch
-                    ]
                 ]
+            ]
+            Bulma.column [
+                column.isOneFifth
+                prop.children [
+                    searchButton model dispatch
+                ]
+            ]
+            Bulma.column [
+                filterButton model dispatch
             ]
         ]
 
@@ -315,7 +368,7 @@ let safeSearchNavBar =
         ]
     ]
 
-let facetBox (label: string) facets selectedFacet dispatch =
+let facetBox (label: string) facets selectedFacets dispatch =
     let fromPluralToSingular = function
         | "Counties" -> "County"
         | "Districts" -> "District"
@@ -323,66 +376,79 @@ let facetBox (label: string) facets selectedFacet dispatch =
         | "Towns" -> "Town"
         | _ -> failwith "Invalid facet name"
 
-    Bulma.box [
-        Bulma.level [
-            Bulma.levelLeft [
-                Bulma.levelItem [
-                    Bulma.label [
-                        prop.style [ style.color.gray ]
-                        prop.text label
-                    ]
-                ]
+    let (|NoResults|NotFiltered|Filtered|) facets =
+        if facets |> List.exists(fun facet ->
+            selectedFacets
+            |> List.exists((=) (fromPluralToSingular label, facet)))
+            then
+                Filtered
+        elif facets |> List.isEmpty then
+            NoResults
+        else
+            NotFiltered
+
+    let panelColour =
+        match facets with
+        | NoResults -> color.isDanger
+        | NotFiltered -> color.isInfo
+        | Filtered -> color.isPrimary
+
+    Bulma.panel [
+            panelColour
+            prop.children [
+            Bulma.panelHeading [
+                prop.text label
             ]
-            Bulma.levelRight [
-                Bulma.levelItem [
-                    Html.i [
-                        prop.style [ style.color.gray ]
-                        prop.onClick (fun _ -> ())
-                        prop.className ($"""fas fa-caret-{if true then "up" else "down"}""")
-                    ]
-                ]
-            ]
-        ]
+            if facets |> List.isEmpty |> not then
+                for (facet: string) in facets do
+                    let facetKeyValue  = fromPluralToSingular label, facet
+                    let isSelected =
+                        selectedFacets
+                        |> List.exists ((=) facetKeyValue)
 
-        for (facet: string) in facets do
-
-            let facetKeyValue  = fromPluralToSingular label, facet
-
-            let isSelected =
-                selectedFacet
-                |> Option.map ((=) facetKeyValue)
-                |> Option.defaultValue false
-
-            Bulma.columns [
-                columns.isCentered
-                prop.children [
-                    Bulma.column [
-                        column.is1
-                        prop.children [
-                            Bulma.input.checkbox [
-                                prop.isChecked isSelected
-                                prop.onChange (fun (isChecked: bool) ->
-                                    if isChecked then
-                                        facetKeyValue
-                                        |> SelectFacet
-                                        |> dispatch
-                                    else
-                                        RemoveFacet |> dispatch
-                                )
-                            ]
-                        ]
-                    ]
-                    Bulma.column [
-                        Html.div [
-                            prop.text (facet.ToLower())
+                    Bulma.panelBlock.div [
+                        Bulma.columns [
+                            columns.isMobile
+                            columns.isVCentered
                             prop.style [
-                                if isSelected then style.fontWeight.bolder
-                                style.textTransform.capitalize
+                                style.width (length.percent 100);
+                                style.paddingLeft  10
+                             ]
+                            prop.children [
+                                Bulma.column [
+                                    column.is1
+                                    prop.children [
+                                        Bulma.input.checkbox [
+                                            prop.isChecked isSelected
+                                            prop.onChange (fun (isChecked: bool) ->
+                                                if isChecked then
+                                                    facetKeyValue
+                                                    |> SelectFacet
+                                                    |> dispatch
+                                                else
+                                                    facetKeyValue
+                                                    |> RemoveFacet
+                                                    |> dispatch
+                                            )
+                                        ]
+                                    ]
+                                ]
+                                Bulma.column [
+                                    prop.text (facet.ToLower())
+                                    prop.style [
+                                        style.textOverflow.ellipsis
+                                        if isSelected then style.fontWeight.bolder
+                                        style.textTransform.capitalize
+                                    ]
+                                ]
                             ]
                         ]
                     ]
-                ]
-            ]
+                else
+                    Bulma.panelBlock.div [
+                        prop.text "No results"
+                    ]
+        ]
     ]
 
 let facetsBoxes (facets: Facets) selectedFacets dispatch =
@@ -391,7 +457,6 @@ let facetsBoxes (facets: Facets) selectedFacets dispatch =
         facetBox "Districts" facets.Districts selectedFacets dispatch
         facetBox "Localities" facets.Localities selectedFacets dispatch
         facetBox "Towns" facets.Towns selectedFacets dispatch
-        // PriceFacetBox facets.Prices dispatch
     ]
 
 let resultsGrid dispatch searchKind (results:PropertyResult list) =
@@ -560,11 +625,52 @@ let modalView dispatch property =
         ]
     ]
 
+let loadingSkeleton =
+    Bulma.columns [
+        Bulma.column [
+            helpers.isHiddenTouch
+            column.isOneQuarter
+            prop.children [
+                for _ in [0..2] do
+                    Html.div [
+                        prop.style [ style.marginBottom 20]
+                        prop.children [
+                            Skeleton.skeleton [
+                                Skeleton.height 500
+                            ]
+                        ]
+                    ]
+            ]
+        ]
+        Bulma.column [
+            Bulma.container [
+                Skeleton.skeleton [
+                    Skeleton.height 800
+                ]
+            ]
+        ]
+    ]
+
 let view (model:Model) dispatch =
     Html.div [
+        QuickView.quickview [
+            if model.FilterMenuOpen then
+                helpers.isHiddenDesktop
+                quickview.isActive
+            prop.children [
+                QuickView.header [
+                    Html.div "Filters"
+                    Bulma.delete [ prop.onClick (fun _ -> dispatch CloseFilterMenu) ]
+                ]
+                QuickView.body [
+                    Bulma.section [
+                        facetsBoxes model.Facets model.SelectedFacets dispatch
+                    ]
+                ]
+            ]
+        ]
         safeSearchNavBar
         Bulma.section [
-            if not model.HasProperties && not model.HasLoadedSomeData then section.isLarge
             prop.children [
                 Bulma.container [
                     Heading.title
@@ -574,9 +680,10 @@ let view (model:Model) dispatch =
                     | Resolved (NonEmpty results) ->
                         Bulma.columns [
                             Bulma.column [
-                                column.isOneFifth
+                                helpers.isHiddenTouch
+                                column.isOneQuarter
                                 prop.children [
-                                    facetsBoxes model.Facets model.SelectedFacet dispatch
+                                    facetsBoxes model.Facets model.SelectedFacets dispatch
                                 ]
                             ]
                             Bulma.column [
@@ -623,6 +730,8 @@ let view (model:Model) dispatch =
                                 ]
                             ]
                         ]
+                    | InProgress ->
+                        loadingSkeleton
                     | _ ->
                         ()
                 ]
