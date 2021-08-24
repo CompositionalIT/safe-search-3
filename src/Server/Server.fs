@@ -9,6 +9,7 @@ open Microsoft.AspNetCore.Hosting
 open Saturn
 
 open Shared
+open Crime
 
 type Foo = { Name : string }
 
@@ -32,6 +33,15 @@ let searchApi (context:HttpContext) =
                     Ok results
                 | None ->
                     Error "Invalid postcode"
+        }
+        GetCrimes = fun geo -> async {
+            let! reports = getCrimesNearPosition geo
+            let crimes =
+                reports
+                |> Array.countBy(fun r -> r.Category)
+                |> Array.sortByDescending snd
+                |> Array.map(fun (k, c) -> { Crime = k; Incidents = c })
+            return crimes
         }
     }
 

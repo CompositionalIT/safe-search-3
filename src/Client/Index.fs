@@ -11,7 +11,7 @@ type SearchTextError =
         match this with
         | NoSearchText -> "No search term supplied."
         | InvalidPostcode -> "This is an invalid postcode."
-type LocationTab = ResultsGrid | Map | Crime of CrimeResponse array
+type LocationTab = ResultsGrid | Map | Crime of Geo
 
 type SearchKind =
     FreeTextSearch | LocationSearch of LocationTab
@@ -30,6 +30,7 @@ type Model =
         Facets : Facets
         SelectedFacets: (string * string) list
         FilterMenuOpen : bool
+        CrimeIncidents: Deferred<CrimeResponse array>
     }
     member this.SearchTextError =
         if String.IsNullOrEmpty this.SearchText then
@@ -63,6 +64,7 @@ type Msg =
     | RemoveFacet of string * string
     | OpenFilterMenu
     | CloseFilterMenu
+    | LoadCrimeIncidents of CrimeResponse array
 
 let searchApi =
     Remoting.createApi ()
@@ -89,6 +91,7 @@ let init () =
             Facets = facets
             SelectedFacets = []
             FilterMenuOpen = false
+            CrimeIncidents = HasNotStarted
         }
     model, Cmd.none
 
@@ -98,7 +101,11 @@ let update msg model =
         { model with SearchText = value }, Cmd.none
     | SearchKindSelected kind ->
         match model.SelectedSearchKind, kind with
-        | LocationSearch _, LocationSearch _
+        | LocationSearch _, LocationSearch tab ->
+            match tab with
+            | Crime geo ->
+                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress }, Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
+            | _ -> { model with SelectedSearchKind = kind }, Cmd.none
         | FreeTextSearch, FreeTextSearch ->
             { model with SelectedSearchKind = kind }, Cmd.none
         | LocationSearch _, FreeTextSearch
@@ -164,6 +171,9 @@ let update msg model =
         { model with FilterMenuOpen = true }, Cmd.none
     | CloseFilterMenu ->
         { model with FilterMenuOpen = false }, Cmd.none
+    | LoadCrimeIncidents crimeIncidents ->
+        { model with CrimeIncidents = Resolved crimeIncidents }, Cmd.none
+
 
 
 open Feliz
@@ -705,52 +715,67 @@ let view (model:Model) dispatch =
                                                     ]
                                                 ]
                                             ]
+                                        let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
                                         Bulma.tabs [
                                             Html.ul [
                                                 makeTab ResultsGrid "Results Grid" "table"
                                                 makeTab Map "Map" "map"
+                                                yield!
+                                                    geoLocationOpt
+                                                    |> Option.toList
+                                                    |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
                                             ]
                                         ]
                                         match locationTab with
                                         | ResultsGrid ->
                                             resultsGrid dispatch (LocationSearch ResultsGrid) results
                                         | Map ->
-                                            match results |> List.tryPick (fun r -> r.Address.GeoLocation) with
+                                            match geoLocationOpt with
                                             | Some geoLocation ->
                                                 Bulma.box [
                                                     drawMap geoLocation Full results
                                                 ]
                                             | None ->
                                                 ()
-                                        | Crime crimeIncidents ->
-                                            let cleanData =
-                                                crimeIncidents
-                                                |> Array.map (fun c ->
-                                                    { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
-
-                                            Recharts.barChart [
-                                                barChart.layout.vertical
-                                                barChart.data cleanData
-                                                barChart.width 600
-                                                barChart.height 500
-                                                barChart.children [
-                                                    Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
-                                                    Recharts.xAxis [ xAxis.number ]
-                                                    Recharts.yAxis [
-                                                        yAxis.dataKey (fun point -> point.Crime)
-                                                        yAxis.width 200
-                                                        yAxis.category ]
-                                                    Recharts.tooltip []
-                                                    Recharts.bar [
-                                                        bar.legendType.star
-                                                        bar.isAnimationActive true
-                                                        bar.animationEasing.ease
-                                                        bar.dataKey (fun point -> point.Incidents)
-                                                        bar.fill "#8884d8"
+                                        | Crime _ ->
+                                            match model.CrimeIncidents with
+                                            | Resolved incidents ->
+                                                let cleanData =
+                                                    incidents
+                                                    |> Array.map (fun c ->
+                                                        { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+                                                Bulma.box [
+                                                    Bulma.columns [
+                                                        Bulma.column [
+                                                            column.isOffset1
+                                                            prop.children [
+                                                                Recharts.barChart [
+                                                                    barChart.layout.vertical
+                                                                    barChart.data cleanData
+                                                                    barChart.width 600
+                                                                    barChart.height 500
+                                                                    barChart.children [
+                                                                        Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                                                                        Recharts.xAxis [ xAxis.number ]
+                                                                        Recharts.yAxis [
+                                                                            yAxis.dataKey (fun point -> point.Crime)
+                                                                            yAxis.width 200
+                                                                            yAxis.category ]
+                                                                        Recharts.tooltip []
+                                                                        Recharts.bar [
+                                                                            bar.legendType.star
+                                                                            bar.isAnimationActive true
+                                                                            bar.animationEasing.ease
+                                                                            bar.dataKey (fun point -> point.Incidents)
+                                                                            bar.fill "#8884d8"
+                                                                        ]
+                                                                    ]
+                                                                ]
+                                                            ]
+                                                        ]
                                                     ]
                                                 ]
-                                            ]
-
+                                            | _ ->
 
                                     | FreeTextSearch ->
                                         resultsGrid dispatch FreeTextSearch results

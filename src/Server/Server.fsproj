@@ -11,6 +11,7 @@
     <Compile Include="Kibalta.fs" />
     <Compile Include="AzureSearch.fs" />
     <Compile Include="Transaction.fs" />
+    <Compile Include="Crime.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <ItemGroup>

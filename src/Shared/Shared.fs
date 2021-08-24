@@ -128,6 +128,7 @@ type ISearchApi =
     {
         FreeText : FreeTextSearchRequest -> Async<SearchResponse>
         ByLocation : LocationSearchRequest -> Async<Result<SearchResponse, string>>
+        GetCrimes : Geo -> Async<CrimeResponse array>
     }
 
 
