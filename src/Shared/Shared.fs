@@ -114,8 +114,8 @@ type SearchResponse =
         Facets : Facets
     }
 
-type FreeTextSearchRequest = { Text : string; Filter: (string * string) option }
-type LocationSearchRequest = { Postcode : string; Filter: (string * string) option }
+type FreeTextSearchRequest = { Text : string; Filters: (string * string) list }
+type LocationSearchRequest = { Postcode : string; Filters: (string * string) list }
 
 type ISearchApi =
     {

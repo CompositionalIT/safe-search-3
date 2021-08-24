@@ -43,27 +43,30 @@ module AzureInterop =
         response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList,
         response.Value.Facets
 
-    let search<'T> indexName keyword (filter: (string * string) option) serviceName key =
+    let private buildFilterExpression appliedFilters =
+        match appliedFilters with
+            | [] ->  ConstantFilter true
+            | filters ->
+                filters
+                |> List.map (fun f ->
+                    let (field, value) = f
+                    (field, box value)
+                    |> whereEq)
+                |> List.reduce (+)
+
+    let search<'T> indexName keyword (filters: (string * string) list) serviceName key =
         let filterParam =
-            filter
-            |> Option.map (fun (facetName, facetValue) ->
-                (facetName, box facetValue)
-                |> whereEq
-                |> eval)
-            |> Option.defaultValue ""
+            filters
+            |> buildFilterExpression
+            |> eval
         let options =
             SearchOptions (Size = 20, Filter = filterParam)
         Facets.All |> List.iter options.Facets.Add
         buildClient indexName serviceName key
         |> getResults keyword options
 
-    let searchByLocation<'T> indexName (long, lat) (filter: (string * string) option) serviceName key =
-        let filterParam =
-            filter
-            |> Option.map (fun (facetName, facetValue) ->
-                (facetName, box facetValue)
-                |> whereEq)
-            |> Option.defaultValue (ConstantFilter true)
+    let searchByLocation<'T> indexName (long, lat) (filters: (string * string) list) serviceName key =
+        let filterParam = buildFilterExpression filters
         let options =
             SearchOptions (
                 Size = 20,
@@ -132,10 +135,10 @@ let private toSearchResponse (searchableProperties, facets) =
         Results = searchableProperties |> List.map toPropertyResult
         Facets = facets |> toFacetResult
     }
-let freeTextSearch keyword filter index key =
-    AzureInterop.search "properties" keyword filter index key
+let freeTextSearch keyword filters index key =
+    AzureInterop.search "properties" keyword filters index key
     |> toSearchResponse
 
-let locationSearch (long, lat) filter index key =
-    AzureInterop.searchByLocation "properties" (long, lat) filter index key
+let locationSearch (long, lat) filters index key =
+    AzureInterop.searchByLocation "properties" (long, lat) filters index key
     |> toSearchResponse
