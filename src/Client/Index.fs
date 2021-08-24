@@ -123,7 +123,7 @@ let update msg model =
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress; SelectedFacets = [] }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = []; SelectedSearchKind = LocationSearch ResultsGrid }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
@@ -184,6 +184,8 @@ open Feliz.AgGrid
 open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
+open Feliz.styleModule
+open Feliz.styleModule
 
 importAll "./styles.sass"
 
@@ -738,45 +740,54 @@ let view (model:Model) dispatch =
                                             | None ->
                                                 ()
                                         | Crime _ ->
-                                            match model.CrimeIncidents with
-                                            | Resolved incidents ->
-                                                let cleanData =
-                                                    incidents
-                                                    |> Array.map (fun c ->
-                                                        { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
-                                                Bulma.box [
-                                                    Bulma.columns [
+                                            Bulma.box [
+                                                Bulma.columns [
+                                                    columns.isCentered
+                                                    columns.isVCentered
+                                                    prop.children [
                                                         Bulma.column [
-                                                            column.isOffset1
+                                                            column.isHalf
+                                                            prop.style [
+                                                                style.display.flex
+                                                                style.justifyContent.center
+                                                                style.alignItems.center
+                                                                style.height 520]
                                                             prop.children [
-                                                                Recharts.barChart [
-                                                                    barChart.layout.vertical
-                                                                    barChart.data cleanData
-                                                                    barChart.width 600
-                                                                    barChart.height 500
-                                                                    barChart.children [
-                                                                        Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
-                                                                        Recharts.xAxis [ xAxis.number ]
-                                                                        Recharts.yAxis [
-                                                                            yAxis.dataKey (fun point -> point.Crime)
-                                                                            yAxis.width 200
-                                                                            yAxis.category ]
-                                                                        Recharts.tooltip []
-                                                                        Recharts.bar [
-                                                                            bar.legendType.star
-                                                                            bar.isAnimationActive true
-                                                                            bar.animationEasing.ease
-                                                                            bar.dataKey (fun point -> point.Incidents)
-                                                                            bar.fill "#8884d8"
+                                                                match model.CrimeIncidents with
+                                                                | Resolved incidents ->
+                                                                    let cleanData =
+                                                                        incidents
+                                                                        |> Array.map (fun c ->
+                                                                            { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+                                                                    Recharts.barChart [
+                                                                        barChart.layout.vertical
+                                                                        barChart.data cleanData
+                                                                        barChart.width 600
+                                                                        barChart.height 500
+                                                                        barChart.children [
+                                                                            Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                                                                            Recharts.xAxis [ xAxis.number ]
+                                                                            Recharts.yAxis [
+                                                                                yAxis.dataKey (fun point -> point.Crime)
+                                                                                yAxis.width 200
+                                                                                yAxis.category ]
+                                                                            Recharts.tooltip []
+                                                                            Recharts.bar [
+                                                                                bar.legendType.star
+                                                                                bar.isAnimationActive true
+                                                                                bar.animationEasing.ease
+                                                                                bar.dataKey (fun point -> point.Incidents)
+                                                                                bar.fill "#3298dc"
+                                                                            ]
                                                                         ]
                                                                     ]
-                                                                ]
+                                                                | _ ->
+                                                                        Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
                                                             ]
                                                         ]
                                                     ]
                                                 ]
-                                            | _ ->
-
+                                            ]
                                     | FreeTextSearch ->
                                         resultsGrid dispatch FreeTextSearch results
                                 ]
