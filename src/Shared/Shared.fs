@@ -88,13 +88,39 @@ type PropertyResult =
         DateOfTransfer : DateTime
     }
 
-type FreeTextSearchRequest = { Text : string }
-type LocationSearchRequest = { Postcode : string }
+type Facets =
+    {
+        Towns : string list
+        Localities : string list
+        Districts : string list
+        Counties : string list
+        Prices : string list
+    }
+    static member All =
+        [
+            "Price"
+            "PropertyType"
+            "Build"
+            "Contract"
+            "Locality"
+            "Town"
+            "District"
+            "County"
+        ]
+
+type SearchResponse =
+    {
+        Results : PropertyResult list
+        Facets : Facets
+    }
+
+type FreeTextSearchRequest = { Text : string; Filters: (string * string) list }
+type LocationSearchRequest = { Postcode : string; Filters: (string * string) list }
 
 type ISearchApi =
     {
-        FreeText : FreeTextSearchRequest -> Async<PropertyResult list>
-        ByLocation : LocationSearchRequest -> Async<Result<PropertyResult list, string>>
+        FreeText : FreeTextSearchRequest -> Async<SearchResponse>
+        ByLocation : LocationSearchRequest -> Async<Result<SearchResponse, string>>
     }
 
 
