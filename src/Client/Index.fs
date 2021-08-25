@@ -20,6 +20,8 @@ type SearchKind =
 
 type SearchState = Searching | CannotSearch of SearchTextError | CanSearch of string
 
+type Suggestions = { Visible : bool; Results : string array }
+
 type Model =
     {
         SearchText : string
@@ -31,6 +33,7 @@ type Model =
         SelectedFacets: (string * string) list
         FilterMenuOpen : bool
         CrimeIncidents: Deferred<CrimeResponse array>
+        Suggestions : Suggestions
     }
     member this.SearchTextError =
         if String.IsNullOrEmpty this.SearchText then
@@ -65,6 +68,11 @@ type Msg =
     | OpenFilterMenu
     | CloseFilterMenu
     | LoadCrimeIncidents of CrimeResponse array
+    | GotSuggestions of SuggestResponse
+    | DebounceTextChanged of string
+    | CloseSuggestions
+    | ToggleSuggestions
+    | SelectSuggestion of string
 
 let searchApi =
     Remoting.createApi ()
@@ -92,13 +100,20 @@ let init () =
             SelectedFacets = []
             FilterMenuOpen = false
             CrimeIncidents = HasNotStarted
+            Suggestions = { Visible = false; Results = [||] }
         }
     model, Cmd.none
 
 let update msg model =
     match msg with
+    | SearchTextChanged value when value = "" ->
+        { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }, Cmd.none
     | SearchTextChanged value ->
         { model with SearchText = value }, Cmd.none
+    | DebounceTextChanged value ->
+        model, Cmd.OfAsync.perform searchApi.GetSuggestions value GotSuggestions
+    | GotSuggestions response ->
+        { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
         match model.SelectedSearchKind, kind with
         | LocationSearch _, LocationSearch tab ->
@@ -173,7 +188,12 @@ let update msg model =
         { model with FilterMenuOpen = false }, Cmd.none
     | LoadCrimeIncidents crimeIncidents ->
         { model with CrimeIncidents = Resolved crimeIncidents }, Cmd.none
-
+    | CloseSuggestions ->
+        { model with Suggestions = { model.Suggestions with Visible = false } }, Cmd.none
+    | ToggleSuggestions ->
+        { model with Suggestions = { model.Suggestions with Visible = not model.Suggestions.Visible } }, Cmd.none
+    | SelectSuggestion suggestion ->
+        { model with SearchText = suggestion; Suggestions = { model.Suggestions with Visible = false; Results = [||] }  }, Cmd.none
 
 
 open Feliz
@@ -184,8 +204,18 @@ open Feliz.AgGrid
 open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
+open Feliz.SelectSearch
 
-importAll "./styles.sass"
+importAll "./styles.scss"
+
+let debounce =
+  let timeoutIds = ResizeArray<float>()
+  fun (timeout: int) (callback: unit -> unit) ->
+    let delayed = fun _ ->
+      for timeoutId in timeoutIds do Browser.Dom.window.clearInterval(timeoutId)
+      callback()
+    timeoutIds.Add(Browser.Dom.window.setTimeout(delayed, timeout))
+
 
 module Heading =
     let title =
@@ -207,18 +237,50 @@ module Heading =
             Html.text "Find your unaffordable property in the UK!"
         ]
 
+
+
 module Search =
+    let suggestionsBox suggestions dispatch =
+        Bulma.box [
+            prop.style [
+                style.position.absolute
+                style.padding 0
+                style.width (length.percent 100)
+                style.marginTop 5
+                style.border (1, borderStyle.solid, "#e6e6e6")
+                style.zIndex 1
+                style.borderRadius 5]
+            prop.children [
+                for (suggestion: string) in suggestions do
+                    Html.p [
+                        prop.onClick (fun _ -> suggestion |> SelectSuggestion |> dispatch)
+                        prop.style [
+                            style.padding 10
+                            style.textTransform.capitalize
+                        ]
+                        prop.className "suggestion"
+                        prop.text (suggestion.ToLower())
+                    ]
+            ]
+        ]
+
+
     let searchInput (model:Model) dispatch =
         Bulma.control.div [
             control.hasIconsLeft
             match model.Properties with
             | IsLoading -> control.isLoading
             | IsNotLoading -> ()
-
             prop.children [
                 Bulma.input.search [
-                    prop.onChange (SearchTextChanged >> dispatch)
-
+                    prop.style [ style.textTransform.capitalize]
+                    prop.onClick (fun _ -> dispatch ToggleSuggestions)
+                    prop.onChange (fun s ->
+                        s |> SearchTextChanged |> dispatch
+                        match model.SelectedSearchKind with
+                        | LocationSearch _ -> ()
+                        | FreeTextSearch ->
+                            debounce 250 (fun _ -> s |> DebounceTextChanged |> dispatch))
                     match model.SearchTextError, model.Properties with
                     | Some NoSearchText, _ ->
                         color.isPrimary
@@ -308,7 +370,16 @@ module Search =
         Bulma.columns [
             Bulma.column [
                 column.isThreeFifths
-                prop.children [ searchInput model dispatch ]
+                prop.children [
+                    Html.div [
+                        prop.style [ style.position.relative ]
+                        prop.children [
+                        searchInput model dispatch
+                        if model.Suggestions.Visible && model.Suggestions.Results |> Array.isEmpty |> not then
+                            suggestionsBox model.Suggestions.Results dispatch
+                        ]
+                    ]
+                ]
             ]
             Bulma.column [
                 column.isOneFifth
@@ -683,118 +754,123 @@ let view (model:Model) dispatch =
                     Heading.title
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
-                    match model.Properties with
-                    | Resolved (NonEmpty results) ->
-                        Bulma.columns [
-                            Bulma.column [
-                                helpers.isHiddenTouch
-                                column.isOneQuarter
-                                prop.children [
-                                    facetsBoxes model.Facets model.SelectedFacets dispatch
-                                ]
-                            ]
-                            Bulma.column [
-                                Bulma.container [
-                                    match model.SelectedSearchKind with
-                                    | LocationSearch locationTab ->
-                                        let makeTab searchKind (text:string) faIcon =
-                                            Bulma.tab [
-                                                if (searchKind = locationTab) then tab.isActive
-                                                prop.children [
-                                                    Html.a [
-                                                        prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
-                                                        prop.children [
-                                                            Bulma.icon [
-                                                                icon.isSmall
-                                                                prop.children [
-                                                                    Html.i [ prop.className $"fas fa-{faIcon}" ]
-                                                                ]
-                                                            ]
-                                                            Html.text text
-                                                        ]
-                                                    ]
-                                                ]
-                                            ]
-                                        let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
-                                        Bulma.tabs [
-                                            Html.ul [
-                                                makeTab ResultsGrid "Results Grid" "table"
-                                                makeTab Map "Map" "map"
-                                                yield!
-                                                    geoLocationOpt
-                                                    |> Option.toList
-                                                    |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
-                                            ]
+                    Html.div [
+                        prop.onClick (fun _ -> dispatch CloseSuggestions)
+                        prop.children [
+                            match model.Properties with
+                            | Resolved (NonEmpty results) ->
+                                Bulma.columns [
+                                    Bulma.column [
+                                        helpers.isHiddenTouch
+                                        column.isOneQuarter
+                                        prop.children [
+                                            facetsBoxes model.Facets model.SelectedFacets dispatch
                                         ]
-                                        match locationTab with
-                                        | ResultsGrid ->
-                                            resultsGrid dispatch (LocationSearch ResultsGrid) results
-                                        | Map ->
-                                            match geoLocationOpt with
-                                            | Some geoLocation ->
-                                                Bulma.box [
-                                                    drawMap geoLocation Full results
-                                                ]
-                                            | None ->
-                                                ()
-                                        | Crime _ ->
-                                            Bulma.box [
-                                                Bulma.columns [
-                                                    columns.isCentered
-                                                    columns.isVCentered
-                                                    prop.children [
-                                                        Bulma.column [
-                                                            column.isHalf
-                                                            prop.style [
-                                                                style.display.flex
-                                                                style.justifyContent.center
-                                                                style.alignItems.center
-                                                                style.height 520]
-                                                            prop.children [
-                                                                match model.CrimeIncidents with
-                                                                | Resolved incidents ->
-                                                                    let cleanData =
-                                                                        incidents
-                                                                        |> Array.map (fun c ->
-                                                                            { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
-                                                                    Recharts.barChart [
-                                                                        barChart.layout.vertical
-                                                                        barChart.data cleanData
-                                                                        barChart.width 600
-                                                                        barChart.height 500
-                                                                        barChart.children [
-                                                                            Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
-                                                                            Recharts.xAxis [ xAxis.number ]
-                                                                            Recharts.yAxis [
-                                                                                yAxis.dataKey (fun point -> point.Crime)
-                                                                                yAxis.width 200
-                                                                                yAxis.category ]
-                                                                            Recharts.tooltip []
-                                                                            Recharts.bar [
-                                                                                bar.legendType.star
-                                                                                bar.isAnimationActive true
-                                                                                bar.animationEasing.ease
-                                                                                bar.dataKey (fun point -> point.Incidents)
-                                                                                bar.fill "#3298dc"
-                                                                            ]
+                                    ]
+                                    Bulma.column [
+                                        Bulma.container [
+                                            match model.SelectedSearchKind with
+                                            | LocationSearch locationTab ->
+                                                let makeTab searchKind (text:string) faIcon =
+                                                    Bulma.tab [
+                                                        if (searchKind = locationTab) then tab.isActive
+                                                        prop.children [
+                                                            Html.a [
+                                                                prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
+                                                                prop.children [
+                                                                    Bulma.icon [
+                                                                        icon.isSmall
+                                                                        prop.children [
+                                                                            Html.i [ prop.className $"fas fa-{faIcon}" ]
                                                                         ]
                                                                     ]
-                                                                | _ ->
-                                                                    Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
+                                                                    Html.text text
+                                                                ]
                                                             ]
                                                         ]
                                                     ]
+                                                let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
+                                                Bulma.tabs [
+                                                    Html.ul [
+                                                        makeTab ResultsGrid "Results Grid" "table"
+                                                        makeTab Map "Map" "map"
+                                                        yield!
+                                                            geoLocationOpt
+                                                            |> Option.toList
+                                                            |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
+                                                    ]
                                                 ]
-                                            ]
-                                    | FreeTextSearch ->
-                                        resultsGrid dispatch FreeTextSearch results
+                                                match locationTab with
+                                                | ResultsGrid ->
+                                                    resultsGrid dispatch (LocationSearch ResultsGrid) results
+                                                | Map ->
+                                                    match geoLocationOpt with
+                                                    | Some geoLocation ->
+                                                        Bulma.box [
+                                                            drawMap geoLocation Full results
+                                                        ]
+                                                    | None ->
+                                                        ()
+                                                | Crime _ ->
+                                                    Bulma.box [
+                                                        Bulma.columns [
+                                                            columns.isCentered
+                                                            columns.isVCentered
+                                                            prop.children [
+                                                                Bulma.column [
+                                                                    column.isHalf
+                                                                    prop.style [
+                                                                        style.display.flex
+                                                                        style.justifyContent.center
+                                                                        style.alignItems.center
+                                                                        style.height 520]
+                                                                    prop.children [
+                                                                        match model.CrimeIncidents with
+                                                                        | Resolved incidents ->
+                                                                            let cleanData =
+                                                                                incidents
+                                                                                |> Array.map (fun c ->
+                                                                                    { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+                                                                            Recharts.barChart [
+                                                                                barChart.layout.vertical
+                                                                                barChart.data cleanData
+                                                                                barChart.width 600
+                                                                                barChart.height 500
+                                                                                barChart.children [
+                                                                                    Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                                                                                    Recharts.xAxis [ xAxis.number ]
+                                                                                    Recharts.yAxis [
+                                                                                        yAxis.dataKey (fun point -> point.Crime)
+                                                                                        yAxis.width 200
+                                                                                        yAxis.category ]
+                                                                                    Recharts.tooltip []
+                                                                                    Recharts.bar [
+                                                                                        bar.legendType.star
+                                                                                        bar.isAnimationActive true
+                                                                                        bar.animationEasing.ease
+                                                                                        bar.dataKey (fun point -> point.Incidents)
+                                                                                        bar.fill "#3298dc"
+                                                                                    ]
+                                                                                ]
+                                                                            ]
+                                                                        | _ ->
+                                                                            Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
+                                                                    ]
+                                                                ]
+                                                            ]
+                                                        ]
+                                                    ]
+                                            | FreeTextSearch ->
+                                                resultsGrid dispatch FreeTextSearch results
+                                        ]
+                                    ]
                                 ]
+                            | InProgress ->
+                                loadingSkeleton
+                            | _ ->
+                                ()
                             ]
-                        ]
-                    | InProgress ->
-                        loadingSkeleton
-                    | _ ->
-                        ()
+                    ]
                 ]
                 yield!
                     model.SelectedProperty

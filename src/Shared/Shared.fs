@@ -120,6 +120,12 @@ type CrimeResponse =
         Incidents : int
     }
 
+type SuggestResponse =
+    {
+        Suggestions : string array
+    }
+
+
 type FreeTextSearchRequest = { Text : string; Filters: (string * string) list }
 type LocationSearchRequest = { Postcode : string; Filters: (string * string) list }
 
@@ -129,6 +135,7 @@ type ISearchApi =
         FreeText : FreeTextSearchRequest -> Async<SearchResponse>
         ByLocation : LocationSearchRequest -> Async<Result<SearchResponse, string>>
         GetCrimes : Geo -> Async<CrimeResponse array>
+        GetSuggestions : string -> Async<SuggestResponse>
     }
 
 

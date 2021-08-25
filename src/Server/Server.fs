@@ -43,6 +43,13 @@ let searchApi (context:HttpContext) =
                 |> Array.map(fun (k, c) -> { Crime = k; Incidents = c })
             return crimes
         }
+        GetSuggestions = fun searchedTerm -> async {
+            let results =
+                Search.suggestionsSearch searchedTerm config.["search-name"] config.["search-key"]
+                |> Seq.map (fun suggestion -> suggestion.ToLower())
+                |> Seq.toArray
+            return { Suggestions = results }
+        }
     }
 
 let webApp =
