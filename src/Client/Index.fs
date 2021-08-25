@@ -59,9 +59,11 @@ type Toggle =
     | Open
     | Close
 
+    static member Visibility = function
+        | Open -> true
+        | Close -> false
+
 type SuggestionsMsg =
-    | DebounceTextChanged of string
-    | Select of string
     | ToggleVisibility of Toggle
     | GotSuggestions of SuggestResponse
 
@@ -112,16 +114,13 @@ let init () =
 let update msg model =
     match msg with
     | SearchTextChanged value ->
-        let model =
-            if value = "" then
-                { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }
-            else
-                { model with SearchText = value }
-        model, Cmd.none
+        if value = "" then
+            { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }, Cmd.none
+        else
+            { model with SearchText = value }
+            , Cmd.OfAsync.perform searchApi.GetSuggestions value (GotSuggestions >> Suggestions)
     | Suggestions msg ->
         match msg with
-        | DebounceTextChanged value ->
-            model, Cmd.OfAsync.perform searchApi.GetSuggestions value (GotSuggestions >> Suggestions)
         | ToggleVisibility toggle ->
             let toggleVisibility visibility =
                 { model with Suggestions = { model.Suggestions with Visible = visibility } }
@@ -130,8 +129,6 @@ let update msg model =
                 | Open -> toggleVisibility true
                 | Close -> toggleVisibility false
             model, Cmd.none
-        | Select suggestion ->
-            { model with SearchText = suggestion; Suggestions = { model.Suggestions with Visible = false; Results = [||] } }, Cmd.none
         | GotSuggestions response ->
             { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
@@ -222,8 +219,41 @@ open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
 open Feliz.SelectSearch
+open Feliz.UseElmish
 
 importAll "./styles.scss"
+
+module Debouncer =
+    type private DebounceState<'a> = {
+        Value: 'a
+        OnDone: 'a -> unit
+        Delay: int }
+
+    type private Msg<'a> =
+        | ValueChanged of 'a
+        | Debounced of 'a
+
+    let private init value onDone delay =
+        { Value = value; OnDone = onDone; Delay = delay }, []
+
+    let private update msg model =
+        match msg with
+        | Debounced thenValue ->
+            if model.Value = thenValue then
+                model.OnDone thenValue
+
+            model, Cmd.none
+        | ValueChanged value ->
+            let asyncMsg = async {
+                do! Async.Sleep model.Delay;
+                return Debounced value }
+
+            { model with Value = value }, Cmd.OfAsyncImmediate.result asyncMsg
+
+    let useDebouncer value onDone delay =
+        let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
+        current.Value, (ValueChanged >> dispatch)
+
 
 let debounce =
   let timeoutIds = ResizeArray<float>()
@@ -235,6 +265,7 @@ let debounce =
 
 
 module Heading =
+
     let title =
         Bulma.title.h3 [
             Bulma.icon [
@@ -270,7 +301,7 @@ module Search =
             prop.children [
                 for (suggestion: string) in suggestions do
                     Html.p [
-                        prop.onClick (fun _ -> suggestion |> Select |> Suggestions |> dispatch)
+                        prop.onClick (fun _ -> dispatch suggestion)
                         prop.style [
                             style.padding 10
                             style.textTransform.capitalize
@@ -280,56 +311,60 @@ module Search =
                     ]
             ]
         ]
-
-    let searchInput (model:Model) dispatch =
-        Bulma.control.div [
-            control.hasIconsLeft
-            match model.Properties with
-            | IsLoading -> control.isLoading
-            | IsNotLoading -> ()
+    [<ReactComponent>]
+    let AutoCompleteSearch (model:Model) dispatch =
+        let currentValue, onChange = Debouncer.useDebouncer model.SearchText (SearchTextChanged >> dispatch) 1000
+        Html.div [
+            prop.style [ style.position.relative ]
             prop.children [
-                Bulma.input.search [
-                    prop.value model.SearchText
-                    prop.style [ style.textTransform.capitalize]
-                    prop.onClick (fun _ ->
-                        let visibility =
-                            if model.Suggestions.Visible then Close else Open
-                        visibility |> ToggleVisibility |> Suggestions |> dispatch)
-                    prop.onChange (fun s ->
-                        s |> SearchTextChanged |> dispatch
-                        match model.SelectedSearchKind with
-                        | LocationSearch _ -> ()
-                        | FreeTextSearch ->
-                            debounce 250 (fun _ -> s |> DebounceTextChanged |> Suggestions |> dispatch))
-                    match model.SearchTextError, model.Properties with
-                    | Some NoSearchText, _ ->
-                        color.isPrimary
-                        prop.placeholder "Enter your search term here."
-                    | Some InvalidPostcode, _ ->
-                        color.isDanger
-                    | None, IsNotLoading ->
-                        prop.valueOrDefault model.SearchText
-                        color.isPrimary
-                    | None, IsLoading ->
-                        ()
-                ]
-                Bulma.icon [
-                    icon.isSmall
-                    icon.isLeft
+                Bulma.control.div [
+                    control.hasIconsLeft
+                    match model.Properties with
+                    | IsLoading -> control.isLoading
+                    | IsNotLoading -> ()
                     prop.children [
-                        Html.i [
-                            prop.className "fas fa-search"
+                        Bulma.input.search [
+                            prop.onChange onChange
+                            prop.value currentValue
+                            prop.style [ style.textTransform.capitalize]
+                            prop.onClick (fun _ ->
+                                let visibility =
+                                    if model.Suggestions.Visible then Close else Open
+                                visibility |> ToggleVisibility |> Suggestions |> dispatch)
+                            match model.SearchTextError, model.Properties with
+                            | Some NoSearchText, _ ->
+                                color.isPrimary
+                                prop.placeholder "Enter your search term here."
+                            | Some InvalidPostcode, _ ->
+                                color.isDanger
+                            | None, IsNotLoading ->
+                                prop.valueOrDefault currentValue
+                                color.isPrimary
+                            | None, IsLoading ->
+                                ()
                         ]
+
+                        Bulma.icon [
+                            icon.isSmall
+                            icon.isLeft
+                            prop.children [
+                                Html.i [
+                                    prop.className "fas fa-search"
+                                ]
+                            ]
+                        ]
+                        match model.SearchTextError with
+                        | Some error ->
+                            Bulma.help [
+                                color.isDanger
+                                prop.text error.Description
+                            ]
+                        | None ->
+                            ()
                     ]
                 ]
-                match model.SearchTextError with
-                | Some error ->
-                    Bulma.help [
-                        color.isDanger
-                        prop.text error.Description
-                    ]
-                | None ->
-                    ()
+                if model.Suggestions.Visible && model.Suggestions.Results |> Array.isEmpty |> not then
+                    suggestionsBox model.Suggestions.Results onChange
             ]
         ]
 
@@ -391,14 +426,7 @@ module Search =
             Bulma.column [
                 column.isThreeFifths
                 prop.children [
-                    Html.div [
-                        prop.style [ style.position.relative ]
-                        prop.children [
-                        searchInput model dispatch
-                        if model.Suggestions.Visible && model.Suggestions.Results |> Array.isEmpty |> not then
-                            suggestionsBox model.Suggestions.Results dispatch
-                        ]
-                    ]
+                    AutoCompleteSearch model dispatch
                 ]
             ]
             Bulma.column [
