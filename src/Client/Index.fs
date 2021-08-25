@@ -254,16 +254,6 @@ module Debouncer =
         let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
         current.Value, (ValueChanged >> dispatch)
 
-
-let debounce =
-  let timeoutIds = ResizeArray<float>()
-  fun (timeout: int) (callback: unit -> unit) ->
-    let delayed = fun _ ->
-      for timeoutId in timeoutIds do Browser.Dom.window.clearInterval(timeoutId)
-      callback()
-    timeoutIds.Add(Browser.Dom.window.setTimeout(delayed, timeout))
-
-
 module Heading =
 
     let title =
