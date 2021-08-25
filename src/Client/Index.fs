@@ -55,6 +55,16 @@ type SearchMsg =
     | ByFreeText of AsyncOperation<string, SearchResponse>
     | ByLocation of AsyncOperation<string, Result<SearchResponse, string>>
 
+type Toggle =
+    | Open
+    | Close
+
+type SuggestionsMsg =
+    | DebounceTextChanged of string
+    | Select of string
+    | ToggleVisibility of Toggle
+    | GotSuggestions of SuggestResponse
+
 type Msg =
     | SearchTextChanged of string
     | SearchKindSelected of SearchKind
@@ -65,14 +75,9 @@ type Msg =
     | CloseProperty
     | SelectFacet of string * string
     | RemoveFacet of string * string
-    | OpenFilterMenu
-    | CloseFilterMenu
+    | ToggleFilterMenu of Toggle
     | LoadCrimeIncidents of CrimeResponse array
-    | GotSuggestions of SuggestResponse
-    | DebounceTextChanged of string
-    | CloseSuggestions
-    | ToggleSuggestions
-    | SelectSuggestion of string
+    | Suggestions of SuggestionsMsg
 
 let searchApi =
     Remoting.createApi ()
@@ -106,20 +111,36 @@ let init () =
 
 let update msg model =
     match msg with
-    | SearchTextChanged value when value = "" ->
-        { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }, Cmd.none
     | SearchTextChanged value ->
-        { model with SearchText = value }, Cmd.none
-    | DebounceTextChanged value ->
-        model, Cmd.OfAsync.perform searchApi.GetSuggestions value GotSuggestions
-    | GotSuggestions response ->
-        { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
+        let model =
+            if value = "" then
+                { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }
+            else
+                { model with SearchText = value }
+        model, Cmd.none
+    | Suggestions msg ->
+        match msg with
+        | DebounceTextChanged value ->
+            model, Cmd.OfAsync.perform searchApi.GetSuggestions value (GotSuggestions >> Suggestions)
+        | ToggleVisibility toggle ->
+            let toggleVisibility visibility =
+                { model with Suggestions = { model.Suggestions with Visible = visibility } }
+            let model =
+                match toggle with
+                | Open -> toggleVisibility true
+                | Close -> toggleVisibility false
+            model, Cmd.none
+        | Select suggestion ->
+            { model with SearchText = suggestion; Suggestions = { model.Suggestions with Visible = false; Results = [||] } }, Cmd.none
+        | GotSuggestions response ->
+            { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
         match model.SelectedSearchKind, kind with
         | LocationSearch _, LocationSearch tab ->
             match tab with
             | Crime geo ->
-                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress }, Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
+                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress }
+                , Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
             | _ -> { model with SelectedSearchKind = kind }, Cmd.none
         | FreeTextSearch, FreeTextSearch ->
             { model with SelectedSearchKind = kind }, Cmd.none
@@ -132,13 +153,15 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress; SelectedFacets = [] }, Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = [] }
+            , Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete searchResponse ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
     | Search (ByLocation operation) ->
         match operation with
         | Start postcode ->
-            { model with Properties = InProgress; SelectedFacets = []; SelectedSearchKind = LocationSearch ResultsGrid }, Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
+            { model with Properties = InProgress; SelectedFacets = []; SelectedSearchKind = LocationSearch ResultsGrid }
+            , Cmd.OfAsync.either searchApi.ByLocation { Postcode = postcode; Filters = [] } (Complete >> ByLocation >> Search) (string >> AppError)
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
@@ -180,21 +203,15 @@ let update msg model =
                 Cmd.OfAsync.either searchApi.ByLocation { Postcode = model.SearchText; Filters = updatedFacets } (Complete >> ByLocation >> Search) (string >> AppError)
             | FreeTextSearch ->
                 Cmd.OfAsync.either searchApi.FreeText { Text = model.SearchText; Filters = updatedFacets } (Complete >> ByFreeText >> Search) (string >> AppError)
-
         { model with SelectedFacets = updatedFacets }, cmd
-    | OpenFilterMenu ->
-        { model with FilterMenuOpen = true }, Cmd.none
-    | CloseFilterMenu ->
-        { model with FilterMenuOpen = false }, Cmd.none
+    | ToggleFilterMenu toggle ->
+        let model =
+            match toggle with
+            | Open -> { model with FilterMenuOpen = true }
+            | Close -> { model with FilterMenuOpen = false }
+        model, Cmd.none
     | LoadCrimeIncidents crimeIncidents ->
         { model with CrimeIncidents = Resolved crimeIncidents }, Cmd.none
-    | CloseSuggestions ->
-        { model with Suggestions = { model.Suggestions with Visible = false } }, Cmd.none
-    | ToggleSuggestions ->
-        { model with Suggestions = { model.Suggestions with Visible = not model.Suggestions.Visible } }, Cmd.none
-    | SelectSuggestion suggestion ->
-        { model with SearchText = suggestion; Suggestions = { model.Suggestions with Visible = false; Results = [||] }  }, Cmd.none
-
 
 open Feliz
 open Feliz.Bulma
@@ -248,12 +265,12 @@ module Search =
                 style.width (length.percent 100)
                 style.marginTop 5
                 style.border (1, borderStyle.solid, "#e6e6e6")
-                style.zIndex 1
+                style.zIndex 10
                 style.borderRadius 5]
             prop.children [
                 for (suggestion: string) in suggestions do
                     Html.p [
-                        prop.onClick (fun _ -> suggestion |> SelectSuggestion |> dispatch)
+                        prop.onClick (fun _ -> suggestion |> Select |> Suggestions |> dispatch)
                         prop.style [
                             style.padding 10
                             style.textTransform.capitalize
@@ -264,7 +281,6 @@ module Search =
             ]
         ]
 
-
     let searchInput (model:Model) dispatch =
         Bulma.control.div [
             control.hasIconsLeft
@@ -273,14 +289,18 @@ module Search =
             | IsNotLoading -> ()
             prop.children [
                 Bulma.input.search [
+                    prop.value model.SearchText
                     prop.style [ style.textTransform.capitalize]
-                    prop.onClick (fun _ -> dispatch ToggleSuggestions)
+                    prop.onClick (fun _ ->
+                        let visibility =
+                            if model.Suggestions.Visible then Close else Open
+                        visibility |> ToggleVisibility |> Suggestions |> dispatch)
                     prop.onChange (fun s ->
                         s |> SearchTextChanged |> dispatch
                         match model.SelectedSearchKind with
                         | LocationSearch _ -> ()
                         | FreeTextSearch ->
-                            debounce 250 (fun _ -> s |> DebounceTextChanged |> dispatch))
+                            debounce 250 (fun _ -> s |> DebounceTextChanged |> Suggestions |> dispatch))
                     match model.SearchTextError, model.Properties with
                     | Some NoSearchText, _ ->
                         color.isPrimary
@@ -351,7 +371,7 @@ module Search =
             | None, IsLoading ->
                 button.isLoading
             | None, IsNotLoading ->
-                prop.onClick (fun _ -> dispatch OpenFilterMenu)
+                prop.onClick (fun _ -> Open |> ToggleFilterMenu |> dispatch)
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -450,15 +470,15 @@ let safeSearchNavBar =
         ]
     ]
 
-let facetBox (label: string) facets selectedFacets dispatch =
+module Facets =
     let fromPluralToSingular = function
         | "Counties" -> "County"
         | "Districts" -> "District"
         | "Localities" -> "Locality"
         | "Towns" -> "Town"
-        | _ -> failwith "Invalid facet name"
+        | facet -> failwithf $"Invalid facet name: {facet}"
 
-    let (|NoResults|NotFiltered|Filtered|) facets =
+    let (|NoResults|NotFiltered|Filtered|) (label, facets, selectedFacets) =
         if facets |> List.exists(fun facet ->
             selectedFacets
             |> List.exists((=) (fromPluralToSingular label, facet)))
@@ -469,78 +489,117 @@ let facetBox (label: string) facets selectedFacets dispatch =
         else
             NotFiltered
 
-    let panelColour =
-        match facets with
+    let panelColour = function
         | NoResults -> color.isDanger
         | NotFiltered -> color.isInfo
         | Filtered -> color.isPrimary
 
-    Bulma.panel [
-            panelColour
-            prop.style [ style.borderRadius 0 ]
-            prop.children [
-            Bulma.panelHeading [
+    let facetBox (label: string) facets selectedFacets dispatch =
+        Bulma.panel [
+                panelColour (label, facets, selectedFacets)
                 prop.style [ style.borderRadius 0 ]
-                prop.text label
-            ]
-            if facets |> List.isEmpty |> not then
-                for (facet: string) in facets do
-                    let facetKeyValue  = fromPluralToSingular label, facet
-                    let isSelected =
-                        selectedFacets
-                        |> List.exists ((=) facetKeyValue)
-
-                    Bulma.panelBlock.div [
-                        Bulma.columns [
-                            columns.isMobile
-                            columns.isVCentered
-                            prop.style [
-                                style.width (length.percent 100);
-                                style.paddingLeft  10
-                             ]
-                            prop.children [
-                                Bulma.column [
-                                    column.is1
-                                    prop.children [
-                                        Bulma.input.checkbox [
-                                            prop.isChecked isSelected
-                                            prop.onChange (fun (isChecked: bool) ->
-                                                if isChecked then
-                                                    facetKeyValue
-                                                    |> SelectFacet
-                                                    |> dispatch
-                                                else
-                                                    facetKeyValue
-                                                    |> RemoveFacet
-                                                    |> dispatch
-                                            )
+                prop.children [
+                Bulma.panelHeading [
+                    prop.style [ style.borderRadius 0 ]
+                    prop.text label
+                ]
+                if facets |> List.isEmpty |> not then
+                    for (facet: string) in facets do
+                        let facetKeyValue  = fromPluralToSingular label, facet
+                        let isSelected =
+                            selectedFacets
+                            |> List.exists ((=) facetKeyValue)
+                        Bulma.panelBlock.div [
+                            Bulma.columns [
+                                columns.isMobile
+                                columns.isVCentered
+                                prop.style [
+                                    style.width (length.percent 100);
+                                    style.paddingLeft  10
+                                 ]
+                                prop.children [
+                                    Bulma.column [
+                                        column.is1
+                                        prop.children [
+                                            Bulma.input.checkbox [
+                                                prop.isChecked isSelected
+                                                prop.onChange (fun (isChecked: bool) ->
+                                                    if isChecked then
+                                                        facetKeyValue
+                                                        |> SelectFacet
+                                                        |> dispatch
+                                                    else
+                                                        facetKeyValue
+                                                        |> RemoveFacet
+                                                        |> dispatch
+                                                )
+                                            ]
                                         ]
                                     ]
-                                ]
-                                Bulma.column [
-                                    prop.text (facet.ToLower())
-                                    prop.style [
-                                        style.textOverflow.ellipsis
-                                        if isSelected then style.fontWeight.bolder
-                                        style.textTransform.capitalize
+                                    Bulma.column [
+                                        prop.text (facet.ToLower())
+                                        prop.style [
+                                            style.textOverflow.ellipsis
+                                            if isSelected then style.fontWeight.bolder
+                                            style.textTransform.capitalize
+                                        ]
                                     ]
                                 ]
                             ]
                         ]
-                    ]
-                else
-                    Bulma.panelBlock.div [
-                        prop.text "No results"
-                    ]
+                    else
+                        Bulma.panelBlock.div [
+                            prop.text "No results"
+                        ]
+            ]
         ]
-    ]
 
-let facetsBoxes (facets: Facets) selectedFacets dispatch =
-    Html.div [
-        facetBox "Counties" facets.Counties selectedFacets dispatch
-        facetBox "Districts" facets.Districts selectedFacets dispatch
-        facetBox "Localities" facets.Localities selectedFacets dispatch
-        facetBox "Towns" facets.Towns selectedFacets dispatch
+    let facetBoxes (facets: Facets) selectedFacets dispatch =
+        Html.div [
+            facetBox "Counties" facets.Counties selectedFacets dispatch
+            facetBox "Districts" facets.Districts selectedFacets dispatch
+            facetBox "Localities" facets.Localities selectedFacets dispatch
+            facetBox "Towns" facets.Towns selectedFacets dispatch
+        ]
+
+    let facetMenu menuVisible facets selectedFacets dispatch =
+        QuickView.quickview [
+            if menuVisible then
+                helpers.isHiddenDesktop
+                quickview.isActive
+            prop.children [
+                QuickView.header [
+                    Html.div "Filters"
+                    Bulma.delete [ prop.onClick (fun _ -> Close |> ToggleFilterMenu |> dispatch) ]
+                ]
+                QuickView.body [
+                    facetBoxes facets selectedFacets dispatch
+                ]
+            ]
+        ]
+
+let crimeChart (data: CrimeResponse array) =
+    Recharts.barChart [
+        barChart.layout.vertical
+        barChart.data data
+        barChart.width 600
+        barChart.height 500
+        barChart.children [
+            Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+            Recharts.xAxis [ xAxis.number ]
+            Recharts.yAxis [
+                yAxis.dataKey (fun point -> point.Crime)
+                yAxis.width 200
+                yAxis.category ]
+            Recharts.tooltip []
+            Recharts.bar [
+                bar.legendType.star
+                bar.isAnimationActive true
+                bar.animationEasing.ease
+                bar.dataKey (fun point -> point.Incidents)
+                bar.fill "#3298dc"
+            ]
+        ]
     ]
 
 let resultsGrid dispatch searchKind (results:PropertyResult list) =
@@ -733,20 +792,7 @@ let loadingSkeleton =
 
 let view (model:Model) dispatch =
     Html.div [
-        QuickView.quickview [
-            if model.FilterMenuOpen then
-                helpers.isHiddenDesktop
-                quickview.isActive
-            prop.children [
-                QuickView.header [
-                    Html.div "Filters"
-                    Bulma.delete [ prop.onClick (fun _ -> dispatch CloseFilterMenu) ]
-                ]
-                QuickView.body [
-                    facetsBoxes model.Facets model.SelectedFacets dispatch
-                ]
-            ]
-        ]
+        Facets.facetMenu model.FilterMenuOpen model.Facets model.SelectedFacets dispatch
         safeSearchNavBar
         Bulma.section [
             prop.children [
@@ -755,7 +801,7 @@ let view (model:Model) dispatch =
                     Heading.subtitle
                     Search.createSearchPanel model dispatch
                     Html.div [
-                        prop.onClick (fun _ -> dispatch CloseSuggestions)
+                        prop.onClick (fun _ -> Close |> ToggleVisibility |> Suggestions |> dispatch)
                         prop.children [
                             match model.Properties with
                             | Resolved (NonEmpty results) ->
@@ -764,7 +810,7 @@ let view (model:Model) dispatch =
                                         helpers.isHiddenTouch
                                         column.isOneQuarter
                                         prop.children [
-                                            facetsBoxes model.Facets model.SelectedFacets dispatch
+                                            Facets.facetBoxes model.Facets model.SelectedFacets dispatch
                                         ]
                                     ]
                                     Bulma.column [
@@ -831,28 +877,7 @@ let view (model:Model) dispatch =
                                                                                 incidents
                                                                                 |> Array.map (fun c ->
                                                                                     { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
-                                                                            Recharts.barChart [
-                                                                                barChart.layout.vertical
-                                                                                barChart.data cleanData
-                                                                                barChart.width 600
-                                                                                barChart.height 500
-                                                                                barChart.children [
-                                                                                    Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
-                                                                                    Recharts.xAxis [ xAxis.number ]
-                                                                                    Recharts.yAxis [
-                                                                                        yAxis.dataKey (fun point -> point.Crime)
-                                                                                        yAxis.width 200
-                                                                                        yAxis.category ]
-                                                                                    Recharts.tooltip []
-                                                                                    Recharts.bar [
-                                                                                        bar.legendType.star
-                                                                                        bar.isAnimationActive true
-                                                                                        bar.animationEasing.ease
-                                                                                        bar.dataKey (fun point -> point.Incidents)
-                                                                                        bar.fill "#3298dc"
-                                                                                    ]
-                                                                                ]
-                                                                            ]
+                                                                            crimeChart cleanData
                                                                         | _ ->
                                                                             Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
                                                                     ]
