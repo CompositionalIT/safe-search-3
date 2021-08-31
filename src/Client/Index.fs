@@ -111,24 +111,38 @@ let init () =
         }
     model, Cmd.none
 
+let alreadySelected suggestions value =
+    suggestions |> Array.exists ((=) value)
+
 let update msg model =
     match msg with
     | SearchTextChanged value ->
+        let updatedSearchResetSuggestions =
+            { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }
         if value = "" then
-            { model with SearchText = value; Suggestions = { Visible = false; Results = [||] } }, Cmd.none
+            updatedSearchResetSuggestions, Cmd.none
+        elif value |> alreadySelected model.Suggestions.Results then
+            { model with SearchText = value; Suggestions = { model.Suggestions with Visible = false } }, Cmd.none
+        elif model.SelectedSearchKind.Value = 2 then
+            updatedSearchResetSuggestions, Cmd.none
         else
             { model with SearchText = value }
             , Cmd.OfAsync.perform searchApi.GetSuggestions value (GotSuggestions >> Suggestions)
     | Suggestions msg ->
         match msg with
         | ToggleVisibility toggle ->
-            let toggleVisibility visibility =
-                { model with Suggestions = { model.Suggestions with Visible = visibility } }
-            let model =
-                match toggle with
-                | Open -> toggleVisibility true
-                | Close -> toggleVisibility false
-            model, Cmd.none
+            match model.SelectedSearchKind with
+            | FreeTextSearch ->
+                let toggleVisibility visibility =
+                    { model with Suggestions = { model.Suggestions with Visible = visibility && model.Suggestions.Results |> Array.isEmpty |> not } }
+                let model =
+                    match toggle with
+                    | Open when model.SearchText = "" -> toggleVisibility false
+                    | Open -> toggleVisibility true
+                    | Close -> toggleVisibility false
+                model, Cmd.none
+            | LocationSearch _ ->
+                { model with Suggestions = { Visible = false; Results = [||] } }, Cmd.none
         | GotSuggestions response ->
             { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
@@ -223,37 +237,6 @@ open Feliz.UseElmish
 
 importAll "./styles.scss"
 
-module Debouncer =
-    type private DebounceState<'a> = {
-        Value: 'a
-        OnDone: 'a -> unit
-        Delay: int }
-
-    type private Msg<'a> =
-        | ValueChanged of 'a
-        | Debounced of 'a
-
-    let private init value onDone delay =
-        { Value = value; OnDone = onDone; Delay = delay }, []
-
-    let private update msg model =
-        match msg with
-        | Debounced thenValue ->
-            if model.Value = thenValue then
-                model.OnDone thenValue
-
-            model, Cmd.none
-        | ValueChanged value ->
-            let asyncMsg = async {
-                do! Async.Sleep model.Delay;
-                return Debounced value }
-
-            { model with Value = value }, Cmd.OfAsyncImmediate.result asyncMsg
-
-    let useDebouncer value onDone delay =
-        let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
-        current.Value, (ValueChanged >> dispatch)
-
 module Heading =
 
     let title =
@@ -278,7 +261,38 @@ module Heading =
 
 
 module Search =
-    let suggestionsBox suggestions dispatch =
+    module Debouncer =
+        type private DebounceState<'a> = {
+            Value: 'a
+            OnDone: 'a -> unit
+            Delay: int }
+
+        type private Msg<'a> =
+            | ValueChanged of 'a
+            | Debounced of 'a
+
+        let private init value onDone delay =
+            { Value = value; OnDone = onDone; Delay = delay }, []
+
+        let private update msg model =
+            match msg with
+            | Debounced thenValue ->
+                if model.Value = thenValue then
+                    model.OnDone thenValue
+
+                model, Cmd.none
+            | ValueChanged value ->
+                let asyncMsg = async {
+                    do! Async.Sleep model.Delay;
+                    return Debounced value }
+
+                { model with Value = value }, Cmd.OfAsyncImmediate.result asyncMsg
+
+        let useDebouncer value onDone delay =
+            let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
+            current.Value, (ValueChanged >> dispatch)
+
+    let suggestionsBox searchText suggestions onChange  dispatch =
         Bulma.box [
             prop.style [
                 style.position.absolute
@@ -289,21 +303,28 @@ module Search =
                 style.zIndex 10
                 style.borderRadius 5]
             prop.children [
-                for (suggestion: string) in suggestions do
+                for (suggestion: string) in suggestions.Results do
+                    Browser.Dom.console.log( (searchText = suggestion), "Hi")
                     Html.p [
-                        prop.onClick (fun _ -> dispatch suggestion)
+                        prop.onClick (fun _ ->
+                            Close |> ToggleVisibility |> Suggestions |> dispatch
+                            onChange suggestion)
                         prop.style [
                             style.padding 10
                             style.textTransform.capitalize
+                            if searchText = suggestion then
+                                style.backgroundColor "#00d1b2"
+                                style.color.white
                         ]
                         prop.className "suggestion"
                         prop.text (suggestion.ToLower())
                     ]
             ]
         ]
+
     [<ReactComponent>]
     let AutoCompleteSearch (model:Model) dispatch =
-        let currentValue, onChange = Debouncer.useDebouncer model.SearchText (SearchTextChanged >> dispatch) 1000
+        let currentValue, onChange = Debouncer.useDebouncer model.SearchText (SearchTextChanged >> dispatch) 300
         Html.div [
             prop.style [ style.position.relative ]
             prop.children [
@@ -353,8 +374,8 @@ module Search =
                             ()
                     ]
                 ]
-                if model.Suggestions.Visible && model.Suggestions.Results |> Array.isEmpty |> not then
-                    suggestionsBox model.Suggestions.Results onChange
+                if model.Suggestions.Visible then
+                    suggestionsBox model.SearchText model.Suggestions onChange dispatch
             ]
         ]
 
