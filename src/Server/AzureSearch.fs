@@ -12,6 +12,8 @@ open System
 open System.Text.Json.Serialization
 open System.Collections.Generic
 
+
+
 [<CLIMutable>]
 type SearchableProperty =
     {
@@ -76,6 +78,14 @@ module AzureInterop =
         options.OrderBy.Add((ByDistance ("Geo", long, lat, Ascending) ).StringValue)
         buildClient indexName serviceName key
         |> getResults null options
+
+    let searchSuggestions<'T> indexName searchedTerm serviceName key =
+        let searchClient = buildClient indexName serviceName key
+        let b = searchClient.Suggest(searchedTerm, "suggester")
+        b.Value.Results
+        |> Seq.map (fun r -> r.Text)
+        |> Seq.distinct
+
 
 let private toPropertyResult result  =
     {
@@ -142,3 +152,6 @@ let freeTextSearch keyword filters index key =
 let locationSearch (long, lat) filters index key =
     AzureInterop.searchByLocation "properties" (long, lat) filters index key
     |> toSearchResponse
+
+let suggestionsSearch searchedTerm index key =
+    AzureInterop.searchSuggestions "properties" searchedTerm index key

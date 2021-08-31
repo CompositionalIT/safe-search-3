@@ -12,6 +12,7 @@ nuget Feliz.PigeonMaps
 nuget Feliz.ReactLoadingSkeleton
 nuget Feliz.Recharts
 nuget Feliz.Tippy
+nuget Feliz.UseElmish
 nuget FSharp.Data
 nuget Microsoft.Azure.Core.Spatial
 nuget Microsoft.Spatial
