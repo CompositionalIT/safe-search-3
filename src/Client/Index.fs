@@ -123,8 +123,6 @@ let update msg model =
             updatedSearchResetSuggestions, Cmd.none
         elif value |> alreadySelected model.Suggestions.Results then
             { model with SearchText = value; Suggestions = { model.Suggestions with Visible = false } }, Cmd.none
-        elif model.SelectedSearchKind.Value = 2 then
-            updatedSearchResetSuggestions, Cmd.none
         else
             { model with SearchText = value }
             , Cmd.OfAsync.perform searchApi.GetSuggestions value (GotSuggestions >> Suggestions)
@@ -144,13 +142,14 @@ let update msg model =
             | LocationSearch _ ->
                 { model with Suggestions = { Visible = false; Results = [||] } }, Cmd.none
         | GotSuggestions response ->
-            { model with Suggestions = { Visible = true; Results = response.Suggestions } }, Cmd.none
+            { model with Suggestions = { Visible = response.Suggestions |> Array.isEmpty |> not; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
+        let model = { model with Suggestions = { model.Suggestions with Visible = false }}
         match model.SelectedSearchKind, kind with
         | LocationSearch _, LocationSearch tab ->
             match tab with
             | Crime geo ->
-                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress }
+                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress; Suggestions = { model.Suggestions with Visible = false } }
                 , Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
             | _ -> { model with SelectedSearchKind = kind }, Cmd.none
         | FreeTextSearch, FreeTextSearch ->
@@ -232,7 +231,6 @@ open Feliz.AgGrid
 open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
-open Feliz.SelectSearch
 open Feliz.UseElmish
 
 importAll "./styles.scss"
@@ -257,8 +255,6 @@ module Heading =
         Bulma.subtitle.h5 [
             Html.text "Find your unaffordable property in the UK!"
         ]
-
-
 
 module Search =
     module Debouncer =
