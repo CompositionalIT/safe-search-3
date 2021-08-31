@@ -10,9 +10,7 @@ nuget Feliz.Bulma.QuickView
 nuget Feliz.Bulma.Slider
 nuget Feliz.PigeonMaps
 nuget Feliz.ReactLoadingSkeleton
-nuget Feliz.ReactSelect
 nuget Feliz.Recharts
-nuget Feliz.SelectSearch
 nuget Feliz.Tippy
 nuget Feliz.UseElmish
 nuget FSharp.Data
