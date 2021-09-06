@@ -787,6 +787,8 @@ let drawMap geoLocation mapSize properties =
                                 Html.div [
                                     prop.text $"{property.Address.Building}, {property.Address.Street |> Option.toObj} (£{property.Price?toLocaleString()})"
                                     prop.style [
+                                        style.fontSize 12
+                                        style.width 150
                                         style.color.lightGreen
                                     ]
                                 ]
