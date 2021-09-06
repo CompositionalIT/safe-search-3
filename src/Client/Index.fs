@@ -290,7 +290,20 @@ module Search =
             let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
             current.Value, (ValueChanged >> dispatch)
 
-    let suggestionsBox searchText suggestions onChange  dispatch =
+    let suggestionsBox searchText suggestions updateInput dispatch =
+
+        let closeSuggestions () =  Close |> ToggleVisibility |> Suggestions |> dispatch
+
+        let searchSelectedSuggestion location =
+            location |> Start |> ByFreeText |> Search |> dispatch
+            location
+
+        let onSuggestionClick suggestion =
+            suggestion
+            |> searchSelectedSuggestion
+            |> updateInput
+            |> closeSuggestions
+
         Bulma.box [
             prop.style [
                 style.position.absolute
@@ -304,9 +317,7 @@ module Search =
                 for (suggestion: string) in suggestions.Results do
                     Browser.Dom.console.log( (searchText = suggestion), "Hi")
                     Html.p [
-                        prop.onClick (fun _ ->
-                            Close |> ToggleVisibility |> Suggestions |> dispatch
-                            onChange suggestion)
+                        prop.onClick (fun _ -> onSuggestionClick suggestion)
                         prop.style [
                             style.padding 10
                             style.textTransform.capitalize
