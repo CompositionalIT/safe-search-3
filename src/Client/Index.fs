@@ -163,7 +163,9 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress; SelectedFacets = [] }
+            { model with
+                Properties = InProgress; SelectedFacets = []
+                Suggestions = { model.Suggestions with Visible = false} }
             , Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete searchResponse ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
