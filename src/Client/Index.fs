@@ -355,15 +355,12 @@ module Search =
                             | Some NoSearchText, _ ->
                                 color.isPrimary
                                 prop.placeholder "Enter your search term here."
-                            | Some InvalidPostcode, _ ->
-                                color.isDanger
                             | None, IsNotLoading ->
                                 prop.valueOrDefault currentValue
                                 color.isPrimary
                             | None, IsLoading ->
                                 ()
                         ]
-
                         Bulma.icon [
                             icon.isSmall
                             icon.isLeft
@@ -387,6 +384,50 @@ module Search =
                     suggestionsBox model.SearchText model.Suggestions onChange dispatch
             ]
         ]
+
+    let postCodeSearchInput model dispatch =
+        Bulma.control.div [
+            control.hasIconsLeft
+            match model.Properties with
+            | IsLoading -> control.isLoading
+            | IsNotLoading -> ()
+            prop.children [
+                Bulma.input.search [
+                    prop.onChange (SearchTextChanged >> dispatch)
+                    prop.value model.SearchText
+                    prop.style [ style.textTransform.uppercase ]
+                    match model.SearchTextError, model.Properties with
+                    | Some NoSearchText, _ ->
+                        color.isPrimary
+                        prop.placeholder "Enter your search term here."
+                    | Some InvalidPostcode, _ ->
+                        color.isDanger
+                    | None, IsNotLoading ->
+                        prop.valueOrDefault model.SearchText
+                        color.isPrimary
+                    | None, IsLoading ->
+                        ()
+                ]
+                Bulma.icon [
+                    icon.isSmall
+                    icon.isLeft
+                    prop.children [
+                        Html.i [
+                            prop.className "fas fa-search"
+                        ]
+                    ]
+                ]
+                match model.SearchTextError with
+                | Some error ->
+                    Bulma.help [
+                        color.isDanger
+                        prop.text error.Description
+                    ]
+                | None ->
+                    ()
+            ]
+        ]
+
 
     let searchButton (model:Model) dispatch =
         Bulma.button.a [
@@ -446,7 +487,9 @@ module Search =
             Bulma.column [
                 column.isThreeFifths
                 prop.children [
-                    AutoCompleteSearch model dispatch
+                    match model.SelectedSearchKind with
+                    | FreeTextSearch -> AutoCompleteSearch model dispatch
+                    | LocationSearch _ -> postCodeSearchInput model dispatch
                 ]
             ]
             Bulma.column [
