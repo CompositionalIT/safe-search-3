@@ -81,6 +81,17 @@ type Msg =
     | LoadCrimeIncidents of CrimeResponse array
     | Suggestions of SuggestionsMsg
 
+type Key =
+    | Enter
+    | ArrowUp
+    | ArrowDown
+
+    static member Pressed = function
+        | "Enter" -> Some Enter
+        | "ArrowUp" -> Some ArrowUp
+        | "ArrowDown" -> Some ArrowDown
+        | invalidKey -> None
+
 let searchApi =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
@@ -324,13 +335,15 @@ module Search =
             prop.tabIndex 1
             prop.onKeyDown (fun e ->
                 e.preventDefault ()
-                if e.key = "ArrowUp" then
+                match Key.Pressed e.key with
+                | Some ArrowUp ->
                     setCurrentIndex (if currentIndex <= 0 then (suggestions.Results.Length - 1) else (((currentIndex - 1) % (suggestions.Results.Length))))
-                elif e.key = "ArrowDown" then
+                | Some ArrowDown ->
                     setCurrentIndex ((currentIndex + 1) % (suggestions.Results.Length))
-                elif e.key = "Enter" then
+                | Some Enter ->
                     suggestions.Results.[currentIndex] |> updateInput
-                    suggestions.Results.[currentIndex] |> Start |> ByFreeText |> Search |> dispatch)
+                    suggestions.Results.[currentIndex] |> Start |> ByFreeText |> Search |> dispatch
+                | None -> ())
             prop.style [
                 style.position.absolute
                 style.padding 0
@@ -338,7 +351,9 @@ module Search =
                 style.marginTop 5
                 style.border (1, borderStyle.solid, "#e6e6e6")
                 style.zIndex 10
-                style.borderRadius 5]
+                style.borderRadius 5
+            ]
+            prop.className "move"
             prop.children [
                 yield!
                     suggestions.Results
@@ -372,11 +387,14 @@ module Search =
                     | IsNotLoading -> ()
                     prop.children [
                         Bulma.input.search [
+                            prop.className "move"
                             prop.tabIndex 1
                             prop.onChange onChange
                             prop.onKeyPress (fun e ->
-                                if e.key = "Enter" then
-                                    currentValue |> Start |> ByFreeText |> Search |> dispatch)
+                                match Key.Pressed e.key with
+                                | Some Enter -> currentValue |> Start |> ByFreeText |> Search |> dispatch
+                                | _ -> ()
+                            )
                             prop.value currentValue
                             prop.style [ style.textTransform.capitalize]
                             prop.onClick (fun _ ->
@@ -390,7 +408,7 @@ module Search =
                             | None, IsNotLoading ->
                                 prop.valueOrDefault currentValue
                                 color.isPrimary
-                            | None, IsLoading ->
+                            | _, _ ->
                                 ()
                         ]
                         Bulma.icon [
@@ -428,8 +446,9 @@ module Search =
                     prop.tabIndex 1
                     prop.onChange (SearchTextChanged >> dispatch)
                     prop.onKeyPress (fun e ->
-                        if e.key = "Enter" then
-                            model.SearchText |> Start |> ByLocation |> Search |> dispatch)
+                        match Key.Pressed e.key with
+                        | Some Enter -> model.SearchText |> Start |> ByLocation |> Search |> dispatch
+                        | _ -> ())
                     prop.value model.SearchText
                     prop.style [ style.textTransform.uppercase ]
                     match model.SearchTextError, model.Properties with
@@ -480,8 +499,10 @@ module Search =
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
                 | LocationSearch _ -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
             prop.onKeyPress (fun e ->
-                if e.key = "Enter" then
-                    model.SearchText |> Start |> ByFreeText |> Search |> dispatch)
+                match Key.Pressed e.key with
+                | Some Enter -> model.SearchText |> Start |> ByFreeText |> Search |> dispatch
+                | _ -> ()
+            )
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -510,8 +531,10 @@ module Search =
             | None, IsNotLoading ->
                 prop.onClick (fun _ -> Open |> ToggleFilterMenu |> dispatch)
             prop.onKeyPress (fun e ->
-                if e.key = "Enter" then
-                    Open |> ToggleFilterMenu |> dispatch)
+                match Key.Pressed e.key with
+                | Some Enter -> Open |> ToggleFilterMenu |> dispatch
+                | _ -> ()
+            )
             prop.children [
                 Bulma.icon [
                     prop.children [
