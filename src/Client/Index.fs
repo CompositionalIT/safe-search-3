@@ -290,12 +290,28 @@ module Search =
             let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
             current.Value, (ValueChanged >> dispatch)
 
-    let suggestionsBox searchText suggestions updateInput dispatch =
 
-        let closeSuggestions () =  Close |> ToggleVisibility |> Suggestions |> dispatch
+    [<ReactComponent>]
+    let SuggestionsBox searchText suggestions updateInput dispatch =
+        let initIndex =
+            suggestions.Results
+            |> Array.tryFindIndex ((=) searchText)
+            |> Option.defaultValue 0
+
+        let (currentIndex, setCurrentIndex) = React.useState initIndex
+
+        let closeSuggestions () =
+            Close
+            |> ToggleVisibility
+            |> Suggestions
+            |> dispatch
 
         let searchSelectedSuggestion location =
-            location |> Start |> ByFreeText |> Search |> dispatch
+            location
+            |> Start
+            |> ByFreeText
+            |> Search
+            |> dispatch
             location
 
         let onSuggestionClick suggestion =
@@ -305,6 +321,16 @@ module Search =
             |> closeSuggestions
 
         Bulma.box [
+            prop.tabIndex 1
+            prop.onKeyDown (fun e ->
+                e.preventDefault ()
+                if e.key = "ArrowUp" then
+                    setCurrentIndex (if currentIndex <= 0 then (suggestions.Results.Length - 1) else (((currentIndex - 1) % (suggestions.Results.Length))))
+                elif e.key = "ArrowDown" then
+                    setCurrentIndex ((currentIndex + 1) % (suggestions.Results.Length))
+                elif e.key = "Enter" then
+                    suggestions.Results.[currentIndex] |> updateInput
+                    suggestions.Results.[currentIndex] |> Start |> ByFreeText |> Search |> dispatch)
             prop.style [
                 style.position.absolute
                 style.padding 0
@@ -314,20 +340,22 @@ module Search =
                 style.zIndex 10
                 style.borderRadius 5]
             prop.children [
-                for (suggestion: string) in suggestions.Results do
-                    Browser.Dom.console.log( (searchText = suggestion), "Hi")
-                    Html.p [
-                        prop.onClick (fun _ -> onSuggestionClick suggestion)
-                        prop.style [
-                            style.padding 10
-                            style.textTransform.capitalize
-                            if searchText = suggestion then
-                                style.backgroundColor "#00d1b2"
-                                style.color.white
-                        ]
-                        prop.className "suggestion"
-                        prop.text (suggestion.ToLower())
-                    ]
+                yield!
+                    suggestions.Results
+                    |> Array.mapi (fun i suggestion ->
+                        Html.p [
+                            prop.onClick (fun _ -> onSuggestionClick suggestion)
+                            prop.style [
+                                style.padding 10
+                                style.textTransform.capitalize
+                                if searchText = suggestion || i = currentIndex then
+                                    style.backgroundColor "#00d1b2"
+                                    style.color.white
+                            ]
+                            prop.autoFocus true
+                            prop.className "suggestion"
+                            prop.text (suggestion.ToLower())
+                        ])
             ]
         ]
 
@@ -344,7 +372,11 @@ module Search =
                     | IsNotLoading -> ()
                     prop.children [
                         Bulma.input.search [
+                            prop.tabIndex 1
                             prop.onChange onChange
+                            prop.onKeyPress (fun e ->
+                                if e.key = "Enter" then
+                                    currentValue |> Start |> ByFreeText |> Search |> dispatch)
                             prop.value currentValue
                             prop.style [ style.textTransform.capitalize]
                             prop.onClick (fun _ ->
@@ -381,7 +413,7 @@ module Search =
                     ]
                 ]
                 if model.Suggestions.Visible then
-                    suggestionsBox model.SearchText model.Suggestions onChange dispatch
+                    SuggestionsBox model.SearchText model.Suggestions onChange dispatch
             ]
         ]
 
@@ -393,7 +425,11 @@ module Search =
             | IsNotLoading -> ()
             prop.children [
                 Bulma.input.search [
+                    prop.tabIndex 1
                     prop.onChange (SearchTextChanged >> dispatch)
+                    prop.onKeyPress (fun e ->
+                        if e.key = "Enter" then
+                            model.SearchText |> Start |> ByLocation |> Search |> dispatch)
                     prop.value model.SearchText
                     prop.style [ style.textTransform.uppercase ]
                     match model.SearchTextError, model.Properties with
@@ -432,6 +468,7 @@ module Search =
     let searchButton (model:Model) dispatch =
         Bulma.button.a [
             button.isFullWidth
+            prop.tabIndex 3
             color.isPrimary
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
@@ -442,6 +479,9 @@ module Search =
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
                 | LocationSearch _ -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
+            prop.onKeyPress (fun e ->
+                if e.key = "Enter" then
+                    model.SearchText |> Start |> ByFreeText |> Search |> dispatch)
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -461,6 +501,7 @@ module Search =
             helpers.isHiddenDesktop
             button.isFullWidth
             color.isPrimary
+            prop.tabIndex 4
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
                 prop.disabled true
@@ -468,6 +509,9 @@ module Search =
                 button.isLoading
             | None, IsNotLoading ->
                 prop.onClick (fun _ -> Open |> ToggleFilterMenu |> dispatch)
+            prop.onKeyPress (fun e ->
+                if e.key = "Enter" then
+                    Open |> ToggleFilterMenu |> dispatch)
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -499,6 +543,7 @@ module Search =
                         control.hasIconsLeft
                         prop.children [
                             Bulma.select [
+                                prop.tabIndex 2
                                 select.isFullWidth
                                 prop.style [ style.width (length.percent 100)]
                                 prop.disabled (model.Properties = InProgress)
