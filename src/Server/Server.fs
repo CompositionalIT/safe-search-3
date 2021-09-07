@@ -18,18 +18,18 @@ let searchApi (context:HttpContext) =
     let logger = context.GetService<ILogger<ISearchApi>>()
     {
         FreeText = fun request -> async {
-            logger.LogInformation $"""Searching for '{request.Text}' on index '{config.["search-name"]}'"""
-            let results = Search.freeTextSearch request.Text request.Filters config.["search-name"] config.["search-key"]
+            logger.LogInformation $"""Searching for '{request.Text}' on index '{config.["searchName"]}'"""
+            let results = Search.freeTextSearch request.Text request.Filters config.["searchName"] config.["searchKey"]
             return results
         }
         ByLocation = fun request -> async {
-            logger.LogInformation $"""Searching for '{request.Postcode}' on index '{config.["search-name"]}'"""
-            let! geoLookupResult = GeoLookup.tryGetGeo config.["storage-connection-string"] request.Postcode |> Async.AwaitTask
+            logger.LogInformation $"""Searching for '{request.Postcode}' on index '{config.["searchName"]}'"""
+            let! geoLookupResult = GeoLookup.tryGetGeo config.["storageConnectionString"] request.Postcode |> Async.AwaitTask
             return
                 match geoLookupResult with
                 | Some geo ->
                     logger.LogInformation $"{request.Postcode} => {(geo.Long, geo.Lat)}."
-                    let results = Search.locationSearch (geo.Long, geo.Lat) request.Filters config.["search-name"] config.["search-key"]
+                    let results = Search.locationSearch (geo.Long, geo.Lat) request.Filters config.["searchName"] config.["searchKey"]
                     Ok results
                 | None ->
                     Error "Invalid postcode"
@@ -45,7 +45,7 @@ let searchApi (context:HttpContext) =
         }
         GetSuggestions = fun searchedTerm -> async {
             let results =
-                Search.suggestionsSearch searchedTerm config.["search-name"] config.["search-key"]
+                Search.suggestionsSearch searchedTerm config.["searchName"] config.["searchKey"]
                 |> Seq.map (fun suggestion -> suggestion.ToLower())
                 |> Seq.toArray
             return { Suggestions = results }
