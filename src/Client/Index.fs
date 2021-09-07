@@ -335,14 +335,20 @@ module Search =
             prop.tabIndex 1
             prop.onKeyDown (fun e ->
                 e.preventDefault ()
+                let resultsLength = suggestions.Results.Length
+                let currentSuggestion = suggestions.Results.[currentIndex]
                 match Key.Pressed e.key with
                 | Some ArrowUp ->
-                    setCurrentIndex (if currentIndex <= 0 then (suggestions.Results.Length - 1) else (((currentIndex - 1) % (suggestions.Results.Length))))
+                    setCurrentIndex (
+                        if currentIndex <= 0 then
+                            resultsLength - 1
+                        else
+                            (currentIndex - 1) % (resultsLength))
                 | Some ArrowDown ->
-                    setCurrentIndex ((currentIndex + 1) % (suggestions.Results.Length))
+                    setCurrentIndex ((currentIndex + 1) % (resultsLength))
                 | Some Enter ->
-                    suggestions.Results.[currentIndex] |> updateInput
-                    suggestions.Results.[currentIndex] |> Start |> ByFreeText |> Search |> dispatch
+                    currentSuggestion |> updateInput
+                    currentSuggestion |> Start |> ByFreeText |> Search |> dispatch
                 | None -> ())
             prop.style [
                 style.position.absolute
