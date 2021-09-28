@@ -81,6 +81,17 @@ type Msg =
     | LoadCrimeIncidents of CrimeResponse array
     | Suggestions of SuggestionsMsg
 
+type Key =
+    | Enter
+    | ArrowUp
+    | ArrowDown
+
+    static member Pressed = function
+        | "Enter" -> Some Enter
+        | "ArrowUp" -> Some ArrowUp
+        | "ArrowDown" -> Some ArrowDown
+        | invalidKey -> None
+
 let searchApi =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
@@ -163,7 +174,9 @@ let update msg model =
     | Search (ByFreeText operation) ->
         match operation with
         | Start text ->
-            { model with Properties = InProgress; SelectedFacets = [] }
+            { model with
+                Properties = InProgress; SelectedFacets = []
+                Suggestions = { model.Suggestions with Visible = false} }
             , Cmd.OfAsync.either searchApi.FreeText { Text = text; Filters = [] } (Complete >> ByFreeText >> Search) (string >> AppError)
         | Complete searchResponse ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
@@ -288,8 +301,55 @@ module Search =
             let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
             current.Value, (ValueChanged >> dispatch)
 
-    let suggestionsBox searchText suggestions onChange  dispatch =
+
+    [<ReactComponent>]
+    let SuggestionsBox searchText suggestions updateInput dispatch =
+        let initIndex =
+            suggestions.Results
+            |> Array.tryFindIndex ((=) searchText)
+            |> Option.defaultValue 0
+
+        let (currentIndex, setCurrentIndex) = React.useState initIndex
+
+        let closeSuggestions () =
+            Close
+            |> ToggleVisibility
+            |> Suggestions
+            |> dispatch
+
+        let searchSelectedSuggestion location =
+            location
+            |> Start
+            |> ByFreeText
+            |> Search
+            |> dispatch
+            location
+
+        let onSuggestionClick suggestion =
+            suggestion
+            |> searchSelectedSuggestion
+            |> updateInput
+            |> closeSuggestions
+
         Bulma.box [
+            prop.tabIndex 1
+            prop.onKeyDown (fun e ->
+                e.preventDefault ()
+                let resultsLength = suggestions.Results.Length
+                let currentSuggestion = suggestions.Results.[currentIndex]
+                match Key.Pressed e.key with
+                | Some ArrowUp ->
+                    setCurrentIndex (
+                        if currentIndex <= 0 then
+                            resultsLength - 1
+                        else
+                            (currentIndex - 1) % (resultsLength))
+                | Some ArrowDown ->
+                    setCurrentIndex ((currentIndex + 1) % (resultsLength))
+                | Some Enter ->
+                    currentSuggestion |> updateInput
+                    currentSuggestion |> Start |> ByFreeText |> Search |> dispatch
+                | None -> ())
             prop.style [
                 style.position.absolute
                 style.padding 0
@@ -297,24 +357,26 @@ module Search =
                 style.marginTop 5
                 style.border (1, borderStyle.solid, "#e6e6e6")
                 style.zIndex 10
-                style.borderRadius 5]
+                style.borderRadius 5
+            ]
+            prop.className "move"
             prop.children [
-                for (suggestion: string) in suggestions.Results do
-                    Browser.Dom.console.log( (searchText = suggestion), "Hi")
-                    Html.p [
-                        prop.onClick (fun _ ->
-                            Close |> ToggleVisibility |> Suggestions |> dispatch
-                            onChange suggestion)
-                        prop.style [
-                            style.padding 10
-                            style.textTransform.capitalize
-                            if searchText = suggestion then
-                                style.backgroundColor "#00d1b2"
-                                style.color.white
-                        ]
-                        prop.className "suggestion"
-                        prop.text (suggestion.ToLower())
-                    ]
+                yield!
+                    suggestions.Results
+                    |> Array.mapi (fun i suggestion ->
+                        Html.p [
+                            prop.onClick (fun _ -> onSuggestionClick suggestion)
+                            prop.style [
+                                style.padding 10
+                                style.textTransform.capitalize
+                                if searchText = suggestion || i = currentIndex then
+                                    style.backgroundColor "#00d1b2"
+                                    style.color.white
+                            ]
+                            prop.autoFocus true
+                            prop.className "suggestion"
+                            prop.text (suggestion.ToLower())
+                        ])
             ]
         ]
 
@@ -331,7 +393,14 @@ module Search =
                     | IsNotLoading -> ()
                     prop.children [
                         Bulma.input.search [
+                            prop.className "move"
+                            prop.tabIndex 1
                             prop.onChange onChange
+                            prop.onKeyPress (fun e ->
+                                match Key.Pressed e.key with
+                                | Some Enter -> currentValue |> Start |> ByFreeText |> Search |> dispatch
+                                | _ -> ()
+                            )
                             prop.value currentValue
                             prop.style [ style.textTransform.capitalize]
                             prop.onClick (fun _ ->
@@ -342,15 +411,12 @@ module Search =
                             | Some NoSearchText, _ ->
                                 color.isPrimary
                                 prop.placeholder "Enter your search term here."
-                            | Some InvalidPostcode, _ ->
-                                color.isDanger
                             | None, IsNotLoading ->
                                 prop.valueOrDefault currentValue
                                 color.isPrimary
-                            | None, IsLoading ->
+                            | _, _ ->
                                 ()
                         ]
-
                         Bulma.icon [
                             icon.isSmall
                             icon.isLeft
@@ -371,13 +437,63 @@ module Search =
                     ]
                 ]
                 if model.Suggestions.Visible then
-                    suggestionsBox model.SearchText model.Suggestions onChange dispatch
+                    SuggestionsBox model.SearchText model.Suggestions onChange dispatch
             ]
         ]
+
+    let postCodeSearchInput model dispatch =
+        Bulma.control.div [
+            control.hasIconsLeft
+            match model.Properties with
+            | IsLoading -> control.isLoading
+            | IsNotLoading -> ()
+            prop.children [
+                Bulma.input.search [
+                    prop.tabIndex 1
+                    prop.onChange (SearchTextChanged >> dispatch)
+                    prop.onKeyPress (fun e ->
+                        match Key.Pressed e.key with
+                        | Some Enter -> model.SearchText |> Start |> ByLocation |> Search |> dispatch
+                        | _ -> ())
+                    prop.value model.SearchText
+                    prop.style [ style.textTransform.uppercase ]
+                    match model.SearchTextError, model.Properties with
+                    | Some NoSearchText, _ ->
+                        color.isPrimary
+                        prop.placeholder "Enter your search term here."
+                    | Some InvalidPostcode, _ ->
+                        color.isDanger
+                    | None, IsNotLoading ->
+                        prop.valueOrDefault model.SearchText
+                        color.isPrimary
+                    | None, IsLoading ->
+                        ()
+                ]
+                Bulma.icon [
+                    icon.isSmall
+                    icon.isLeft
+                    prop.children [
+                        Html.i [
+                            prop.className "fas fa-search"
+                        ]
+                    ]
+                ]
+                match model.SearchTextError with
+                | Some error ->
+                    Bulma.help [
+                        color.isDanger
+                        prop.text error.Description
+                    ]
+                | None ->
+                    ()
+            ]
+        ]
+
 
     let searchButton (model:Model) dispatch =
         Bulma.button.a [
             button.isFullWidth
+            prop.tabIndex 3
             color.isPrimary
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
@@ -388,6 +504,11 @@ module Search =
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
                 | LocationSearch _ -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
+            prop.onKeyPress (fun e ->
+                match Key.Pressed e.key with
+                | Some Enter -> model.SearchText |> Start |> ByFreeText |> Search |> dispatch
+                | _ -> ()
+            )
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -407,6 +528,7 @@ module Search =
             helpers.isHiddenDesktop
             button.isFullWidth
             color.isPrimary
+            prop.tabIndex 4
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
                 prop.disabled true
@@ -414,6 +536,11 @@ module Search =
                 button.isLoading
             | None, IsNotLoading ->
                 prop.onClick (fun _ -> Open |> ToggleFilterMenu |> dispatch)
+            prop.onKeyPress (fun e ->
+                match Key.Pressed e.key with
+                | Some Enter -> Open |> ToggleFilterMenu |> dispatch
+                | _ -> ()
+            )
             prop.children [
                 Bulma.icon [
                     prop.children [
@@ -433,7 +560,9 @@ module Search =
             Bulma.column [
                 column.isThreeFifths
                 prop.children [
-                    AutoCompleteSearch model dispatch
+                    match model.SelectedSearchKind with
+                    | FreeTextSearch -> AutoCompleteSearch model dispatch
+                    | LocationSearch _ -> postCodeSearchInput model dispatch
                 ]
             ]
             Bulma.column [
@@ -443,6 +572,7 @@ module Search =
                         control.hasIconsLeft
                         prop.children [
                             Bulma.select [
+                                prop.tabIndex 2
                                 select.isFullWidth
                                 prop.style [ style.width (length.percent 100)]
                                 prop.disabled (model.Properties = InProgress)
@@ -731,6 +861,8 @@ let drawMap geoLocation mapSize properties =
                                 Html.div [
                                     prop.text $"{property.Address.Building}, {property.Address.Street |> Option.toObj} (£{property.Price?toLocaleString()})"
                                     prop.style [
+                                        style.fontSize 12
+                                        style.width 150
                                         style.color.lightGreen
                                     ]
                                 ]
