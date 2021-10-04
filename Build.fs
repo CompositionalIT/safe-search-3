@@ -20,16 +20,31 @@ Target.create "Clean" (fun _ ->
 Target.create "InstallClient" (fun _ -> run npm "install" ".")
 
 Target.create "Bundle" (fun _ ->
-    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
+    [ "server", dotnet $"publish -c Release -o \"{deployPath}\" -r linux-x64" serverPath // may need to change
       "client", dotnet "fable --run webpack -p" clientPath ]
     |> runParallel
 )
 
+
 Target.create "Azure" (fun _ ->
+    let searchKey = Environment.environVarOrFail "searchKey"
+    let searchName = Environment.environVarOrFail "searchName"
+    let storageConnectionString = Environment.environVarOrFail "storageConnectionString"
+
     let web = webApp {
         name "safesearch3"
         zip_deploy "deploy"
+        always_on
+        sku WebApp.Sku.B1
+        operating_system Linux
+        automatic_logging_extension false
+        runtime_stack Runtime.DotNet50
+        setting "searchKey" searchKey
+        setting "searchName" searchName
+        setting "storageConnectionString" storageConnectionString
+
     }
+
     let deployment = arm {
         location Location.WestEurope
         add_resource web

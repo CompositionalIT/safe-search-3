@@ -61,7 +61,6 @@ let webApp =
 
 let app =
     application {
-        url "http://0.0.0.0:8085"
         logging (fun logging -> logging.AddConsole() |> ignore)
         webhost_config (fun config ->
             config.ConfigureAppConfiguration(fun c -> c.AddUserSecrets<Foo>() |> ignore)
