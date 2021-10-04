@@ -97,30 +97,31 @@ let searchApi =
     |> Remoting.withRouteBuilder Route.builder
     |> Remoting.buildProxy<ISearchApi>
 
-let init () =
+let initModel () =
     let facets =
-        {
-            Towns = []
-            Localities = []
-            Districts = []
-            Counties = []
-            Prices = []
-        }
+            {
+                Towns = []
+                Localities = []
+                Districts = []
+                Counties = []
+                Prices = []
+            }
 
-    let model =
-        {
-            SearchText = ""
-            SelectedSearchKind = FreeTextSearch
-            Properties = HasNotStarted
-            SelectedProperty = None
-            HasLoadedSomeData = false
-            Facets = facets
-            SelectedFacets = []
-            FilterMenuOpen = false
-            CrimeIncidents = HasNotStarted
-            Suggestions = { Visible = false; Results = [||] }
-        }
-    model, Cmd.none
+    {
+        SearchText = ""
+        SelectedSearchKind = FreeTextSearch
+        Properties = HasNotStarted
+        SelectedProperty = None
+        HasLoadedSomeData = false
+        Facets = facets
+        SelectedFacets = []
+        FilterMenuOpen = false
+        CrimeIncidents = HasNotStarted
+        Suggestions = { Visible = false; Results = [||] }
+    }
+
+let init () =
+    initModel (), Cmd.none
 
 let alreadySelected suggestions value =
     suggestions |> Array.exists ((=) value)
@@ -155,7 +156,7 @@ let update msg model =
         | GotSuggestions response ->
             { model with Suggestions = { Visible = response.Suggestions |> Array.isEmpty |> not; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
-        let model = { model with Suggestions = { model.Suggestions with Visible = false }}
+        let model = { model with SearchText = ""; Suggestions = { model.Suggestions with Visible = false }}
         match model.SelectedSearchKind, kind with
         | LocationSearch _, LocationSearch tab ->
             match tab with
@@ -188,7 +189,7 @@ let update msg model =
         | Complete (Ok searchResponse) ->
             { model with Properties = Resolved searchResponse.Results; HasLoadedSomeData = true; Facets = searchResponse.Facets }, Cmd.none
         | Complete (Error message) ->
-            model, Cmd.ofMsg (AppError message)
+            { initModel () with SearchText = model.SearchText; SelectedSearchKind = LocationSearch ResultsGrid }, Cmd.ofMsg (AppError message)
     | ViewProperty property ->
         { model with SelectedProperty = Some property }, Cmd.none
     | CloseProperty ->
@@ -347,8 +348,8 @@ module Search =
                 | Some ArrowDown ->
                     setCurrentIndex ((currentIndex + 1) % (resultsLength))
                 | Some Enter ->
-                    currentSuggestion |> updateInput
-                    currentSuggestion |> Start |> ByFreeText |> Search |> dispatch
+                        currentSuggestion |> updateInput
+                        currentSuggestion |> Start |> ByFreeText |> Search |> dispatch
                 | None -> ())
             prop.style [
                 style.position.absolute
@@ -398,7 +399,10 @@ module Search =
                             prop.onChange onChange
                             prop.onKeyPress (fun e ->
                                 match Key.Pressed e.key with
-                                | Some Enter -> currentValue |> Start |> ByFreeText |> Search |> dispatch
+                                | Some Enter ->
+                                    match model.SearchTextError with
+                                    | None -> currentValue |> Start |> ByFreeText |> Search |> dispatch
+                                    | _ -> ()
                                 | _ -> ()
                             )
                             prop.value currentValue
@@ -453,7 +457,9 @@ module Search =
                     prop.onChange (SearchTextChanged >> dispatch)
                     prop.onKeyPress (fun e ->
                         match Key.Pressed e.key with
-                        | Some Enter -> model.SearchText |> Start |> ByLocation |> Search |> dispatch
+                        | Some Enter ->
+                            if Validation.isValidPostcode model.SearchText then
+                                model.SearchText |> Start |> ByLocation |> Search |> dispatch
                         | _ -> ())
                     prop.value model.SearchText
                     prop.style [ style.textTransform.uppercase ]
@@ -506,7 +512,9 @@ module Search =
                 | LocationSearch _ -> prop.onClick(fun _ -> dispatch (Search (ByLocation (Start model.SearchText))))
             prop.onKeyPress (fun e ->
                 match Key.Pressed e.key with
-                | Some Enter -> model.SearchText |> Start |> ByFreeText |> Search |> dispatch
+                | Some Enter ->
+                    if Validation.isValidPostcode model.SearchText then
+                        model.SearchText |> Start |> ByFreeText |> Search |> dispatch
                 | _ -> ()
             )
             prop.children [
