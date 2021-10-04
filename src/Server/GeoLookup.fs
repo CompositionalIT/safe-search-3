@@ -24,8 +24,12 @@ let tryGetGeo connectionString (postcode:string) = task {
     match postcode.Split ' ' with
     | [| postcodeA; postcodeB |] ->
         let client = TableClient (connectionString, "postcodes")
-        let! response = client.GetEntityAsync<TableEntity>(postcodeA.ToUpper(), postcodeB.ToUpper())
-        return response.Value |> Postcode.TryParse
+        try
+            let! response = client.GetEntityAsync<TableEntity>(postcodeA.ToUpper(), postcodeB.ToUpper())
+            return response.Value |> Postcode.TryParse
+        with
+        | _ -> return None
+
     | _ ->
         return None
 }
