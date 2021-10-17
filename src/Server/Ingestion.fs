@@ -21,9 +21,9 @@ module LandRegistry =
     type PricePaid = CsvProvider<const (__SOURCE_DIRECTORY__ + "/price-paid-schema.csv"), PreferOptionals = true, Schema="Date=Date">
     type PostcodeResult = PostcodeResult of float * float
     type PricePaidAndGeo = { Property : PricePaid.Row; GeoLocation : PostcodeResult option }
-    type HashedDownload = { Hash : string; Rows : PricePaidAndGeo array } 
+    type HashedDownload = { Hash : string; Rows : PricePaidAndGeo array }
     type ComparisonResult = FileAlreadyExists | NewFile of HashedDownload
-    
+
     let md5 = MD5.Create()
 
     module Uris =
@@ -39,7 +39,7 @@ module LandRegistry =
                 PropertyNameCaseInsensitive = true)
         fun (value:obj) -> JsonSerializer.Serialize (value, options)
     let asHash (stream:Stream) =
-        stream.Position <- 0
+        stream.Position <- 0L
         stream
         |> md5.ComputeHash
         |> BitConverter.ToString
@@ -208,7 +208,7 @@ let tryRefreshPrices connectionString requestType = task {
     let toBlob = LandRegistry.writeToBlob connectionString
 
     let! download =
-        let streamTask = LandRegistry.getPropertyStream requestType 
+        let streamTask = LandRegistry.getPropertyStream requestType
         let existingHashes = LandRegistry.getAllHashes connectionString
         let toLongLat = (LandRegistry.toLongLat connectionString).Value
         LandRegistry.tryGetLatestFile toLongLat streamTask.Result existingHashes
