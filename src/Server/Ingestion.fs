@@ -1,6 +1,9 @@
 module Ingestion
 
 open FSharp.Control.Tasks
+open Microsoft.Extensions.Hosting
+open Microsoft.Extensions.Logging
+open System.Net.Http
 
 type RefreshType = LatestMonth | Year of int
 type RefreshResult = NothingToDo | Completed of {| Type : RefreshType; Rows : int; Hash : string |}
@@ -8,21 +11,19 @@ type RefreshResult = NothingToDo | Completed of {| Type : RefreshType; Rows : in
 module LandRegistry =
     open Azure.Storage.Blobs
     open FSharp.Data
-    open Microsoft.Extensions.Caching.Memory
     open System.Security.Cryptography
     open System
     open System.IO
-    open System.Net
     open System.Threading.Tasks
     open System.Text
     open System.Text.Encodings.Web
     open System.Text.Json
 
     type PricePaid = CsvProvider<const (__SOURCE_DIRECTORY__ + "/price-paid-schema.csv"), PreferOptionals = true, Schema="Date=Date">
-    type PostcodeResult = PostcodeResult of float * float
+    type PostcodeResult = PostcodeResult of Shared.Geo
     type PricePaidAndGeo = { Property : PricePaid.Row; GeoLocation : PostcodeResult option }
     type HashedDownload = { Hash : string; Rows : PricePaidAndGeo array }
-    type ComparisonResult = FileAlreadyExists | NewFile of HashedDownload
+    type ComparisonResult = DataAlreadyExists | NewDataAvailable of HashedDownload
 
     let md5 = MD5.Create()
 
@@ -38,9 +39,8 @@ module LandRegistry =
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNameCaseInsensitive = true)
         fun (value:obj) -> JsonSerializer.Serialize (value, options)
-    let asHash (stream:Stream) =
-        stream.Position <- 0L
-        stream
+    let asHash (data:byte array) =
+        data
         |> md5.ComputeHash
         |> BitConverter.ToString
         |> String.filter ((<>) '-')
@@ -64,11 +64,11 @@ module LandRegistry =
                 "District", property.District |> box
                 "County", property.County |> box
                 match geo with
-                | Some (PostcodeResult (long, lat)) ->
+                | Some (PostcodeResult geo) ->
                     "Geo",
                     [
                         "type", box "Point"
-                        "coordinates", box [| long; lat |]
+                        "coordinates", box [| geo.Long; geo.Lat |]
                     ]
                     |> readOnlyDict
                     |> box
@@ -96,10 +96,10 @@ module LandRegistry =
                 property.District |> string
                 property.County |> string
                 match geo with
-                | Some (PostcodeResult (long, lat)) ->
+                | Some (PostcodeResult geo) ->
                     [
                         "type", box "Point"
-                        "coordinates", box [| long; lat |]
+                        "coordinates", box [| geo.Long; geo.Lat |]
                     ]
                     |> readOnlyDict
                     |> toJson
@@ -124,54 +124,30 @@ module LandRegistry =
         let Csv = (asCsvOutput, processCsvChunk), "csv"
         let Json = (asJsonOutput, processJsonChunk), "json"
 
-    let toLongLat connectionString =
-        let geoCache = new MemoryCache (MemoryCacheOptions())
-        lazy (fun postcode ->
-            geoCache.GetOrCreateAsync(
-                postcode,
-                fun (e:ICacheEntry) -> task {
-                    match! GeoLookup.tryGetGeo connectionString postcode with
-                    | Some geo -> return Some (geo.Long, geo.Lat)
-                    | None -> return None
-                }))
-
-    let getPropertyStream requestType =
-        let output = new MemoryStream ()
-        use webClient = new WebClient ()
+    let httpClient = new HttpClient ()
+    let getPropertyData requestType cancellationToken =
         let uri =
             match requestType with
             | LatestMonth -> Uris.latestMonth
             | Year year -> Uris.forYear year
+        httpClient.GetByteArrayAsync (uri, cancellationToken)
 
-        task {
-            use! stream = webClient.OpenReadTaskAsync uri
-            do! stream.CopyToAsync output
-            return output
-        }
-
-    let tryGetLatestFile toLongLat (stream:Stream) (existingHashes:Set<_>) = task {
-        let latestHash = stream |> asHash
-        if existingHashes.Contains latestHash then
-            return ComparisonResult.FileAlreadyExists
-        else
-            stream.Position <- 0L
-            let noOp = Task.FromResult None
-            let! encoded =
-                let rows = PricePaid.Load stream
-                rows.Rows
-                |> Seq.toArray
-                |> Array.map (fun (line) ->
-                    task {
-                        let! postcode =
-                            match line.Postcode with
-                            | None -> noOp
-                            | Some postcode -> toLongLat postcode
-                        return { Property = line; GeoLocation = postcode |> Option.map PostcodeResult }
-                    }
-                )
-                |> Task.WhenAll
-            return
-                NewFile { Hash = latestHash; Rows = encoded }
+    let private noOp = Task.FromResult None
+    let enrichPropertiesWithGeoLocation tryGetGeo (propertyData:byte array) = task {
+        use stream = new MemoryStream (propertyData)
+        stream.Position <- 0L
+        let rows = PricePaid.Load stream
+        let tasks = [
+            for line in rows.Rows do
+                task {
+                    let! postcode =
+                        match line.Postcode with
+                        | None -> noOp
+                        | Some postcode -> tryGetGeo postcode
+                    return { Property = line; GeoLocation = postcode |> Option.map PostcodeResult }
+                }
+        ]
+        return! Task.WhenAll tasks
     }
 
     let processIntoChunks (exporter, chunker) rows =
@@ -182,17 +158,21 @@ module LandRegistry =
         |> Array.indexed
 
     let writeToFile name data = File.WriteAllLines(name, data, Encoding.UTF8)
-    let writeToBlob connectionString name lines =
+    let writeToBlob connectionString cancellationToken name lines =
         let client = BlobContainerClient (connectionString, "properties")
         let blob = client.GetBlobClient name
 
         let data = lines |> String.concat "\r" |> BinaryData.FromString
-        blob.Upload(data, true) |> ignore
+        blob.UploadAsync (data, true, cancellationToken) :> Task
 
-    let write writer (exporter, extension) download =
+    let writeAllProperties writer (exporter, extension) download = task {
         let chunks = download.Rows |> processIntoChunks exporter
-        for chunk, (lines:string list) in chunks do
-            writer $"%s{download.Hash}-part-%i{chunk}.%s{extension}" lines
+        let tasks = [
+            for chunk, (lines:string list) in chunks do
+                yield writer $"%s{download.Hash}-part-%i{chunk}.%s{extension}" lines
+        ]
+        do! Task.WhenAll tasks
+    }
 
     let createHashRecord writer hash = writer $"hash-%s{hash}.txt" []
 
@@ -203,21 +183,69 @@ module LandRegistry =
         |> Set
 
 open type LandRegistry.ComparisonResult
+open System.Threading.Tasks
+open System
+open Microsoft.Extensions.Configuration
+open System.Diagnostics
 
-let tryRefreshPrices connectionString requestType = task {
-    let toBlob = LandRegistry.writeToBlob connectionString
+let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refreshType = task {
+    let blobWriter = LandRegistry.writeToBlob connectionString cancellationToken
 
-    let! download =
-        let streamTask = LandRegistry.getPropertyStream requestType
+    let! download = task {
+        logger.LogInformation "Downloading latest price paid data..."
+        let! propertyData = LandRegistry.getPropertyData refreshType cancellationToken
+
         let existingHashes = LandRegistry.getAllHashes connectionString
-        let toLongLat = (LandRegistry.toLongLat connectionString).Value
-        LandRegistry.tryGetLatestFile toLongLat streamTask.Result existingHashes
+        let latestHash = propertyData |> LandRegistry.asHash
+        logger.LogInformation $"Comparing latest hash '{latestHash}' against {existingHashes.Count} existing hashes."
+        if existingHashes.Contains latestHash then
+            return LandRegistry.DataAlreadyExists
+        else
+            let tryGetGeo = (GeoLookup.createTryGetGeoCached connectionString cancellationToken).Value
+            logger.LogInformation "Enriching properties with geo location information"
+            let! encoded = LandRegistry.enrichPropertiesWithGeoLocation tryGetGeo propertyData
+            return NewDataAvailable { Hash = latestHash; Rows = encoded }
+    }
 
     match download with
-    | FileAlreadyExists ->
+    | DataAlreadyExists ->
+        logger.LogInformation $"The data already exists."
         return NothingToDo
-    | NewFile download ->
-        LandRegistry.write toBlob LandRegistry.Exporters.Csv download
-        LandRegistry.createHashRecord toBlob download.Hash
-        return Completed {| download with Rows = download.Rows.Length; Type = requestType |}
+    | NewDataAvailable download ->
+        logger.LogInformation $"Downloaded and enriched {download.Rows.Length} transactions. Now saving to storage."
+        do! LandRegistry.writeAllProperties blobWriter LandRegistry.Exporters.Csv download
+        do! LandRegistry.createHashRecord blobWriter download.Hash
+        return Completed {| download with Rows = download.Rows.Length; Type = refreshType |}
 }
+
+let DELAY_BETWEEN_CHECKS = TimeSpan.FromDays 7.
+
+/// Regularly checks for new price data
+type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfiguration) =
+    inherit BackgroundService ()
+    override this.ExecuteAsync cancellationToken =
+        let backgroundWork = 
+            task {
+                let connectionString = config.["storageConnectionString"]
+                logger.LogInformation "Price Paid Data background download worker has started."
+
+                // Put an initial delay for the first check
+                do! Task.Delay (TimeSpan.FromSeconds 30., cancellationToken)
+
+                while not cancellationToken.IsCancellationRequested do
+                    logger.LogInformation "Trying to refresh latest property prices..."
+                    let timer = Stopwatch.StartNew ()
+                    let! result = tryRefreshPrices connectionString cancellationToken logger LatestMonth
+                    timer.Stop ()
+                    match result with
+                    | NothingToDo ->
+                        logger.LogInformation "Check was successful - nothing to do."
+                    | Completed stats ->
+                        logger.LogInformation $"Successfully ingested {stats.Rows} (hash: {stats.Hash})!"
+                    logger.LogInformation $"Check took {timer.Elapsed.TotalSeconds} seconds. Now sleeping until next check due in {DELAY_BETWEEN_CHECKS.TotalHours} hours ({DateTime.UtcNow.Add DELAY_BETWEEN_CHECKS})."
+                    do! Task.Delay (DELAY_BETWEEN_CHECKS, cancellationToken)
+            }
+        backgroundWork
+            .ContinueWith (
+                (fun (_:Task) -> logger.LogInformation "Price Paid Data background download worker has gracefully shut down."),
+                TaskContinuationOptions.OnlyOnCanceled)
