@@ -8,7 +8,9 @@ open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
+open OpenTelemetry.Trace
 open Saturn
+open Serilog
 open Shared
 open System.Threading
 
@@ -71,17 +73,20 @@ let webApp =
     |> Remoting.fromContext searchApi
     |> Remoting.buildHttpHandler
 
-open OpenTelemetry.Trace
+type System.Object with
+    member this.Ignore() = ignore()
 
 let app =
     application {
-        logging (fun logging -> logging.AddConsole() |> ignore)
         webhost_config (fun config -> config.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
+        logging (fun cfg -> cfg.AddSerilog().Ignore())
+        host_config (fun config -> config.UseSerilog((fun _ _ config -> config.WriteTo.Console().Ignore())))
         service_config (fun config ->
             config
                 .AddOpenTelemetryMetrics()
                 .AddOpenTelemetryTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
-                .AddHostedService<Ingestion.PricePaidDownloader>())
+                .AddHostedService<Ingestion.PricePaidDownloader>()
+        )
         memory_cache
         use_static "public"
         use_gzip

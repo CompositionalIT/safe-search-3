@@ -10,3 +10,5 @@ OpenTelemetry.Instrumentation.AspNetCore
 OpenTelemetry.Extensions.Hosting
 OpenTelemetry.Exporter.Console
 FSharp.Control.AsyncSeq
+Serilog.AspNetCore
+Serilog.Sinks.Console
