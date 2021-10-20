@@ -14,9 +14,13 @@ nuget Feliz.ReactLoadingSkeleton
 nuget Feliz.Recharts
 nuget Feliz.Tippy
 nuget Feliz.UseElmish
+nuget FSharp.Control.AsyncSeq
 nuget FSharp.Data
 nuget Microsoft.Azure.Core.Spatial
 nuget Microsoft.Spatial
+nuget OpenTelemetry.Exporter.Console
+nuget OpenTelemetry.Extensions.Hosting
+nuget OpenTelemetry.Instrumentation.AspNetCore
 nuget Saturn
 nuget Expecto
 

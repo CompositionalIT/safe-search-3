@@ -1,5 +1,6 @@
 module Ingestion
 
+open FSharp.Control
 open FSharp.Control.Tasks
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
@@ -13,6 +14,7 @@ module LandRegistry =
     open FSharp.Data
     open System.Security.Cryptography
     open System
+    open System.Collections.Generic
     open System.IO
     open System.Threading.Tasks
     open System.Text
@@ -25,7 +27,7 @@ module LandRegistry =
     type HashedDownload = { Hash : string; Rows : PricePaidAndGeo array }
     type ComparisonResult = DataAlreadyExists | NewDataAvailable of HashedDownload
 
-    let md5 = MD5.Create()
+    let md5 = MD5.Create ()
 
     module Uris =
         let latestMonth = Uri "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com/pp-monthly-update-new-version.csv"
@@ -176,11 +178,18 @@ module LandRegistry =
 
     let createHashRecord writer hash = writer $"hash-%s{hash}.txt" []
 
-    let getAllHashes (connectionString:string) =
+    let getAllHashes (connectionString:string) cancellationToken = task {
         let client = BlobContainerClient (connectionString, "properties")
-        client.GetBlobs (prefix = "hash-")
-        |> Seq.map (fun b -> b.Name.[5..] |> Path.GetFileNameWithoutExtension)
-        |> Set
+        let! blobs =
+            client.GetBlobsAsync (prefix = "hash-", cancellationToken = cancellationToken)
+            |> AsyncSeq.ofAsyncEnum
+            |> AsyncSeq.toArrayAsync
+
+        return
+            blobs
+            |> Array.map (fun blob -> blob.Name.[5..] |> Path.GetFileNameWithoutExtension)
+            |> Set
+    }
 
 open type LandRegistry.ComparisonResult
 open System.Threading.Tasks
@@ -195,7 +204,7 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
         logger.LogInformation "Downloading latest price paid data..."
         let! propertyData = LandRegistry.getPropertyData refreshType cancellationToken
 
-        let existingHashes = LandRegistry.getAllHashes connectionString
+        let! existingHashes = LandRegistry.getAllHashes connectionString cancellationToken
         let latestHash = propertyData |> LandRegistry.asHash
         logger.LogInformation $"Comparing latest hash '{latestHash}' against {existingHashes.Count} existing hashes."
         if existingHashes.Contains latestHash then
@@ -224,7 +233,7 @@ let DELAY_BETWEEN_CHECKS = TimeSpan.FromDays 7.
 type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfiguration) =
     inherit BackgroundService ()
     override this.ExecuteAsync cancellationToken =
-        let backgroundWork = 
+        let backgroundWork =
             task {
                 let connectionString = config.["storageConnectionString"]
                 logger.LogInformation "Price Paid Data background download worker has started."

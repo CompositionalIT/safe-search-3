@@ -67,15 +67,21 @@ let searchApi (context:HttpContext) =
 let webApp =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.withErrorHandler (fun ex _ -> printfn "%O" ex; Ignore)
+    |> Remoting.withErrorHandler (fun ex _ -> printfn $"{ex}"; Ignore)
     |> Remoting.fromContext searchApi
     |> Remoting.buildHttpHandler
+
+open OpenTelemetry.Trace
 
 let app =
     application {
         logging (fun logging -> logging.AddConsole() |> ignore)
         webhost_config (fun config -> config.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
-        service_config (fun config -> config.AddHostedService<Ingestion.PricePaidDownloader>())
+        service_config (fun config ->
+            config
+                .AddOpenTelemetryMetrics()
+                .AddOpenTelemetryTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
+                .AddHostedService<Ingestion.PricePaidDownloader>())
         memory_cache
         use_static "public"
         use_gzip

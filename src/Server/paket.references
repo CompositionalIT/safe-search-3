@@ -6,3 +6,7 @@ Microsoft.Spatial
 Microsoft.Azure.Core.Spatial
 Azure.Data.Tables
 Azure.Storage.Blobs
+OpenTelemetry.Instrumentation.AspNetCore
+OpenTelemetry.Extensions.Hosting
+OpenTelemetry.Exporter.Console
+FSharp.Control.AsyncSeq
