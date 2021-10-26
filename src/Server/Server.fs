@@ -28,10 +28,10 @@ let searchApi (context:HttpContext) =
 
     {
         FreeText = fun request -> async {
-            let formattedQuery = $"\"{request.Text}\""
-            logger.LogInformation $"Free Text search for {formattedQuery} on index '{config.SearchIndexName}'"
+            let formattedQuery = Search.FormattedQuery.Build request.Text
+            logger.LogInformation $"Free Text search for {formattedQuery.Value} on index '{config.SearchIndexName}'"
             let results = Search.freeTextSearch formattedQuery request.Filters config.SearchIndexName config.SearchIndexKey
-            logger.LogInformation $"Returned {results.Results.Length} results for '{formattedQuery}'."
+            logger.LogInformation $"Returned {results.Results.Length} results for '{formattedQuery.Value}'."
             return results
         }
         ByLocation = fun request -> async {

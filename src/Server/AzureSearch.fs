@@ -59,7 +59,8 @@ module AzureInterop =
 
     let private buildFilterExpression appliedFilters =
         match appliedFilters with
-            | [] ->  ConstantFilter true
+            | [] ->
+                ConstantFilter true
             | filters ->
                 filters
                 |> List.map (fun f ->
@@ -68,19 +69,20 @@ module AzureInterop =
                     |> whereEq)
                 |> List.reduce (+)
 
-    let search<'T> indexName keyword (filters: (string * string) list) serviceName key =
-        let filterParam =
-            filters
-            |> buildFilterExpression
-            |> eval
-        let options = SearchOptions (Size = 20, Filter = filterParam)
-        options.OrderBy.Add(ByField(Fields.DATE_OF_TRANSFER, Descending).StringValue)
-        for facet in Facets.All do options.Facets.Add facet
+    let freeText<'T> indexName keyword (filters: (string * string) list) serviceName key =
+        let options =
+            SearchOptions (
+                Size = 20,
+                Filter = (filters |> buildFilterExpression |> eval),
+                QueryType = SearchQueryType.Full
+            )
+        for facet in Facets.All do
+            options.Facets.Add facet
 
         buildClient indexName serviceName key
         |> getResults keyword options
 
-    let searchByLocation<'T> indexName (long, lat) (filters: (string * string) list) serviceName key =
+    let location<'T> indexName (long, lat) (filters: (string * string) list) serviceName key =
         let filterParam = buildFilterExpression filters
         let options =
             SearchOptions (
@@ -94,7 +96,7 @@ module AzureInterop =
         buildClient indexName serviceName key
         |> getResults null options
 
-    let searchSuggestions<'T> indexName searchedTerm serviceName key =
+    let suggestions<'T> indexName searchedTerm serviceName key =
         let searchClient = buildClient indexName serviceName key
         let response = searchClient.Suggest(searchedTerm, SUGGESTER_NAME)
 
@@ -155,26 +157,36 @@ let private toFacetResult (facets: IDictionary<string, IList<FacetResult>>) =
         Prices = getFacets Fields.PRICE
     }
 
+[<Struct>]
+type FormattedQuery =
+    private | FormattedQuery of string
+    member this.Value = match this with FormattedQuery q -> q
+    static member Build (phrase:string) =
+        phrase.Split ' '
+        |> Seq.map (sprintf "%s~")
+        |> String.concat " "
+        |> FormattedQuery
+
 let private toSearchResponse (searchableProperties, facets) =
     {
         Results = searchableProperties |> List.map toPropertyResult
         Facets = facets |> toFacetResult
     }
-let freeTextSearch keyword filters index key =
-    AzureInterop.search PROPERTIES_INDEX keyword filters index key
+let freeTextSearch (FormattedQuery keyword) filters index key =
+    AzureInterop.freeText PROPERTIES_INDEX keyword filters index key
     |> toSearchResponse
 
 let locationSearch (long, lat) filters index key =
-    AzureInterop.searchByLocation PROPERTIES_INDEX (long, lat) filters index key
+    AzureInterop.location PROPERTIES_INDEX (long, lat) filters index key
     |> toSearchResponse
 
 let suggestionsSearch searchedTerm index key =
-    AzureInterop.searchSuggestions PROPERTIES_INDEX searchedTerm index key
+    AzureInterop.suggestions PROPERTIES_INDEX searchedTerm index key
 
 module Management =
     open Azure.Search.Documents.Indexes.Models
 
-    // Build and configure the search index store itself
+    /// Build and configure the search index store itself
     let createIndex indexConnection =
         let searchIndex =
             let fieldBuilder = FieldBuilder ()
@@ -188,7 +200,7 @@ module Management =
 
     let BLOB_DATA_SOURCE = "blob-transactions"
 
-    // Create the data source of the JSON blobs of properties
+    /// Create the data source of the JSON blobs of properties
     let createBlobDataSource connectionString indexConnection =
         let blobConnection =
             SearchIndexerDataSourceConnection(
@@ -200,7 +212,7 @@ module Management =
         searchIndexer.DeleteDataSourceConnection blobConnection |> ignore
         searchIndexer.CreateDataSourceConnection blobConnection |> ignore
 
-    // Create the indexer
+    /// Create the indexer
     let createCsvIndexer indexConnection =
         let indexer =
             let indexingParameters =
