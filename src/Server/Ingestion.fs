@@ -206,7 +206,7 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
 
         let! existingHashes = LandRegistry.getAllHashes connectionString cancellationToken
         let latestHash = propertyData |> LandRegistry.asHash
-        logger.LogInformation $"Comparing latest hash '{latestHash}' against {existingHashes.Count} existing hashes."
+        logger.LogInformation("Comparing latest hash '{LatestHash}' against {Count} existing hashes.", latestHash, existingHashes.Count)
         if existingHashes.Contains latestHash then
             return LandRegistry.DataAlreadyExists
         else
@@ -218,10 +218,10 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
 
     match download with
     | DataAlreadyExists ->
-        logger.LogInformation $"The data already exists."
+        logger.LogInformation "The data already exists."
         return NothingToDo
     | NewDataAvailable download ->
-        logger.LogInformation $"Downloaded and enriched {download.Rows.Length} transactions. Now saving to storage."
+        logger.LogInformation("Downloaded and enriched {Transactions} transactions. Now saving to storage.", download.Rows.Length)
         do! LandRegistry.writeAllProperties blobWriter LandRegistry.Exporters.Csv download
         do! LandRegistry.createHashRecord blobWriter download.Hash
         return Completed {| download with Rows = download.Rows.Length; Type = refreshType |}
@@ -250,8 +250,11 @@ type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfigura
                     | NothingToDo ->
                         logger.LogInformation "Check was successful - nothing to do."
                     | Completed stats ->
-                        logger.LogInformation $"Successfully ingested {stats.Rows} (hash: {stats.Hash})!"
-                    logger.LogInformation $"Check took {timer.Elapsed.TotalSeconds} seconds. Now sleeping until next check due in {DELAY_BETWEEN_CHECKS.TotalHours} hours ({DateTime.UtcNow.Add DELAY_BETWEEN_CHECKS})."
+                        logger.LogInformation ("Successfully ingested {Rows} (hash: {Hash})!", stats.Rows, stats.Hash)
+                    logger.LogInformation ("Check took {Seconds} seconds. Now sleeping until next check due in {TimeToNextCheck} hours ({NextCheckDate}).",
+                        timer.Elapsed.TotalSeconds,
+                        DELAY_BETWEEN_CHECKS.TotalHours,
+                        DateTime.UtcNow.Add DELAY_BETWEEN_CHECKS)
                     do! Task.Delay (DELAY_BETWEEN_CHECKS, cancellationToken)
             }
         backgroundWork

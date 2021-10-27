@@ -5,6 +5,7 @@ open Azure.Core.Serialization
 open Azure.Search.Documents
 open Azure.Search.Documents.Indexes
 open Azure.Search.Documents.Models
+open FSharp.Control.Tasks
 open Kibalta
 open Microsoft.Spatial
 open Shared
@@ -46,16 +47,18 @@ module Fields =
 
 module AzureInterop =
     open Filters
+    open FSharp.Control
 
     let private buildClient indexName serviceName key =
         let indexClient = SearchIndexClient(Uri $"https://%s{serviceName}.search.windows.net", AzureKeyCredential key)
         indexClient.GetSearchClient indexName
 
-    let private getResults keyword (options:SearchOptions) (searchClient:SearchClient) =
-        let response = searchClient.Search<'T> (keyword, options)
-        let results = response.Value.GetResults() |> Seq.map(fun r -> r.Document) |> Seq.toList
-
-        results, response.Value.Facets
+    let private getResults keyword (options:SearchOptions) (searchClient:SearchClient) = task {
+        let! response = searchClient.SearchAsync<'T> (keyword, options)
+        let! searchResults = response.Value.GetResultsAsync () |> AsyncSeq.ofAsyncEnum |> AsyncSeq.toArrayAsync
+        let documents = searchResults |> Seq.map(fun r -> r.Document) |> Seq.toList
+        return documents, response.Value.Facets
+    }
 
     let private buildFilterExpression appliedFilters =
         match appliedFilters with
@@ -89,20 +92,25 @@ module AzureInterop =
                 Size = 20,
                 Filter = ((whereGeoDistance Fields.GEO (long, lat) Lt 20.) |> (+) filterParam |> eval)
             )
-        for facet in Facets.All do options.Facets.Add facet
-        options.OrderBy.Add(ByDistance(Fields.GEO, long, lat, Ascending).StringValue)
-        options.OrderBy.Add(ByField(Fields.DATE_OF_TRANSFER, Descending).StringValue)
+        for facet in Facets.All do
+            options.Facets.Add facet
+
+        options.OrderBy.Add (ByDistance(Fields.GEO, long, lat, Ascending).StringValue)
+        options.OrderBy.Add (ByField(Fields.DATE_OF_TRANSFER, Descending).StringValue)
 
         buildClient indexName serviceName key
         |> getResults null options
 
-    let suggestions<'T> indexName searchedTerm serviceName key =
+    let suggestions<'T> indexName searchedTerm serviceName key = task {
         let searchClient = buildClient indexName serviceName key
-        let response = searchClient.Suggest(searchedTerm, SUGGESTER_NAME)
+        let! response = searchClient.SuggestAsync (searchedTerm, SUGGESTER_NAME)
 
-        response.Value.Results
-        |> Seq.map (fun r -> r.Text)
-        |> Seq.distinct
+        return
+            response.Value.Results
+            |> Seq.map (fun r -> r.Text)
+            |> Seq.distinct
+            |> Seq.toArray
+    }
 
 let private toPropertyResult result  =
     {
@@ -141,11 +149,10 @@ let getFacets (facetResults: IDictionary<string, IList<FacetResult>>) facetName 
     | true, facets ->
         facets
         |> Seq.toList
-        |> List.map (fun facet ->
-                string facet.Value
-            )
+        |> List.map (fun facet -> string facet.Value)
         |> Some
-    | false, x -> None
+    | false, _ ->
+        None
     |> Option.defaultValue []
 let private toFacetResult (facets: IDictionary<string, IList<FacetResult>>) =
     let getFacets = getFacets facets
@@ -172,13 +179,15 @@ let private toSearchResponse (searchableProperties, facets) =
         Results = searchableProperties |> List.map toPropertyResult
         Facets = facets |> toFacetResult
     }
-let freeTextSearch (FormattedQuery keyword) filters index key =
-    AzureInterop.freeText PROPERTIES_INDEX keyword filters index key
-    |> toSearchResponse
+let freeTextSearch (FormattedQuery keyword) filters index key = task {
+    let! results = AzureInterop.freeText PROPERTIES_INDEX keyword filters index key
+    return results |> toSearchResponse
+}
 
-let locationSearch (long, lat) filters index key =
-    AzureInterop.location PROPERTIES_INDEX (long, lat) filters index key
-    |> toSearchResponse
+let locationSearch (long, lat) filters index key = task {
+    let! results = AzureInterop.location PROPERTIES_INDEX (long, lat) filters index key
+    return results |> toSearchResponse
+}
 
 let suggestionsSearch searchedTerm index key =
     AzureInterop.suggestions PROPERTIES_INDEX searchedTerm index key
