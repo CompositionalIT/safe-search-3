@@ -108,8 +108,9 @@ module LandRegistry =
                 | None ->
                     ""
             |]
-            |> Array.map (fun s -> s.Replace("\"", "\"\""))
-            |> Array.map (fun s -> $"\"{s}\"")
+            |> Array.map (fun s ->
+                let escaped = s.Replace("\"", "\"\"")
+                $"\"{escaped}\"")
             |> String.concat ","
 
         // Combine a chunk of JSON rows

@@ -85,7 +85,7 @@ let webApp =
     |> Remoting.buildHttpHandler
 
 type Object with
-    member _.Ignore() = ignore()
+    member _.Ignore() = ()
 
 let app =
     application {

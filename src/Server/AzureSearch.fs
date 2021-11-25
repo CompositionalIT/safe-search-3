@@ -26,7 +26,7 @@ type SearchableProperty =
         [<SimpleField (IsSortable = true)>] Building : string
         [<SearchableField(IsSortable = true)>] Street : string
         [<SearchableField(IsFacetable = true, IsFilterable = true)>] Locality : string
-        [<SearchableField(IsSortable = true, IsFacetable = true)>] Town : string
+        [<SearchableField(IsSortable = true, IsFacetable = true, IsFilterable = true)>] Town : string
         [<SearchableField(IsFacetable = true, IsFilterable = true)>] District : string
         [<SearchableField(IsFacetable = true, IsFilterable = true)>] County : string
         [<SimpleField (IsSortable = true, IsFilterable = true); JsonConverter(typeof<MicrosoftSpatialGeoJsonConverter>)>] Geo : GeographyPoint
