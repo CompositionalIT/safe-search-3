@@ -8,6 +8,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="GeoLookup.fs" />
+    <Compile Include="Ingestion.fs" />
     <Compile Include="Kibalta.fs" />
     <Compile Include="AzureSearch.fs" />
     <Compile Include="Transaction.fs" />

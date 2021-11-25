@@ -1,0 +1,23 @@
+POST http://localhost:5000/api/ISearchApi/GetSuggestions
+
+[ "London" ]
+
+###
+POST http://localhost:5000/api/ISearchApi/ByLocation
+
+[
+    {
+        "Postcode": "WD6 1FY",
+        "Filters": []
+    }
+]
+
+###
+POST http://localhost:5000/api/ISearchApi/FreeText
+
+[
+    {
+        "Text": "Tottenham",
+        "Filters": [ [ "District", "HARINGEY" ] ]
+    }
+]
