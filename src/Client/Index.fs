@@ -85,12 +85,14 @@ type Key =
     | Enter
     | ArrowUp
     | ArrowDown
+    | Escape
 
     static member Pressed = function
         | "Enter" -> Some Enter
         | "ArrowUp" -> Some ArrowUp
         | "ArrowDown" -> Some ArrowDown
-        | invalidKey -> None
+        | "Escape" -> Some Escape
+        | _ -> None
 
 let searchApi =
     Remoting.createApi ()
@@ -304,14 +306,7 @@ module Search =
 
 
     [<ReactComponent>]
-    let SuggestionsBox searchText suggestions updateInput dispatch =
-        let initIndex =
-            suggestions.Results
-            |> Array.tryFindIndex ((=) searchText)
-            |> Option.defaultValue 0
-
-        let (currentIndex, setCurrentIndex) = React.useState initIndex
-
+    let SuggestionsBox suggestions highlightedIndex updateInput dispatch =
         let closeSuggestions () =
             Close
             |> ToggleVisibility
@@ -334,23 +329,6 @@ module Search =
 
         Bulma.box [
             prop.tabIndex 1
-            prop.onKeyDown (fun e ->
-                e.preventDefault ()
-                let resultsLength = suggestions.Results.Length
-                let currentSuggestion = suggestions.Results.[currentIndex]
-                match Key.Pressed e.key with
-                | Some ArrowUp ->
-                    setCurrentIndex (
-                        if currentIndex <= 0 then
-                            resultsLength - 1
-                        else
-                            (currentIndex - 1) % (resultsLength))
-                | Some ArrowDown ->
-                    setCurrentIndex ((currentIndex + 1) % (resultsLength))
-                | Some Enter ->
-                        currentSuggestion |> updateInput
-                        currentSuggestion |> Start |> ByFreeText |> Search |> dispatch
-                | None -> ())
             prop.style [
                 style.position.absolute
                 style.padding 0
@@ -370,9 +348,11 @@ module Search =
                             prop.style [
                                 style.padding 10
                                 style.textTransform.capitalize
-                                if searchText = suggestion || i = currentIndex then
+                                match highlightedIndex with
+                                | Some idx when i = idx ->
                                     style.backgroundColor "#00d1b2"
                                     style.color.white
+                                | _ -> ()
                             ]
                             prop.autoFocus true
                             prop.className "suggestion"
@@ -384,6 +364,14 @@ module Search =
     [<ReactComponent>]
     let AutoCompleteSearch (model:Model) dispatch =
         let currentValue, onChange = Debouncer.useDebouncer model.SearchText (SearchTextChanged >> dispatch) 300
+        let highlightedIndex, setHighlightedIndex = React.useState None
+        let showSuggestions () =
+            if not model.Suggestions.Visible then
+                Open |> ToggleVisibility |> Suggestions |> dispatch
+        let hideSuggestions () =
+            if model.Suggestions.Visible then
+                Close |> ToggleVisibility |> Suggestions |> dispatch
+
         Html.div [
             prop.style [ style.position.relative ]
             prop.children [
@@ -397,20 +385,10 @@ module Search =
                             prop.className "move"
                             prop.tabIndex 1
                             prop.onChange onChange
-                            prop.onKeyPress (fun e ->
-                                match Key.Pressed e.key with
-                                | Some Enter ->
-                                    match model.SearchTextError with
-                                    | None -> currentValue |> Start |> ByFreeText |> Search |> dispatch
-                                    | _ -> ()
-                                | _ -> ()
-                            )
                             prop.value currentValue
                             prop.style [ style.textTransform.capitalize]
-                            prop.onClick (fun _ ->
-                                let visibility =
-                                    if model.Suggestions.Visible then Close else Open
-                                visibility |> ToggleVisibility |> Suggestions |> dispatch)
+                            prop.onClick (fun _ -> showSuggestions ())
+                            prop.onBlur (fun _ -> hideSuggestions ())
                             match model.SearchTextError, model.Properties with
                             | Some NoSearchText, _ ->
                                 color.isPrimary
@@ -420,6 +398,56 @@ module Search =
                                 color.isPrimary
                             | _, _ ->
                                 ()
+                            prop.onKeyDown (fun e ->
+                                let results = model.Suggestions.Results
+                                match Key.Pressed e.key with
+                                | Some ArrowUp ->
+                                    e.preventDefault ()
+                                    let newIndex =
+                                        match highlightedIndex with
+                                        | None ->
+                                            Some (results.Length - 1)
+                                        | Some idx when not model.Suggestions.Visible ->
+                                            Some idx
+                                        | Some idx when idx <= 0 ->
+                                            None
+                                        | Some idx ->
+                                            Some (idx - 1)
+                                    setHighlightedIndex newIndex
+                                    showSuggestions ()
+                                | Some ArrowDown ->
+                                    e.preventDefault ()
+                                    let newIndex =
+                                        match highlightedIndex with
+                                        | None ->
+                                            Some 0
+                                        | Some idx when not model.Suggestions.Visible ->
+                                            Some idx
+                                        | Some idx when idx = results.Length - 1 ->
+                                            None
+                                        | Some idx ->
+                                            Some (idx + 1)
+                                    setHighlightedIndex newIndex
+                                    showSuggestions ()
+                                | Some Escape ->
+                                    if highlightedIndex.IsSome then
+                                        e.preventDefault ()
+                                        setHighlightedIndex None
+                                    else
+                                        hideSuggestions ()
+                                | Some Enter ->
+                                    e.preventDefault ()
+                                    let searchTerm =
+                                        match model.Suggestions.Visible, highlightedIndex with
+                                        | true, Some idx ->
+                                            let highlightedSuggestion = results.[idx]
+                                            onChange highlightedSuggestion
+                                            highlightedSuggestion
+                                        | _ ->
+                                            currentValue
+                                    searchTerm |> Start |> ByFreeText |> Search |> dispatch
+                                | None ->
+                                    showSuggestions ())
                         ]
                         Bulma.icon [
                             icon.isSmall
@@ -441,7 +469,7 @@ module Search =
                     ]
                 ]
                 if model.Suggestions.Visible then
-                    SuggestionsBox model.SearchText model.Suggestions onChange dispatch
+                    SuggestionsBox model.Suggestions highlightedIndex onChange dispatch
             ]
         ]
 
