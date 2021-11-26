@@ -253,7 +253,6 @@ open Feliz.UseElmish
 importAll "./styles.scss"
 
 module Heading =
-
     let title =
         Bulma.title.h3 [
             Bulma.icon [
@@ -268,9 +267,173 @@ module Heading =
                 Html.text " SAFE Search"
             ]
         ]
+
     let subtitle =
         Bulma.subtitle.h5 [
             Html.text "Find your unaffordable property in the UK!"
+        ]
+
+module Facets =
+    let fromPluralToSingular = function
+        | "Counties" -> "County"
+        | "Districts" -> "District"
+        | "Localities" -> "Locality"
+        | "Towns" -> "Town"
+        | facet -> failwithf $"Invalid facet name: {facet}"
+
+    let (|NoResults|NotFiltered|Filtered|) (label, facets, selectedFacets) =
+        if facets |> List.exists(fun facet ->
+            selectedFacets
+            |> List.exists((=) (fromPluralToSingular label, facet)))
+            then
+                Filtered
+        elif facets |> List.isEmpty then
+            NoResults
+        else
+            NotFiltered
+
+    let panelColour = function
+        | NoResults -> color.isDanger
+        | NotFiltered -> color.isInfo
+        | Filtered -> color.isPrimary
+
+    let facetBox (label: string) facets selectedFacets dispatch =
+        Bulma.panel [
+            panelColour (label, facets, selectedFacets)
+            prop.style [ style.borderRadius 0 ]
+            prop.children [
+                Bulma.panelHeading [
+                    prop.style [ style.borderRadius 0 ]
+                    prop.text label
+                ]
+                for facet in facets do
+                    let facetKeyValue  = fromPluralToSingular label, facet
+                    let isSelected =
+                        selectedFacets
+                        |> List.exists ((=) facetKeyValue)
+                    Bulma.panelBlock.div [
+                        Bulma.columns [
+                            columns.isMobile
+                            columns.isVCentered
+                            prop.style [
+                                style.width (length.percent 100)
+                                style.paddingLeft  10
+                             ]
+                            prop.children [
+                                Bulma.column [
+                                    column.is1
+                                    prop.children [
+                                        Bulma.input.checkbox [
+                                            prop.isChecked isSelected
+                                            prop.onChange (fun isChecked ->
+                                                if isChecked then
+                                                    facetKeyValue
+                                                    |> SelectFacet
+                                                    |> dispatch
+                                                else
+                                                    facetKeyValue
+                                                    |> RemoveFacet
+                                                    |> dispatch
+                                            )
+                                        ]
+                                    ]
+                                ]
+                                Bulma.column [
+                                    prop.text (facet.ToLower())
+                                    prop.style [
+                                        style.textOverflow.ellipsis
+                                        if isSelected then style.fontWeight.bolder
+                                        style.textTransform.capitalize
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                if facets.IsEmpty then
+                    Bulma.panelBlock.div [
+                        prop.text "No results"
+                    ]
+            ]
+        ]
+
+    let facetBoxes (facets: Facets) selectedFacets dispatch =
+        Html.div [
+            facetBox "Counties" facets.Counties selectedFacets dispatch
+            facetBox "Districts" facets.Districts selectedFacets dispatch
+            facetBox "Localities" facets.Localities selectedFacets dispatch
+            facetBox "Towns" facets.Towns selectedFacets dispatch
+        ]
+
+    let facetMenu menuVisible facets selectedFacets dispatch =
+        QuickView.quickview [
+            if menuVisible then
+                helpers.isHiddenDesktop
+                quickview.isActive
+            prop.children [
+                QuickView.header [
+                    Html.div "Filters"
+                    Bulma.delete [ prop.onClick (fun _ -> Close |> ToggleFilterMenu |> dispatch) ]
+                ]
+                QuickView.body [
+                    facetBoxes facets selectedFacets dispatch
+                ]
+            ]
+        ]
+
+module Map =
+    type MapSize = Full | Modal
+
+    let drawMap geoLocation mapSize properties =
+        PigeonMaps.map [
+            map.center (geoLocation.Lat, geoLocation.Long)
+            map.zoom 16
+            map.height (match mapSize with Full -> 700 | Modal -> 350)
+            map.markers [
+                let propertiesWithGeo = [
+                    for property in properties do
+                        match property.Address.GeoLocation with
+                        | Some geo -> geo, property
+                        | None -> ()
+                ]
+                for geo, property in propertiesWithGeo do
+                    PigeonMaps.marker [
+                        marker.anchor (geo.Lat, geo.Long)
+                        marker.offsetLeft 15
+                        marker.offsetTop 30
+                        marker.render (fun _ -> [
+                            Tippy.create [
+                                Tippy.plugins [|
+                                    Plugins.followCursor
+                                    Plugins.animateFill
+                                    Plugins.inlinePositioning
+                                |]
+                                Tippy.placement Auto
+                                Tippy.animateFill
+                                Tippy.interactive
+                                Tippy.content (
+                                    Html.div [
+                                        prop.text $"{property.Address.Building}, {property.Address.Street |> Option.toObj} (£{property.Price?toLocaleString()})"
+                                        prop.style [
+                                            style.fontSize 12
+                                            style.width 150
+                                            style.color.lightGreen
+                                        ]
+                                    ]
+                                )
+                                prop.children [
+                                    Html.i [
+                                        let icon =
+                                            match property.BuildDetails.PropertyType with
+                                            | Some (Terraced | Detached | SemiDetached) -> "home"
+                                            | Some (FlatsMaisonettes | Other) -> "building"
+                                            | None -> "map-marker"
+                                        prop.className [ "fa"; $"fa-{icon}" ]
+                                    ]
+                                ]
+                            ]
+                        ])
+                    ]
+            ]
         ]
 
 module Search =
@@ -643,6 +806,203 @@ module Search =
             ]
         ]
 
+    let resultsGrid dispatch searchKind (results:PropertyResult list) =
+        Html.div [
+            prop.className ThemeClass.Alpine
+            prop.children [
+                AgGrid.grid [
+                    AgGrid.rowData (List.toArray results)
+                    AgGrid.pagination true
+                    AgGrid.defaultColDef [
+                        ColumnDef.resizable true
+                        ColumnDef.sortable true
+                        ColumnDef.editable (fun _ -> false)
+                    ]
+                    AgGrid.domLayout AutoHeight
+                    AgGrid.columnDefs [
+                        ColumnDef.create<string> [
+                            ColumnDef.onCellClicked (fun _ row -> dispatch (ViewProperty row))
+                            ColumnDef.cellRendererFramework (fun _ _ -> Html.a [ Html.text "View" ])
+                        ]
+                        ColumnDef.create<DateTime> [
+                            ColumnDef.filter Date
+                            ColumnDef.headerName "Date"
+                            ColumnDef.valueGetter (fun x -> x.DateOfTransfer)
+                            ColumnDef.valueFormatter (fun x _ -> x.ToShortDateString())
+                        ]
+                        ColumnDef.create<int> [
+                            ColumnDef.headerName "Price"
+                            ColumnDef.filter Number
+                            ColumnDef.valueGetter (fun x -> x.Price)
+                            ColumnDef.columnType NumericColumn
+                            ColumnDef.valueFormatter (fun value _ -> $"£{value?toLocaleString()}")
+                        ]
+                        ColumnDef.create<string> [
+                            ColumnDef.filter Text
+                            ColumnDef.headerName "Street"
+                            ColumnDef.valueGetter (fun x -> x.Address.Street |> Option.toObj)
+                        ]
+                        ColumnDef.create<string> [
+                            ColumnDef.filter Text
+                            ColumnDef.headerName "Town"
+                            ColumnDef.valueGetter (fun x -> x.Address.TownCity)
+                        ]
+                        ColumnDef.create<string> [
+                            ColumnDef.filter Text
+                            ColumnDef.headerName "County"
+                            ColumnDef.valueGetter (fun x -> x.Address.County)
+                        ]
+                        ColumnDef.create<string> [
+                            ColumnDef.filter Text
+                            ColumnDef.headerName "Postcode"
+                            match searchKind with
+                            | FreeTextSearch ->
+                                ColumnDef.onCellClicked (fun _ row -> dispatch (DoPostcodeSearch (Option.toObj row.Address.PostCode)))
+                                ColumnDef.cellRendererFramework (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
+                            | LocationSearch _ ->
+                                ColumnDef.valueGetter (fun x -> Option.toObj x.Address.PostCode)
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+    let crimeChart (data: CrimeResponse array) =
+        Recharts.barChart [
+            barChart.layout.vertical
+            barChart.data data
+            barChart.width 600
+            barChart.height 500
+            barChart.children [
+                Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
+                Recharts.xAxis [ xAxis.number ]
+                Recharts.yAxis [
+                    yAxis.dataKey (fun point -> point.Crime)
+                    yAxis.width 200
+                    yAxis.category ]
+                Recharts.tooltip []
+                Recharts.bar [
+                    bar.legendType.star
+                    bar.isAnimationActive true
+                    bar.animationEasing.ease
+                    bar.dataKey (fun point -> point.Incidents)
+                    bar.fill "#3298dc"
+                ]
+            ]
+        ]
+
+    let loadingSkeleton =
+        Bulma.columns [
+            Bulma.column [
+                helpers.isHiddenTouch
+                column.isOneQuarter
+                prop.children [
+                    Skeleton.skeleton [
+                        Skeleton.count 3
+                        Skeleton.height 500
+                    ]
+                ]
+            ]
+            Bulma.column [
+                Bulma.container [
+                    Skeleton.skeleton [
+                        Skeleton.count 15
+                        Skeleton.height 50
+                    ]
+                ]
+            ]
+        ]
+
+    let renderLocationSearch dispatch locationTab results crimeIncidents =
+        let makeTab searchKind (text:string) faIcon =
+            Bulma.tab [
+                if searchKind = locationTab then tab.isActive
+                prop.children [
+                    Html.a [
+                        prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
+                        prop.children [
+                            Bulma.icon [
+                                icon.isSmall
+                                prop.children [
+                                    Html.i [ prop.className $"fas fa-{faIcon}" ]
+                                ]
+                            ]
+                            Html.text text
+                        ]
+                    ]
+                ]
+            ]
+        let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
+        React.fragment [
+            Bulma.tabs [
+                Html.ul [
+                    makeTab ResultsGrid "Results Grid" "table"
+                    makeTab Map "Map" "map"
+                    yield!
+                        geoLocationOpt
+                        |> Option.toList
+                        |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
+                ]
+            ]
+            match locationTab with
+            | ResultsGrid ->
+                resultsGrid dispatch (LocationSearch ResultsGrid) results
+            | Map ->
+                match geoLocationOpt with
+                | Some geoLocation ->
+                    Bulma.box [
+                        Map.drawMap geoLocation Map.Full results
+                    ]
+                | None ->
+                    ()
+            | Crime _ ->
+                Bulma.box [
+                    prop.style [
+                        style.display.flex
+                        style.justifyContent.center
+                        style.alignItems.center
+                        style.height 520
+                    ]
+                    prop.children [
+                        match crimeIncidents with
+                        | Resolved incidents ->
+                            let cleanData =
+                                incidents
+                                |> Array.map (fun c ->
+                                    { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
+                            crimeChart cleanData
+                        | _ ->
+                            Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
+                    ]
+                ]
+        ]
+
+    let createSearchResults model dispatch =
+        match model.Properties with
+        | Resolved (NonEmpty results) ->
+            Bulma.columns [
+                Bulma.column [
+                    helpers.isHiddenTouch
+                    column.isOneQuarter
+                    prop.children [
+                        Facets.facetBoxes model.Facets model.SelectedFacets dispatch
+                    ]
+                ]
+                Bulma.column [
+                    Bulma.container [
+                        match model.SelectedSearchKind with
+                        | LocationSearch locationTab ->
+                            renderLocationSearch dispatch locationTab results model.CrimeIncidents
+                        | FreeTextSearch ->
+                            resultsGrid dispatch FreeTextSearch results
+                    ]
+                ]
+            ]
+        | InProgress ->
+            loadingSkeleton
+        | _ ->
+            Html.none
+
 let safeSearchNavBar =
     Bulma.navbar [
         color.isPrimary
@@ -661,253 +1021,6 @@ let safeSearchNavBar =
         ]
     ]
 
-module Facets =
-    let fromPluralToSingular = function
-        | "Counties" -> "County"
-        | "Districts" -> "District"
-        | "Localities" -> "Locality"
-        | "Towns" -> "Town"
-        | facet -> failwithf $"Invalid facet name: {facet}"
-
-    let (|NoResults|NotFiltered|Filtered|) (label, facets, selectedFacets) =
-        if facets |> List.exists(fun facet ->
-            selectedFacets
-            |> List.exists((=) (fromPluralToSingular label, facet)))
-            then
-                Filtered
-        elif facets |> List.isEmpty then
-            NoResults
-        else
-            NotFiltered
-
-    let panelColour = function
-        | NoResults -> color.isDanger
-        | NotFiltered -> color.isInfo
-        | Filtered -> color.isPrimary
-
-    let facetBox (label: string) facets selectedFacets dispatch =
-        Bulma.panel [
-            panelColour (label, facets, selectedFacets)
-            prop.style [ style.borderRadius 0 ]
-            prop.children [
-                Bulma.panelHeading [
-                    prop.style [ style.borderRadius 0 ]
-                    prop.text label
-                ]
-                for facet in facets do
-                    let facetKeyValue  = fromPluralToSingular label, facet
-                    let isSelected =
-                        selectedFacets
-                        |> List.exists ((=) facetKeyValue)
-                    Bulma.panelBlock.div [
-                        Bulma.columns [
-                            columns.isMobile
-                            columns.isVCentered
-                            prop.style [
-                                style.width (length.percent 100)
-                                style.paddingLeft  10
-                             ]
-                            prop.children [
-                                Bulma.column [
-                                    column.is1
-                                    prop.children [
-                                        Bulma.input.checkbox [
-                                            prop.isChecked isSelected
-                                            prop.onChange (fun isChecked ->
-                                                if isChecked then
-                                                    facetKeyValue
-                                                    |> SelectFacet
-                                                    |> dispatch
-                                                else
-                                                    facetKeyValue
-                                                    |> RemoveFacet
-                                                    |> dispatch
-                                            )
-                                        ]
-                                    ]
-                                ]
-                                Bulma.column [
-                                    prop.text (facet.ToLower())
-                                    prop.style [
-                                        style.textOverflow.ellipsis
-                                        if isSelected then style.fontWeight.bolder
-                                        style.textTransform.capitalize
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                if facets.IsEmpty then
-                    Bulma.panelBlock.div [
-                        prop.text "No results"
-                    ]
-            ]
-        ]
-
-    let facetBoxes (facets: Facets) selectedFacets dispatch =
-        Html.div [
-            facetBox "Counties" facets.Counties selectedFacets dispatch
-            facetBox "Districts" facets.Districts selectedFacets dispatch
-            facetBox "Localities" facets.Localities selectedFacets dispatch
-            facetBox "Towns" facets.Towns selectedFacets dispatch
-        ]
-
-    let facetMenu menuVisible facets selectedFacets dispatch =
-        QuickView.quickview [
-            if menuVisible then
-                helpers.isHiddenDesktop
-                quickview.isActive
-            prop.children [
-                QuickView.header [
-                    Html.div "Filters"
-                    Bulma.delete [ prop.onClick (fun _ -> Close |> ToggleFilterMenu |> dispatch) ]
-                ]
-                QuickView.body [
-                    facetBoxes facets selectedFacets dispatch
-                ]
-            ]
-        ]
-
-let crimeChart (data: CrimeResponse array) =
-    Recharts.barChart [
-        barChart.layout.vertical
-        barChart.data data
-        barChart.width 600
-        barChart.height 500
-        barChart.children [
-            Recharts.cartesianGrid [ cartesianGrid.strokeDasharray(4, 4) ]
-            Recharts.xAxis [ xAxis.number ]
-            Recharts.yAxis [
-                yAxis.dataKey (fun point -> point.Crime)
-                yAxis.width 200
-                yAxis.category ]
-            Recharts.tooltip []
-            Recharts.bar [
-                bar.legendType.star
-                bar.isAnimationActive true
-                bar.animationEasing.ease
-                bar.dataKey (fun point -> point.Incidents)
-                bar.fill "#3298dc"
-            ]
-        ]
-    ]
-
-let resultsGrid dispatch searchKind (results:PropertyResult list) =
-    Html.div [
-        prop.className ThemeClass.Alpine
-        prop.children [
-            AgGrid.grid [
-                AgGrid.rowData (List.toArray results)
-                AgGrid.pagination true
-                AgGrid.defaultColDef [
-                    ColumnDef.resizable true
-                    ColumnDef.sortable true
-                    ColumnDef.editable (fun _ -> false)
-                ]
-                AgGrid.domLayout AutoHeight
-                AgGrid.columnDefs [
-                    ColumnDef.create<string> [
-                        ColumnDef.onCellClicked (fun _ row -> dispatch (ViewProperty row))
-                        ColumnDef.cellRendererFramework (fun _ _ -> Html.a [ Html.text "View" ])
-                    ]
-                    ColumnDef.create<DateTime> [
-                        ColumnDef.filter Date
-                        ColumnDef.headerName "Date"
-                        ColumnDef.valueGetter (fun x -> x.DateOfTransfer)
-                        ColumnDef.valueFormatter (fun x _ -> x.ToShortDateString())
-                    ]
-                    ColumnDef.create<int> [
-                        ColumnDef.headerName "Price"
-                        ColumnDef.filter Number
-                        ColumnDef.valueGetter (fun x -> x.Price)
-                        ColumnDef.columnType NumericColumn
-                        ColumnDef.valueFormatter (fun value _ -> $"£{value?toLocaleString()}")
-                    ]
-                    ColumnDef.create<string> [
-                        ColumnDef.filter Text
-                        ColumnDef.headerName "Street"
-                        ColumnDef.valueGetter (fun x -> x.Address.Street |> Option.toObj)
-                    ]
-                    ColumnDef.create<string> [
-                        ColumnDef.filter Text
-                        ColumnDef.headerName "Town"
-                        ColumnDef.valueGetter (fun x -> x.Address.TownCity)
-                    ]
-                    ColumnDef.create<string> [
-                        ColumnDef.filter Text
-                        ColumnDef.headerName "County"
-                        ColumnDef.valueGetter (fun x -> x.Address.County)
-                    ]
-                    ColumnDef.create<string> [
-                        ColumnDef.filter Text
-                        ColumnDef.headerName "Postcode"
-                        match searchKind with
-                        | FreeTextSearch ->
-                            ColumnDef.onCellClicked (fun _ row -> dispatch (DoPostcodeSearch (Option.toObj row.Address.PostCode)))
-                            ColumnDef.cellRendererFramework (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
-                        | LocationSearch _ ->
-                            ColumnDef.valueGetter (fun x -> Option.toObj x.Address.PostCode)
-                    ]
-                ]
-            ]
-        ]
-    ]
-
-type MapSize = Full | Modal
-
-let drawMap geoLocation mapSize properties =
-    PigeonMaps.map [
-        map.center (geoLocation.Lat, geoLocation.Long)
-        map.zoom 16
-        map.height (match mapSize with Full -> 700 | Modal -> 350)
-        map.markers [
-            let propertiesWithGeo = [
-                for property in properties do
-                    match property.Address.GeoLocation with
-                    | Some geo -> geo, property
-                    | None -> ()
-            ]
-            for geo, property in propertiesWithGeo do
-                PigeonMaps.marker [
-                    marker.anchor (geo.Lat, geo.Long)
-                    marker.offsetLeft 15
-                    marker.offsetTop 30
-                    marker.render (fun _ -> [
-                        Tippy.create [
-                            Tippy.plugins [|
-                                Plugins.followCursor
-                                Plugins.animateFill
-                                Plugins.inlinePositioning
-                            |]
-                            Tippy.placement Auto
-                            Tippy.animateFill
-                            Tippy.interactive
-                            Tippy.content (
-                                Html.div [
-                                    prop.text $"{property.Address.Building}, {property.Address.Street |> Option.toObj} (£{property.Price?toLocaleString()})"
-                                    prop.style [
-                                        style.fontSize 12
-                                        style.width 150
-                                        style.color.lightGreen
-                                    ]
-                                ]
-                            )
-                            prop.children [
-                                Html.i [
-                                    let icon =
-                                        match property.BuildDetails.PropertyType with
-                                        | Some (Terraced | Detached | SemiDetached) -> "home"
-                                        | Some (FlatsMaisonettes | Other) -> "building"
-                                        | None -> "map-marker"
-                                    prop.className [ "fa"; $"fa-{icon}" ]
-                                ]
-                            ]
-                        ]
-                    ])
-                ]
-        ]
-    ]
-
 let modalView dispatch property =
     let makeLine text fields =
         Bulma.field.div [
@@ -915,10 +1028,10 @@ let modalView dispatch property =
             prop.children [
                 Bulma.fieldLabel [
                     fieldLabel.isNormal
-                    prop.text (text:string)
+                    prop.text (text: string)
                 ]
                 Bulma.fieldBody [
-                    for (field:string) in fields do
+                    for field: string in fields do
                         Bulma.field.div [
                             Bulma.control.p [
                                 Bulma.input.text [
@@ -947,7 +1060,7 @@ let modalView dispatch property =
 
                     match property.Address.GeoLocation with
                     | Some geoLocation ->
-                        drawMap geoLocation Modal [ property ]
+                        Map.drawMap geoLocation Map.Modal [ property ]
                     | None ->
                         ()
                 ]
@@ -960,27 +1073,6 @@ let modalView dispatch property =
         ]
     ]
 
-let loadingSkeleton =
-    Bulma.columns [
-        Bulma.column [
-            helpers.isHiddenTouch
-            column.isOneQuarter
-            prop.children [
-                Skeleton.skeleton [
-                    Skeleton.count 3
-                    Skeleton.height 500
-                ]
-            ]
-        ]
-        Bulma.column [
-            Bulma.container [
-                Skeleton.skeleton [
-                    Skeleton.count 15
-                    Skeleton.height 50
-                ]
-            ]
-        ]
-    ]
 
 let view (model:Model) dispatch =
     Html.div [
@@ -991,106 +1083,10 @@ let view (model:Model) dispatch =
                 Heading.title
                 Heading.subtitle
                 Search.createSearchPanel model dispatch
-                Html.div [
-                    prop.onClick (fun _ -> Close |> ToggleVisibility |> Suggestions |> dispatch)
-                    prop.children [
-                        match model.Properties with
-                        | Resolved (NonEmpty results) ->
-                            Bulma.columns [
-                                Bulma.column [
-                                    helpers.isHiddenTouch
-                                    column.isOneQuarter
-                                    prop.children [
-                                        Facets.facetBoxes model.Facets model.SelectedFacets dispatch
-                                    ]
-                                ]
-                                Bulma.column [
-                                    Bulma.container [
-                                        match model.SelectedSearchKind with
-                                        | LocationSearch locationTab ->
-                                            let makeTab searchKind (text:string) faIcon =
-                                                Bulma.tab [
-                                                    if (searchKind = locationTab) then tab.isActive
-                                                    prop.children [
-                                                        Html.a [
-                                                            prop.onClick (fun _ -> dispatch (SearchKindSelected (LocationSearch searchKind)))
-                                                            prop.children [
-                                                                Bulma.icon [
-                                                                    icon.isSmall
-                                                                    prop.children [
-                                                                        Html.i [ prop.className $"fas fa-{faIcon}" ]
-                                                                    ]
-                                                                ]
-                                                                Html.text text
-                                                            ]
-                                                        ]
-                                                    ]
-                                                ]
-                                            let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
-                                            Bulma.tabs [
-                                                Html.ul [
-                                                    makeTab ResultsGrid "Results Grid" "table"
-                                                    makeTab Map "Map" "map"
-                                                    yield!
-                                                        geoLocationOpt
-                                                        |> Option.toList
-                                                        |> List.map(fun location -> makeTab (Crime location) "Crime" "mask")
-                                                ]
-                                            ]
-                                            match locationTab with
-                                            | ResultsGrid ->
-                                                resultsGrid dispatch (LocationSearch ResultsGrid) results
-                                            | Map ->
-                                                match geoLocationOpt with
-                                                | Some geoLocation ->
-                                                    Bulma.box [
-                                                        drawMap geoLocation Full results
-                                                    ]
-                                                | None ->
-                                                    ()
-                                            | Crime _ ->
-                                                Bulma.box [
-                                                    Bulma.columns [
-                                                        columns.isCentered
-                                                        columns.isVCentered
-                                                        prop.children [
-                                                            Bulma.column [
-                                                                column.isHalf
-                                                                prop.style [
-                                                                    style.display.flex
-                                                                    style.justifyContent.center
-                                                                    style.alignItems.center
-                                                                    style.height 520]
-                                                                prop.children [
-                                                                    match model.CrimeIncidents with
-                                                                    | Resolved incidents ->
-                                                                        let cleanData =
-                                                                            incidents
-                                                                            |> Array.map (fun c ->
-                                                                                { c with Crime = c.Crime.[0..0].ToUpper() + c.Crime.[1..].Replace('-', ' ') } )
-                                                                        crimeChart cleanData
-                                                                    | _ ->
-                                                                        Interop.reactApi.createElement(import "Gauge" "css-spinners-react", createObj [])
-                                                                ]
-                                                            ]
-                                                        ]
-                                                    ]
-                                                ]
-                                        | FreeTextSearch ->
-                                            resultsGrid dispatch FreeTextSearch results
-                                    ]
-                                ]
-                            ]
-                        | InProgress ->
-                            loadingSkeleton
-                        | _ ->
-                            ()
-                        ]
-                ]
+                Search.createSearchResults model dispatch
             ]
-            yield!
-                model.SelectedProperty
-                |> Option.map (modalView dispatch)
-                |> Option.toList
+            model.SelectedProperty
+            |> Option.map (modalView dispatch)
+            |> Option.defaultValue Html.none
         ]
     ]
