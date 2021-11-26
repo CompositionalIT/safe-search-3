@@ -304,29 +304,7 @@ module Search =
             let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])
             current.Value, (ValueChanged >> dispatch)
 
-
-    [<ReactComponent>]
-    let SuggestionsBox suggestions highlightedIndex updateInput dispatch =
-        let closeSuggestions () =
-            Close
-            |> ToggleVisibility
-            |> Suggestions
-            |> dispatch
-
-        let searchSelectedSuggestion location =
-            location
-            |> Start
-            |> ByFreeText
-            |> Search
-            |> dispatch
-            location
-
-        let onSuggestionClick suggestion =
-            suggestion
-            |> searchSelectedSuggestion
-            |> updateInput
-            |> closeSuggestions
-
+    let suggestionsBox suggestions highlightedIndex onSuggestionClicked onSuggestionHighlightChanged =
         Bulma.box [
             prop.tabIndex 1
             prop.style [
@@ -338,24 +316,24 @@ module Search =
                 style.zIndex 10
                 style.borderRadius 5
             ]
-            prop.className "move"
             prop.children [
                 yield!
                     suggestions.Results
                     |> Array.mapi (fun i suggestion ->
                         Html.p [
-                            prop.onClick (fun _ -> onSuggestionClick suggestion)
+                            // onClick fires after onBlur so using onMouseDown so event fires before suggestions are removed from the DOM
+                            prop.onMouseDown (fun _ -> onSuggestionClicked suggestion)
+                            prop.onMouseEnter (fun _ -> onSuggestionHighlightChanged (Some i))
                             prop.style [
                                 style.padding 10
                                 style.textTransform.capitalize
+                                style.cursor.pointer
                                 match highlightedIndex with
                                 | Some idx when i = idx ->
                                     style.backgroundColor "#00d1b2"
                                     style.color.white
                                 | _ -> ()
                             ]
-                            prop.autoFocus true
-                            prop.className "suggestion"
                             prop.text (suggestion.ToLower())
                         ])
             ]
@@ -371,7 +349,8 @@ module Search =
         let hideSuggestions () =
             if model.Suggestions.Visible then
                 Close |> ToggleVisibility |> Suggestions |> dispatch
-
+        let startSearch searchTerm =
+            searchTerm |> Start |> ByFreeText |> Search |> dispatch
         Html.div [
             prop.style [ style.position.relative ]
             prop.children [
@@ -441,15 +420,13 @@ module Search =
                                         hideSuggestions ()
                                 | Some Enter ->
                                     e.preventDefault ()
-                                    let searchTerm =
-                                        match model.Suggestions.Visible, highlightedIndex with
-                                        | true, Some idx when idx < results.Length ->
-                                            let highlightedSuggestion = results.[idx]
-                                            onChange highlightedSuggestion
-                                            highlightedSuggestion
-                                        | _ ->
-                                            currentValue
-                                    searchTerm |> Start |> ByFreeText |> Search |> dispatch
+                                    match model.Suggestions.Visible, highlightedIndex with
+                                    | true, Some idx when idx < results.Length ->
+                                        let highlightedSuggestion = results.[idx]
+                                        onChange highlightedSuggestion
+                                        startSearch highlightedSuggestion
+                                    | _ ->
+                                        startSearch currentValue
                                 | None ->
                                     showSuggestions ())
                         ]
@@ -473,7 +450,13 @@ module Search =
                     ]
                 ]
                 if model.Suggestions.Visible then
-                    SuggestionsBox model.Suggestions highlightedIndex onChange dispatch
+                    suggestionsBox
+                        model.Suggestions
+                        highlightedIndex
+                        (fun suggestion ->
+                            onChange suggestion
+                            startSearch suggestion)
+                        setHighlightedIndex
             ]
         ]
 
