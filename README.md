@@ -9,12 +9,38 @@ You'll need to install the following pre-requisites in order to build SAFE appli
 * [.NET Core SDK](https://www.microsoft.com/net/download) 5.0 or higher
 * [Node LTS](https://nodejs.org/en/download/)
 
+## Azure Services pre-requisites
+
+You'll need to following Azure resources provisioned
+
+* An Azure Storage account with:
+    * a container called properties.
+    * a table called postcodes.
+* An Azure Search instance with:
+    * an index created via `Management.createIndex`.
+    * a data source created via `Management.createBlobDataSource`.
+    * an indexer created via `Management.createCsvIndexer`.
+* Postcodes should be inserted into table storage before properties are imported
+
 ## Starting the application
 
 Before you run the project **for the first time only** you must install dotnet "local tools" with this command:
 
 ```bash
 dotnet tool restore
+```
+
+You should also set the following config settings either as environment variables or in [user secrets](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-6.0&tabs=windows#manage-user-secrets-with-visual-studio)
+
+```json
+{
+    // Azure Search resource name
+    "searchName": "my-azure-search",
+    // Azure Search access key
+    "searchKey": "MYSECRETKEY",
+    // Azure Storage account connection string
+    "storageConnectionString": "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=MYSECRETKEY"
+}
 ```
 
 To concurrently run the server and the client components in watch mode use the following command:
@@ -26,14 +52,6 @@ dotnet run
 Then open `http://localhost:8080` in your browser.
 
 The build project in root directory contains a couple of different build targets. You can specify them after `--` (target name is case-insensitive).
-
-To run concurrently server and client tests in watch mode (you can run this command in parallel to the previous one in new terminal):
-
-```bash
-dotnet run -- RunTests
-```
-
-Client tests are available under `http://localhost:8081` in your browser and server tests are running in watch mode in console.
 
 Finally, there are `Bundle` and `Azure` targets that you can use to package your app and deploy to Azure, respectively:
 
