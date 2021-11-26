@@ -158,21 +158,22 @@ let update msg model =
         | GotSuggestions response ->
             { model with Suggestions = { Visible = response.Suggestions |> Array.isEmpty |> not; Results = response.Suggestions } }, Cmd.none
     | SearchKindSelected kind ->
-        let model = { model with SearchText = ""; Suggestions = { model.Suggestions with Visible = false }}
         match model.SelectedSearchKind, kind with
         | LocationSearch _, LocationSearch tab ->
             match tab with
             | Crime geo ->
-                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress; Suggestions = { model.Suggestions with Visible = false } }
-                , Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
+                { model with SelectedSearchKind = kind; CrimeIncidents = InProgress },
+                Cmd.OfAsync.either searchApi.GetCrimes geo LoadCrimeIncidents (string >> AppError)
             | _ -> { model with SelectedSearchKind = kind }, Cmd.none
         | FreeTextSearch, FreeTextSearch ->
-            { model with SelectedSearchKind = kind }, Cmd.none
+            model, Cmd.none
         | LocationSearch _, FreeTextSearch
         | FreeTextSearch, LocationSearch _ ->
             // If we change search type completely, remove all loaded properties
             { model with
+                SearchText = ""
                 SelectedSearchKind = kind
+                Suggestions = { model.Suggestions with Visible = false }
                 Properties = HasNotStarted }, Cmd.none
     | Search (ByFreeText operation) ->
         match operation with
