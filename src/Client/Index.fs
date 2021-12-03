@@ -5,6 +5,9 @@ open Fable.Remoting.Client
 open Shared
 open System
 
+open Fable.Core.JsInterop
+importAll "./css/tailwind.css"
+
 type SearchTextError =
     NoSearchText | InvalidPostcode
     member this.Description =
@@ -297,64 +300,130 @@ module Facets =
         | NotFiltered -> color.isInfo
         | Filtered -> color.isPrimary
 
+
+    // I want to use tailwind classes
     let facetBox (label: string) facets selectedFacets dispatch =
-        Bulma.panel [
-            panelColour (label, facets, selectedFacets)
-            prop.style [ style.borderRadius 0 ]
+        Html.div [
+            prop.className [
+                "mb-10"
+                "shadow-xl"
+            ]
             prop.children [
-                Bulma.panelHeading [
-                    prop.style [ style.borderRadius 0 ]
+                Html.div [
+                    prop.style [
+                        style.
+                    ]
+                    prop.className [
+                        "bg-blue-400"
+                        "text-white"
+                        "p-5"
+                        "text-lg"
+                        "font-bold"
+                    ]
                     prop.text label
                 ]
-                for facet in facets do
+                for (facet: string) in facets do
                     let facetKeyValue  = fromPluralToSingular label, facet
                     let isSelected =
                         selectedFacets
                         |> List.exists ((=) facetKeyValue)
-                    Bulma.panelBlock.div [
-                        Bulma.columns [
-                            columns.isMobile
-                            columns.isVCentered
-                            prop.style [
-                                style.width (length.percent 100)
-                                style.paddingLeft  10
-                             ]
-                            prop.children [
-                                Bulma.column [
-                                    column.is1
-                                    prop.children [
-                                        Bulma.input.checkbox [
-                                            prop.isChecked isSelected
-                                            prop.onChange (fun isChecked ->
-                                                if isChecked then
-                                                    facetKeyValue
-                                                    |> SelectFacet
-                                                    |> dispatch
-                                                else
-                                                    facetKeyValue
-                                                    |> RemoveFacet
-                                                    |> dispatch
-                                            )
-                                        ]
-                                    ]
-                                ]
-                                Bulma.column [
-                                    prop.text (facet.ToLower())
-                                    prop.style [
-                                        style.textOverflow.ellipsis
-                                        if isSelected then style.fontWeight.bolder
-                                        style.textTransform.capitalize
-                                    ]
-                                ]
-                            ]
+                    Html.div [
+                        prop.className [
+                            "flex"
+                            "items-center"
+                            "h-10"
+                            "p-5"
+                            "border-b"
+                            "border-gray-300"
+
                         ]
-                    ]
-                if facets.IsEmpty then
-                    Bulma.panelBlock.div [
-                        prop.text "No results"
+                        prop.children [
+                            Html.input [
+                                prop.className [
+                                    "mr-5"
+                                ]
+                                prop.type'.checkbox
+                            ]
+                            Html.label [
+                                prop.className [
+                                ]
+                                prop.text facet
+                            ]
+
+                        ]
                     ]
             ]
         ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        Bulma.panel [
+//            panelColour (label, facets, selectedFacets)
+//            prop.style [ style.borderRadius 0 ]
+//            prop.children [
+//                Bulma.panelHeading [
+//                    prop.style [ style.borderRadius 0 ]
+//                    prop.text label
+//                ]
+//                for facet in facets do
+//                    let facetKeyValue  = fromPluralToSingular label, facet
+//                    let isSelected =
+//                        selectedFacets
+//                        |> List.exists ((=) facetKeyValue)
+//                    Bulma.panelBlock.div [
+//                        Bulma.columns [
+//                            columns.isMobile
+//                            columns.isVCentered
+//                            prop.style [
+//                                style.width (length.percent 100)
+//                                style.paddingLeft  10
+//                             ]
+//                            prop.children [
+//                                Bulma.column [
+//                                    column.is1
+//                                    prop.children [
+//                                        Bulma.input.checkbox [
+//                                            prop.isChecked isSelected
+//                                            prop.onChange (fun isChecked ->
+//                                                if isChecked then
+//                                                    facetKeyValue
+//                                                    |> SelectFacet
+//                                                    |> dispatch
+//                                                else
+//                                                    facetKeyValue
+//                                                    |> RemoveFacet
+//                                                    |> dispatch
+//                                            )
+//                                        ]
+//                                    ]
+//                                ]
+//                                Bulma.column [
+//                                    prop.text (facet.ToLower())
+//                                    prop.style [
+//                                        style.textOverflow.ellipsis
+//                                        if isSelected then style.fontWeight.bolder
+//                                        style.textTransform.capitalize
+//                                    ]
+//                                ]
+//                            ]
+//                        ]
+//                    ]
+//                if facets.IsEmpty then
+//                    Bulma.panelBlock.div [
+//                        prop.text "No results"
+//                    ]
+//            ]
+//        ]
 
     let facetBoxes (facets: Facets) selectedFacets dispatch =
         Html.div [

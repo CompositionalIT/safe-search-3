@@ -29,6 +29,7 @@ let searchApi (context:HttpContext) =
 
     {
         FreeText = fun request -> async {
+            printf $"Hi reached here, %s{config.SearchIndexKey}"
             let formattedQuery = Search.FormattedQuery.Build request.Text
             logger.LogInformation ("Free Text search for {QueryText} on index '{SearchIndex}'", formattedQuery.Value, config.SearchIndexName)
             let! results = Search.freeTextSearch formattedQuery request.Filters config.SearchIndexName config.SearchIndexKey |> Async.AwaitTask
@@ -89,7 +90,7 @@ type Object with
 
 let app =
     application {
-        webhost_config (fun config -> config.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
+        //webhost_config (fun config -> config.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
         logging (fun cfg -> cfg.AddSerilog().Ignore())
         host_config (fun config -> config.UseSerilog((fun _ _ config ->
             config
