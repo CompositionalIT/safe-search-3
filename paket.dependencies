@@ -9,6 +9,7 @@ nuget Fable.Remoting.Giraffe
 nuget Feliz.AgGrid
 nuget Feliz.Bulma.QuickView
 nuget Feliz.Bulma.Slider
+nuget Feliz.DaisyUI
 nuget Feliz.PigeonMaps
 nuget Feliz.ReactLoadingSkeleton
 nuget Feliz.Recharts

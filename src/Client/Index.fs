@@ -4,8 +4,10 @@ open Elmish
 open Fable.Remoting.Client
 open Shared
 open System
+open Feliz.DaisyUI
 
 open Fable.Core.JsInterop
+
 importAll "./css/tailwind.css"
 
 type SearchTextError =
@@ -309,9 +311,10 @@ module Facets =
                 "shadow-xl"
             ]
             prop.children [
+
                 Html.div [
                     prop.style [
-                        style.
+
                     ]
                     prop.className [
                         "bg-blue-400"
@@ -335,20 +338,36 @@ module Facets =
                             "p-5"
                             "border-b"
                             "border-gray-300"
-
                         ]
                         prop.children [
-                            Html.input [
+//                            Html.input [
+//                                // scale animation on click using tailwind
+//                                prop.className [
+//                                    "transition"
+//                                    "duration-200"
+//                                    "ease-in-out"
+//                                    "hover:scale-150"
+//                                    "transform"
+//                                    "mr-5"
+//                                ]
+//                                prop.type'.checkbox
+//                            ]
+                            Html.button [
                                 prop.className [
-                                    "mr-5"
+
+                                    //"animate-spin"
+
                                 ]
-                                prop.type'.checkbox
-                            ]
-                            Html.label [
-                                prop.className [
+                                prop.children [
+                                    Html.text "button"
                                 ]
-                                prop.text facet
                             ]
+//                            Html.label [
+//                                prop.className [
+//                                    //"animate-spin"
+//                                ]
+//                                prop.text facet
+//                            ]
 
                         ]
                     ]
@@ -745,15 +764,16 @@ module Search =
 
 
     let searchButton (model:Model) dispatch =
-        Bulma.button.a [
-            button.isFullWidth
+
+        Daisy.button.button [
+//            button.wide //button.isFullWidth
             prop.tabIndex 3
-            color.isPrimary
+            button.primary // color.isPrimary
             match model.SearchTextError, model.Properties with
             | Some _, _ ->
                 prop.disabled true
             | None, IsLoading ->
-                button.isLoading
+                button.loading //button.isLoading
             | None, IsNotLoading ->
                 match model.SelectedSearchKind with
                 | FreeTextSearch -> prop.onClick(fun _ -> dispatch (Search (ByFreeText (Start model.SearchText))))
@@ -766,16 +786,10 @@ module Search =
                 | _ -> ()
             )
             prop.children [
-                Bulma.icon [
-                    prop.children [
-                        Html.i [
-                            prop.className "fas fa-search"
-                        ]
-                    ]
+                Html.i [
+                    prop.className "px-2 fas fa-search"
                 ]
-                Html.span [
-                    Html.text "Search"
-                ]
+                Html.text "Search"
             ]
         ]
 
@@ -823,13 +837,14 @@ module Search =
             Bulma.column [
                 column.isOneFifth
                 prop.children [
-                    Bulma.control.div [
-                        control.hasIconsLeft
+                    Html.div [
+                        prop.className "flex items-center"
                         prop.children [
-                            Bulma.select [
+                            Html.i [ prop.className "fas fa-search px-2" ]
+                            Daisy.select [
                                 prop.tabIndex 2
-                                select.isFullWidth
-                                prop.style [ style.width (length.percent 100)]
+                                prop.className "w-2/3"
+                                select.bordered
                                 prop.disabled (model.Properties = InProgress)
                                 prop.onChange (function
                                     | "1" -> dispatch (SearchKindSelected FreeTextSearch)
@@ -844,19 +859,19 @@ module Search =
                                 ]
                                 prop.valueOrDefault model.SelectedSearchKind.Value
                             ]
-                            Bulma.icon [
-                                icon.isSmall
-                                icon.isLeft
-                                prop.children [
-                                    Html.i [
-                                        let iconName =
-                                            match model.SelectedSearchKind with
-                                            | FreeTextSearch -> "search"
-                                            | LocationSearch _ -> "location-arrow"
-                                        prop.className $"fas fa-{iconName}"
-                                    ]
-                                ]
-                            ]
+//                            Bulma.icon [
+//                                icon.isSmall
+//                                icon.isLeft
+//                                prop.children [
+//                                    Html.i [
+//                                        let iconName =
+//                                            match model.SelectedSearchKind with
+//                                            | FreeTextSearch -> "search"
+//                                            | LocationSearch _ -> "location-arrow"
+//                                        prop.className $"fas fa-{iconName}"
+//                                    ]
+//                                ]
+//                            ]
                         ]
                     ]
                 ]
@@ -1145,17 +1160,19 @@ let modalView dispatch property =
 
 let view (model:Model) dispatch =
     Html.div [
-        Facets.facetMenu model.FilterMenuOpen model.Facets model.SelectedFacets dispatch
-        safeSearchNavBar
-        Bulma.section [
-            Bulma.container [
-                Heading.title
-                Heading.subtitle
-                Search.createSearchPanel model dispatch
-                Search.createSearchResults model dispatch
+        prop.children [
+            Facets.facetMenu model.FilterMenuOpen model.Facets model.SelectedFacets dispatch
+            safeSearchNavBar
+            Bulma.section [
+                Bulma.container [
+                    Heading.title
+                    Heading.subtitle
+                    Search.createSearchPanel model dispatch
+                    Search.createSearchResults model dispatch
+                ]
+                model.SelectedProperty
+                |> Option.map (modalView dispatch)
+                |> Option.defaultValue Html.none
             ]
-            model.SelectedProperty
-            |> Option.map (modalView dispatch)
-            |> Option.defaultValue Html.none
         ]
     ]

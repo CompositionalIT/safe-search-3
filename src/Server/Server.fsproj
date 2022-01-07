@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <UserSecretsId>e31940e2-49dc-4737-92a7-5c095d02866a</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
