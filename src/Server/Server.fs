@@ -46,12 +46,7 @@ let searchApi (context:HttpContext) =
         }
         GetCrimes = fun geo -> async {
             logger.LogInformation ("Crime search for '{Geo}'...", geo)
-            let! reports = getCrimesNearPosition geo
-            let crimes =
-                reports
-                |> Array.countBy(fun report -> report.Category)
-                |> Array.sortByDescending snd
-                |> Array.map(fun (crime, incidents) -> { Crime = crime; Incidents = incidents })
+            let! crimes = getCrimesNearPosition geo
             logger.LogInformation ("Retrieved {Crimes} different crimes.", crimes.Length)
             return crimes
         }

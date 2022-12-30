@@ -1,0 +1,4610 @@
+﻿[
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534430,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534432,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506210",
+            "street": {
+                "id": 1705115,
+                "name": "On or near Tawney Road"
+            },
+            "longitude": "0.113106"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533473,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507395",
+            "street": {
+                "id": 1705404,
+                "name": "On or near Hasler Close"
+            },
+            "longitude": "0.116763"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534302,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502540",
+            "street": {
+                "id": 1705321,
+                "name": "On or near Disraeli Close"
+            },
+            "longitude": "0.116653"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534303,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504754",
+            "street": {
+                "id": 1705448,
+                "name": "On or near Carlyle Road"
+            },
+            "longitude": "0.117577"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534304,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534305,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509831",
+            "street": {
+                "id": 1705559,
+                "name": "On or near Nickelby Close"
+            },
+            "longitude": "0.119297"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534308,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494694",
+            "street": {
+                "id": 1705614,
+                "name": "On or near Thistlebrook"
+            },
+            "longitude": "0.119906"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534309,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494694",
+            "street": {
+                "id": 1705614,
+                "name": "On or near Thistlebrook"
+            },
+            "longitude": "0.119906"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534310,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506931",
+            "street": {
+                "id": 1705605,
+                "name": "On or near Goldcrest Close"
+            },
+            "longitude": "0.119523"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534312,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506931",
+            "street": {
+                "id": 1705605,
+                "name": "On or near Goldcrest Close"
+            },
+            "longitude": "0.119523"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534313,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493680",
+            "street": {
+                "id": 1705691,
+                "name": "On or near Cook Close"
+            },
+            "longitude": "0.120752"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534314,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502874",
+            "street": {
+                "id": 1705917,
+                "name": "On or near Eastern Way"
+            },
+            "longitude": "0.125559"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534315,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534397,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534398,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.511496",
+            "street": {
+                "id": 1705753,
+                "name": "On or near Thamesbank Place"
+            },
+            "longitude": "0.123179"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534399,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534401,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497548",
+            "street": {
+                "id": 1705886,
+                "name": "On or near Mere Road"
+            },
+            "longitude": "0.123669"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534402,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534403,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534404,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534407,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509329",
+            "street": {
+                "id": 1706057,
+                "name": "On or near Eastgate Close"
+            },
+            "longitude": "0.126667"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534408,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509329",
+            "street": {
+                "id": 1706057,
+                "name": "On or near Eastgate Close"
+            },
+            "longitude": "0.126667"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534409,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509329",
+            "street": {
+                "id": 1706057,
+                "name": "On or near Eastgate Close"
+            },
+            "longitude": "0.126667"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534410,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509332",
+            "street": {
+                "id": 1706130,
+                "name": "On or near Templar Drive"
+            },
+            "longitude": "0.128468"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534411,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534412,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534413,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497003",
+            "street": {
+                "id": 1706115,
+                "name": "On or near St Martins Close"
+            },
+            "longitude": "0.128975"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534416,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497003",
+            "street": {
+                "id": 1706115,
+                "name": "On or near St Martins Close"
+            },
+            "longitude": "0.128975"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534417,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497003",
+            "street": {
+                "id": 1706115,
+                "name": "On or near St Martins Close"
+            },
+            "longitude": "0.128975"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534418,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497003",
+            "street": {
+                "id": 1706115,
+                "name": "On or near St Martins Close"
+            },
+            "longitude": "0.128975"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534419,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497003",
+            "street": {
+                "id": 1706115,
+                "name": "On or near St Martins Close"
+            },
+            "longitude": "0.128975"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534420,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509548",
+            "street": {
+                "id": 1706269,
+                "name": "On or near Cherbury Close"
+            },
+            "longitude": "0.130424"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534426,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534428,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534429,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534431,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106534433,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106535086,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106535087,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106535088,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504545",
+            "street": {
+                "id": 1704626,
+                "name": "On or near Dean Road"
+            },
+            "longitude": "0.105680"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533460,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533462,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533464,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.503242",
+            "street": {
+                "id": 1704987,
+                "name": "On or near Waterfield Close"
+            },
+            "longitude": "0.110648"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533467,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "anti-social-behaviour",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.503242",
+            "street": {
+                "id": 1704987,
+                "name": "On or near Waterfield Close"
+            },
+            "longitude": "0.110648"
+        },
+        "context": "",
+        "outcome_status": null,
+        "persistent_id": "",
+        "id": 106533468,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "bicycle-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502281",
+            "street": {
+                "id": 1704979,
+                "name": "On or near Hampstead Close"
+            },
+            "longitude": "0.110085"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5b0e08275631d52c88ef3ec368a28b8798aa3c30545f4f1ebb718bb94d4a8281",
+        "id": 106588763,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "cb5e7b19c9ef99db112ff7bcd961facf8b43f43c73319c020c8ebeb1c3ab9948",
+        "id": 106553574,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506153",
+            "street": {
+                "id": 1704974,
+                "name": "On or near Clock Tower Mews"
+            },
+            "longitude": "0.110826"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "ca57518831af092aa1c526ae629b5b828bba1d0c49427d18df49a94aac8538d7",
+        "id": 106562112,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "ed21e29b5b83451dcbe93d9931b41ecc46f80f9314bcb20ec320c71d4b115257",
+        "id": 106600880,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497196",
+            "street": {
+                "id": 1706230,
+                "name": "On or near St Michael's Close"
+            },
+            "longitude": "0.129704"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "f6e2d907114f17027d2fc387a8787508a9daec52f3ad7b3883e1095fa7c7a7bf",
+        "id": 106595835,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497172",
+            "street": {
+                "id": 1706261,
+                "name": "On or near St Katherines Road"
+            },
+            "longitude": "0.130553"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "1f1e2f2b4f8c12f039bf65ba1aa88853192bf1fcb2294b098fd7f9451023e508",
+        "id": 106596796,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "burglary",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502283",
+            "street": {
+                "id": 1705054,
+                "name": "On or near Galsworthy Close"
+            },
+            "longitude": "0.111469"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e306146243b2f5f65d4dd6b33759a267f5db51f3c40f41921d0a7d81e81eb07c",
+        "id": 106618964,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508497",
+            "street": {
+                "id": 1705465,
+                "name": "On or near Bertrand Way"
+            },
+            "longitude": "0.116987"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "bd07a321e40ca3eadca797bb16755b427f30810aefa98bb56a53be1593b21015",
+        "id": 106644464,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506767",
+            "street": {
+                "id": 1705231,
+                "name": "On or near Attlee Road"
+            },
+            "longitude": "0.115668"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "04e9d55681374c55d77d0e30441afb4a2e3cf9e1e1590ef049e204aff6acd36d",
+        "id": 106657063,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "a6d88a834067c33fdea15b8dbe50e735ee6fa2930bdcea61972d42e016af807b",
+        "id": 106623308,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.500426",
+            "street": {
+                "id": 1705068,
+                "name": "On or near "
+            },
+            "longitude": "0.111714"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "7e1d3d556a511545cc39321d85caf3ef02cf707770c1cd15c68d1f55eae90cf1",
+        "id": 106635338,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506886",
+            "street": {
+                "id": 1705839,
+                "name": "On or near Fieldfare Road"
+            },
+            "longitude": "0.122504"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "e56ebf8525fc0eea9d781f0ce74a80987b291daed2e240322732d28bac201def",
+        "id": 106660839,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.511434",
+            "street": {
+                "id": 1706277,
+                "name": "On or near Troon Close"
+            },
+            "longitude": "0.131045"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "4c6580eca40bd66a1cc8023c8363b0d2d5a392f24366d5f1c7596b4ca6965b8b",
+        "id": 106577872,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504891",
+            "street": {
+                "id": 1705255,
+                "name": "On or near Booth Close"
+            },
+            "longitude": "0.114961"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "e0f011c8690f0737ea093cb31f224b85d3f351ba378b414d1e6928b88408295a",
+        "id": 106579418,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "1d7d82f4268de63b04e10ca010d4547832a65945d66b53c133974eea2f520721",
+        "id": 106548540,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.511302",
+            "street": {
+                "id": 1705610,
+                "name": "On or near Voyagers Close"
+            },
+            "longitude": "0.121498"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "267a8d6f0e290406c26729ae0b76dff9f4830efd99005dd47b05f954d1c3b8cb",
+        "id": 106647697,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "7c8a9d5f0e5b1fb648912a515f70a9627834bd48375c53f2329a79fc09e9c778",
+        "id": 106615295,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "a8fb39bd197aedd6f9c8206fe6dc76f8742ec00e222a728bb4ca708e61472d93",
+        "id": 106614728,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.500961",
+            "street": {
+                "id": 1704828,
+                "name": "On or near Sorrel Close"
+            },
+            "longitude": "0.108972"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c7c255f9d2f997cc0d2d50e70a0deaefaa7583ac52b31842849c2e12a48d5c0b",
+        "id": 106630445,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.500899",
+            "street": {
+                "id": 1704978,
+                "name": "On or near Chervil Mews"
+            },
+            "longitude": "0.110425"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "450df513d631da661fca0c8fa9189f440565adcc73ab97960e2b033eb89dc53b",
+        "id": 106650998,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "99c373a39c34c0fd7774a57df6426205b277ce8fdf93beb7deab26932921ea51",
+        "id": 106599598,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e865e7332ae813fdbdf76dd0760fb792436cc2ff1818edd683c70cbe60c61ef5",
+        "id": 106605283,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.501541",
+            "street": {
+                "id": 1705272,
+                "name": "On or near Shaw Close"
+            },
+            "longitude": "0.114244"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "f61c6cec863dd6d64ac1596d7c2da72fb6f8455b65649de793046355d1762f45",
+        "id": 106586801,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.511496",
+            "street": {
+                "id": 1705753,
+                "name": "On or near Thamesbank Place"
+            },
+            "longitude": "0.123179"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2cc6ecf2cb4e31365b19ed6f291da80da1c9d5623e5f22290853d0e31bbd1c2b",
+        "id": 106556850,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508318",
+            "street": {
+                "id": 1705850,
+                "name": "On or near Kingfisher Close"
+            },
+            "longitude": "0.123363"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "86fe2229b0f4a9ad3e72f35178653f940108b4fa30163b9dd7da4243019a23b6",
+        "id": 106560576,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "criminal-damage-arson",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497550",
+            "street": {
+                "id": 1705911,
+                "name": "On or near Southmere Drive"
+            },
+            "longitude": "0.124073"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7ec84786c8285b5bf7a708f40f58bda2a7392adcb961444fa62b25518d75ca59",
+        "id": 106549831,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502961",
+            "street": {
+                "id": 1705600,
+                "name": "On or near Byron Close"
+            },
+            "longitude": "0.119252"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Local resolution",
+            "date": "2022-11"
+        },
+        "persistent_id": "0b09e3b019b479dd388265693a403c694e01136a66a2aee8a5d0434082f3d435",
+        "id": 106553711,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "9981e0d305c14e5315c853b9d155d217d7cc8fe3c3136dce8758d5f97c61ac55",
+        "id": 106554481,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "575b49533191658c7025f0f9a6270fd1ba5f93e2a1fd35660237ef79330e926e",
+        "id": 106558575,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506086",
+            "street": {
+                "id": 1705606,
+                "name": "On or near Linnet Close"
+            },
+            "longitude": "0.118994"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "371b2fa320d7901c4945fb1cb786cb494be236a9166a20e71e6da38fdea1b2c9",
+        "id": 106624058,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497681",
+            "street": {
+                "id": 1705224,
+                "name": "On or near Mountjoy Close"
+            },
+            "longitude": "0.113835"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "26b947dd89364f55a82d479351767bdcc99623edfa36fb5c6a300b87ab683b52",
+        "id": 106602504,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504999",
+            "street": {
+                "id": 1706120,
+                "name": "On or near "
+            },
+            "longitude": "0.129633"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c99980d10d237c1a7ba698acaa4c5a2f799ba785d3e54c1d08edbcc4b533aa11",
+        "id": 106588855,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Local resolution",
+            "date": "2022-11"
+        },
+        "persistent_id": "d06031f137d464a97c96780fd6a6bfc3a1b6ef804f85f78962707e2754503407",
+        "id": 106575645,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "8d09c65e8e45c76cdac21708de1361cc10a9cc405d143c75c2699924c1369e02",
+        "id": 106646080,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "drugs",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Local resolution",
+            "date": "2022-11"
+        },
+        "persistent_id": "d3ed068e44f1e0bff3d48be3ac16eaf459390b3cd45cfe1b971eae580f8c9da6",
+        "id": 106579034,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507050",
+            "street": {
+                "id": 1705498,
+                "name": "On or near Lipton Close"
+            },
+            "longitude": "0.117439"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "d7ace7e82bb055fdf6c7f38d87db49b12d10dbfffe8321f05d95325f38417f0d",
+        "id": 106557601,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507806",
+            "street": {
+                "id": 1706067,
+                "name": "On or near Wroxham Road"
+            },
+            "longitude": "0.126812"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "f96f2a02ffe0aa58e0869c7bcda42a1761940576b8a9b251a1c86830e4060a0e",
+        "id": 106586707,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.501541",
+            "street": {
+                "id": 1705272,
+                "name": "On or near Shaw Close"
+            },
+            "longitude": "0.114244"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e44550c61473ef654b34301f37fc1036f788a1d642bc274e0832a899cfdae6d3",
+        "id": 106573865,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6d0d834f38498aff649bf30d02e48d83e93097a4e7009b8e46987bb29c1ccbe8",
+        "id": 106582038,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.500961",
+            "street": {
+                "id": 1704828,
+                "name": "On or near Sorrel Close"
+            },
+            "longitude": "0.108972"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "71520257c778e0f9d029c6d04a17627328d390a12915f290600be3a85a690441",
+        "id": 106618117,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502961",
+            "street": {
+                "id": 1705600,
+                "name": "On or near Byron Close"
+            },
+            "longitude": "0.119252"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "3878260c1c585c25fd96eb1874c991edd2cef086349552fa0d146ba306a60ff4",
+        "id": 106618743,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502961",
+            "street": {
+                "id": 1705600,
+                "name": "On or near Byron Close"
+            },
+            "longitude": "0.119252"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "0399dcf12eae5b8ed3daf58469f1b2565c1afc1a1db1d5016de876f38c7ea0cf",
+        "id": 106623112,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "b934f6abfa6e0897a54e195a43dddf7c2451e392cc555df8053f04a20ce7f6bc",
+        "id": 106565647,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498224",
+            "street": {
+                "id": 1705456,
+                "name": "On or near Ampleforth Road"
+            },
+            "longitude": "0.117620"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "271edd48e3280b982f6d9e02e370ac64b023ccae81c56811d1f98faf95e9220f",
+        "id": 106546685,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507081",
+            "street": {
+                "id": 1705005,
+                "name": "On or near Saunders Way"
+            },
+            "longitude": "0.112728"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "112b766c5d6de3585ac4d217018dd08bc343af0ef5d8cc2c5b7f3079db36533f",
+        "id": 106645462,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "23fecd31eac00f9d1632613199ad3026ce237a84de1c5fd5972aa209553d9903",
+        "id": 106586036,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "dd91bb70f2e7594053a98a3281ec179802a9ceca3f0e72f15b5c365a673af22b",
+        "id": 106573024,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502283",
+            "street": {
+                "id": 1705054,
+                "name": "On or near Galsworthy Close"
+            },
+            "longitude": "0.111469"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "1602d45c0dce2e03640b5889466302ae50b3a5c51f362a40c2b241a39d30bafc",
+        "id": 106591587,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "7b435f59dfd6ebd6c0a04bced621c4c956be55ffb445e4bb2187cec16b2e987d",
+        "id": 106545502,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-theft",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "2afe29dbb9a2289cde9ea25db19b1492d90589f265a6a3eec969b708612b1a8a",
+        "id": 106576110,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e8cc977ca4c4806783935a6de9ce1c27d9784778e114dea34a8ea6569b4c39b6",
+        "id": 106565660,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508728",
+            "street": {
+                "id": 1705069,
+                "name": "On or near Swift Close"
+            },
+            "longitude": "0.113121"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "423c254e793923aed918c4357cf3789e2ecd99f196d5308b17ea31a0e2ac987c",
+        "id": 106605021,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "fc61d5fb1d573ae7fa1669b72f4b12cca4ad5a6246d7f6ba158c8d759a8863ce",
+        "id": 106553957,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c738e7fa68e3d3b01101fbdc0061138ffdbd48db9a7f7b07ae83daed33550a96",
+        "id": 106548583,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509511",
+            "street": {
+                "id": 1705222,
+                "name": "On or near Greenhaven Drive"
+            },
+            "longitude": "0.115579"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "b9fa61475533fc071c2c74563ad4ad2821ce48dfef1f220c44616e75a93af23c",
+        "id": 106654071,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "5306bd65ab615606d70f8b2251f0c8bd967d9deb7c76de37cea8b7281409429b",
+        "id": 106588448,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504891",
+            "street": {
+                "id": 1705255,
+                "name": "On or near Booth Close"
+            },
+            "longitude": "0.114961"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "fb8441584abf002f15c8aac68eedbb3f92477a598a0947337926a2c7395fe1c6",
+        "id": 106548853,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "ea30014ecaa407e022bf2c3ba3645c48404b3a91d4a55e8f0c9626099cd682cb",
+        "id": 106561367,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "fc61d5fb1d573ae7fa1669b72f4b12cca4ad5a6246d7f6ba158c8d759a8863ce",
+        "id": 106553955,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.511434",
+            "street": {
+                "id": 1706277,
+                "name": "On or near Troon Close"
+            },
+            "longitude": "0.131045"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4c6580eca40bd66a1cc8023c8363b0d2d5a392f24366d5f1c7596b4ca6965b8b",
+        "id": 106576520,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "81f953eb7e948b2f848e0bd66b831d06d9694c80723be76787ee385ed201b949",
+        "id": 106547194,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e865e7332ae813fdbdf76dd0760fb792436cc2ff1818edd683c70cbe60c61ef5",
+        "id": 106603358,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509511",
+            "street": {
+                "id": 1705222,
+                "name": "On or near Greenhaven Drive"
+            },
+            "longitude": "0.115579"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "b9fa61475533fc071c2c74563ad4ad2821ce48dfef1f220c44616e75a93af23c",
+        "id": 106654069,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502281",
+            "street": {
+                "id": 1704979,
+                "name": "On or near Hampstead Close"
+            },
+            "longitude": "0.110085"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7cb37a5971fe1035130fb05acade93f09a0290581455e17bdf4d31e402410858",
+        "id": 106603200,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508356",
+            "street": {
+                "id": 1705962,
+                "name": "On or near Surlingham Close"
+            },
+            "longitude": "0.125728"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "71e54891b6012f660adf74c98fdabec37015cd7679f3841afc2fd2e81e2ff406",
+        "id": 106601373,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "b71820dd74318dfddf910a5dc6908211c4628aea4a74338e8443eabf2683fd4c",
+        "id": 106593846,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506770",
+            "street": {
+                "id": 1704625,
+                "name": "On or near "
+            },
+            "longitude": "0.105859"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "b3c6f14b56fc41f8427f267128013e6102975ffd236e6a593f6a2f04d5cd75ac",
+        "id": 106627118,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "de11b316988d8ab0125cf52641dc7d1785cb25fde1f86e7ce5d01612ab6a3658",
+        "id": 106579873,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "public-order",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506886",
+            "street": {
+                "id": 1705839,
+                "name": "On or near Fieldfare Road"
+            },
+            "longitude": "0.122504"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "073547d8e36620ae717423835e095aa31599e1256364ffa0160835d9075e04de",
+        "id": 106556728,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.505463",
+            "street": {
+                "id": 1705522,
+                "name": "On or near Slocum Close"
+            },
+            "longitude": "0.118172"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2d0d43eba9e058b9693fadc04c91fae9a19863278a531060ab23546dc4fb2259",
+        "id": 106548868,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.503242",
+            "street": {
+                "id": 1704987,
+                "name": "On or near Waterfield Close"
+            },
+            "longitude": "0.110648"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "03d1121874bdd9e08658f06dce3392f211251708fde70e0994f749e27979f4c8",
+        "id": 106577805,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506770",
+            "street": {
+                "id": 1704625,
+                "name": "On or near "
+            },
+            "longitude": "0.105859"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "00ec5b02df88f04b79fa6e8ceea8e80bae89200a27b154bd7fa874fdbbe38c74",
+        "id": 106572332,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "7650663b417f6e707b3555434f43f6d38e2b6647e62686d7e4bcd186e150afb1",
+        "id": 106627587,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "79556b5e62c5871c79efb11e9c920146a08cddf2f1753a4ee6351a977b97761d",
+        "id": 106556399,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.503242",
+            "street": {
+                "id": 1704987,
+                "name": "On or near Waterfield Close"
+            },
+            "longitude": "0.110648"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "03d1121874bdd9e08658f06dce3392f211251708fde70e0994f749e27979f4c8",
+        "id": 106577806,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "76e7ad1d93ad6294d266ddd7370a3be16fb87801cd60b81721c2053528abafd6",
+        "id": 106598426,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "59228806b685885cdfd558ef3ac50958cfd7bad77e9d7bd42705cb35e25a242d",
+        "id": 106605517,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "robbery",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "76e7ad1d93ad6294d266ddd7370a3be16fb87801cd60b81721c2053528abafd6",
+        "id": 106598424,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "shoplifting",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5b6964f97879295ec15cc2a2c9b57ebd54b08bc44d5614c73521c29d0c6c2e6b",
+        "id": 106580486,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "shoplifting",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506770",
+            "street": {
+                "id": 1704625,
+                "name": "On or near "
+            },
+            "longitude": "0.105859"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "36227a447dcba79fd7f5467ac11ac511fa4e650a81bb92d0e667b9f1b39cf263",
+        "id": 106638171,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "theft-from-the-person",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "3d08bb1faa04cb5239df7646f660bf6841f28f8511f3d98d0d3e4c416f3a1c90",
+        "id": 106633980,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "theft-from-the-person",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504754",
+            "street": {
+                "id": 1705448,
+                "name": "On or near Carlyle Road"
+            },
+            "longitude": "0.117577"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "8ae934c332eb26db311de8c7bed853538d1e354597beda2f596549b28eb862c8",
+        "id": 106607220,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "theft-from-the-person",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e42ca5e5ca2355fcc550675b1740fa7b926972f2dd2c55a8be5d28e072b8124f",
+        "id": 106545536,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510962",
+            "street": {
+                "id": 1706302,
+                "name": "On or near Lytham Close"
+            },
+            "longitude": "0.132767"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "fc4d6c0c732f220d9422ede8ae03633762a5f8a8a8edcb29d26ba8008cc9ac31",
+        "id": 106581019,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "483a01b29f977bb0f4d16c9243ec010a2173828ec5483ce0b947ce41b95c9db1",
+        "id": 106549512,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497264",
+            "street": {
+                "id": 1705315,
+                "name": "On or near Grovebury Road"
+            },
+            "longitude": "0.115040"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "19522d50e2905e427a65124e46d83e36028b0d8c6c152b8213b28b719ecc93f9",
+        "id": 106570188,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "cfc103c48ff8b014a604aedcfa33ac5c0fc1867998e60339c1bf009a6c8c77bb",
+        "id": 106551100,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507081",
+            "street": {
+                "id": 1705005,
+                "name": "On or near Saunders Way"
+            },
+            "longitude": "0.112728"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "4481b77d3801059e1385de1682afb35c079a8642b4b4b9f1f4c8aa13af1ae9d2",
+        "id": 106589313,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509548",
+            "street": {
+                "id": 1706269,
+                "name": "On or near Cherbury Close"
+            },
+            "longitude": "0.130424"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4b97fee17f308888fc67a4d3199e1072257807e586687c6b35dbc0665eaa6b5e",
+        "id": 106585397,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "d1dc9004d325fcb530547d7f467299e357307acccb2ce59e72480f3bc93f7e79",
+        "id": 106587019,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "2a56bf1e4b8fabed1f5be362257314db2bfee359709cce0b023c3c42580be0d6",
+        "id": 106605295,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508728",
+            "street": {
+                "id": 1705069,
+                "name": "On or near Swift Close"
+            },
+            "longitude": "0.113121"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "309fe6df93a4ca79e9a94d65be6b11d60f2a8a47404283ef8d16ea369ecf7880",
+        "id": 106583171,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.512085",
+            "street": {
+                "id": 1706182,
+                "name": "On or near St Mellion Close"
+            },
+            "longitude": "0.128899"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "96e0862d5b92ac1f5c981838efecccac8e549fa81e88a304908c1e7213af6000",
+        "id": 106601057,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "3c43761a546a2e9c71459bffa03502f95d381c9a64a29fee4edd6fee5371a015",
+        "id": 106648744,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497058",
+            "street": {
+                "id": 1705524,
+                "name": "On or near Godstow Road"
+            },
+            "longitude": "0.118445"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5b06ab82192046f1eebfaee0bf85dcc2592c8eaa4d9528639cf7632000f9238a",
+        "id": 106625624,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.500899",
+            "street": {
+                "id": 1704978,
+                "name": "On or near Chervil Mews"
+            },
+            "longitude": "0.110425"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "7871e754888e5a440be4eb03454253176090bea6b77edab8aa6ae19178c440c5",
+        "id": 106614295,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502540",
+            "street": {
+                "id": 1705321,
+                "name": "On or near Disraeli Close"
+            },
+            "longitude": "0.116653"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "c1796bf343b571cdaa3c77c9f943c10d8a5c85c36311c1c3239413f94491bd82",
+        "id": 106645662,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "5eea5b6915975b786bc6a49c0fa49c2e61c087bb96ca40dcd8dcbc2665d25612",
+        "id": 106652284,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510320",
+            "street": {
+                "id": 1706237,
+                "name": "On or near Turnbury Close"
+            },
+            "longitude": "0.130042"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "c2b828eb310ff52212bc74fdaeb3a0bb7ecdc7ed2fc86f665b8a3912c2b39f5a",
+        "id": 106584175,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510355",
+            "street": {
+                "id": 1706279,
+                "name": "On or near Sunningdale Close"
+            },
+            "longitude": "0.131543"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "a9cc7a925e8584a675a076827ea939e43b7cde0cb9d28312675880666771d05b",
+        "id": 106586748,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493471",
+            "street": {
+                "id": 1705808,
+                "name": "On or near Overton Road"
+            },
+            "longitude": "0.123883"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "1673e43eaf9518c99ca43e736a6bb8358d044ddc3b488030188e64cda55de03d",
+        "id": 106557824,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510394",
+            "street": {
+                "id": 1705526,
+                "name": "On or near Fantail Close"
+            },
+            "longitude": "0.117997"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "6c73cb3695aa3b202e9611544fda4d4dd507ed735964ce35d76c4fba58f098e6",
+        "id": 106612094,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "vehicle-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497584",
+            "street": {
+                "id": 1706055,
+                "name": "On or near Seacourt Road"
+            },
+            "longitude": "0.126163"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "a0789e4b4856007b50526143c79eaa3580793809c63e95eeec61424c6159a8c9",
+        "id": 106576328,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506145",
+            "street": {
+                "id": 1705837,
+                "name": "On or near Bledlow Close"
+            },
+            "longitude": "0.122700"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2a6183f072ac1c836587a554c8c61a8ae4df45fa8f0e5928c9e710570cd122b8",
+        "id": 106598510,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497172",
+            "street": {
+                "id": 1706261,
+                "name": "On or near St Katherines Road"
+            },
+            "longitude": "0.130553"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "1d98918184dc8c11f03e58067fb15c2f8a66267a7ad999084d80a391abdd1e56",
+        "id": 106599317,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "68135940d5c9acd5096ac5e062ef5e1412e26c943eeeefcd50b32e9880442aa7",
+        "id": 106546547,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4757f498e4d214ea5ad0dc49a1f1600b754485f51bab796e93b9614aa6ad96a3",
+        "id": 106599715,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504891",
+            "street": {
+                "id": 1705255,
+                "name": "On or near Booth Close"
+            },
+            "longitude": "0.114961"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6431f358804c5689713183cb0d920b4041c92a2df0fef9428ef85d2319efd1cc",
+        "id": 106599815,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504891",
+            "street": {
+                "id": 1705255,
+                "name": "On or near Booth Close"
+            },
+            "longitude": "0.114961"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6431f358804c5689713183cb0d920b4041c92a2df0fef9428ef85d2319efd1cc",
+        "id": 106600860,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c0ff7726377be3f2c99f832eb99c995cd61d3a67a4360b6467075471e243addf",
+        "id": 106580930,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497058",
+            "street": {
+                "id": 1705524,
+                "name": "On or near Godstow Road"
+            },
+            "longitude": "0.118445"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "d4aca3375ec7267fbbafe1264f0895f9f2ef096ef25e69880ec42b27dac02e26",
+        "id": 106595966,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506153",
+            "street": {
+                "id": 1704974,
+                "name": "On or near Clock Tower Mews"
+            },
+            "longitude": "0.110826"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "f39cf83ff3e86c624c0a29ab30db73b649ec950a9ab1ec1bab267cfd0b82e264",
+        "id": 106649826,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497584",
+            "street": {
+                "id": 1706055,
+                "name": "On or near Seacourt Road"
+            },
+            "longitude": "0.126163"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "969cc513b37057cf374f73da9e2093ff3251779ec9247509e10a59b1fc5918ac",
+        "id": 106548471,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494825",
+            "street": {
+                "id": 1705646,
+                "name": "On or near Harrow Manorway"
+            },
+            "longitude": "0.121122"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6d3034fb54da113259e014f55af816d1a8c959a24ca4304758157a02106f6c8e",
+        "id": 106603230,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504968",
+            "street": {
+                "id": 1705570,
+                "name": "On or near Abbotts Close"
+            },
+            "longitude": "0.118682"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "71255a03e80e0bf41601a918c4330ecc1f39155e65cca1c70138854e44911f7d",
+        "id": 106594491,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510426",
+            "street": {
+                "id": 1706168,
+                "name": "On or near Woburn Close"
+            },
+            "longitude": "0.129110"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2adfc59c927f57b0a9c6bb91192fe5d72194f06b9a1b36095aed6483a9d63ff6",
+        "id": 106603503,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510426",
+            "street": {
+                "id": 1706168,
+                "name": "On or near Woburn Close"
+            },
+            "longitude": "0.129110"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2adfc59c927f57b0a9c6bb91192fe5d72194f06b9a1b36095aed6483a9d63ff6",
+        "id": 106603506,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "385df9aadfcf3a8740908d3486c79d052bee4ec8053262793f0fd4081f10abf3",
+        "id": 106637998,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.512085",
+            "street": {
+                "id": 1706182,
+                "name": "On or near St Mellion Close"
+            },
+            "longitude": "0.128899"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6326008dda9569f42052bbcc0fd02cfd084c3bce973e0ed71c116e06eb4abc12",
+        "id": 106570334,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507542",
+            "street": {
+                "id": 1704728,
+                "name": "On or near Thamesmere Drive"
+            },
+            "longitude": "0.108570"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c3e8e19fd8676d805a43aaaac71dd4a737d5cb31868a792054644d42a460a221",
+        "id": 106607226,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "66fe6026a5a0af5e54287dd337c69c9c4ac02794d77ee730da58a7b1ff41f0f7",
+        "id": 106594075,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497058",
+            "street": {
+                "id": 1705524,
+                "name": "On or near Godstow Road"
+            },
+            "longitude": "0.118445"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "1b83de03119ee848ffd518d895cee932bdc5b288e8627e6b11ad4f74f9642f14",
+        "id": 106654627,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4b408b813c09290dff8ed788166607deade58021da5998700a6922db67c7844e",
+        "id": 106550052,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504891",
+            "street": {
+                "id": 1705255,
+                "name": "On or near Booth Close"
+            },
+            "longitude": "0.114961"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "37be07aca0721b62bb248f57f6ff4c579c74253746f9ac2b0cfd3efe5d5e4447",
+        "id": 106640885,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504754",
+            "street": {
+                "id": 1705448,
+                "name": "On or near Carlyle Road"
+            },
+            "longitude": "0.117577"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "75715d5431650eb3b7a831ac1ec767fb0d3165fa4a977598e25657d26501cf9a",
+        "id": 106616916,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "b049b8b4ddf2999f9b1c6bd506a1c7af98d0f61eee7059dbd12291ab6083b7f8",
+        "id": 106635247,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.509329",
+            "street": {
+                "id": 1706057,
+                "name": "On or near Eastgate Close"
+            },
+            "longitude": "0.126667"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "707966c83ef4e4965339a223e8cfc53b92b4d868d9a9df95c91b3a55dc940408",
+        "id": 106639500,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "024e1ecce2828f1d9b2bb1cf141ea79c4b3770dcb6a316d4291895277a0bf0d5",
+        "id": 106589206,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506770",
+            "street": {
+                "id": 1704625,
+                "name": "On or near "
+            },
+            "longitude": "0.105859"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "ac871106ab39186fcb71f0e41c407781ae889750f3f9e6836799c6ffdb529de5",
+        "id": 106654067,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4312fd503a15629373e45e24b4a38c8887cace4908e73040ca7006f73c9d2f5e",
+        "id": 106589205,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.503242",
+            "street": {
+                "id": 1704987,
+                "name": "On or near Waterfield Close"
+            },
+            "longitude": "0.110648"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "ab2654591a0052154102c61376a33c36f7fe921bb980c80e2ecc743efcb4c9ae",
+        "id": 106587134,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507395",
+            "street": {
+                "id": 1705404,
+                "name": "On or near Hasler Close"
+            },
+            "longitude": "0.116763"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "67647e075e51bb4d2b72ddc5467546b21e156ec67930909acf82d4ad8a8f96ad",
+        "id": 106655591,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497681",
+            "street": {
+                "id": 1705224,
+                "name": "On or near Mountjoy Close"
+            },
+            "longitude": "0.113835"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "6073adc264e6b70622033018b5e0be7572cba6025ac23e024f876618e4eec149",
+        "id": 106656579,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "63dcaf4107c201a1a9bd6f2411fa4530c69dd1e44288eefb141de8920d5f0bd9",
+        "id": 106586782,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497681",
+            "street": {
+                "id": 1705224,
+                "name": "On or near Mountjoy Close"
+            },
+            "longitude": "0.113835"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "8a5dd1c367cdcbdf53f08bef7b5791dc81eb525fe88918bf29952796c881665b",
+        "id": 106658205,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506767",
+            "street": {
+                "id": 1705231,
+                "name": "On or near Attlee Road"
+            },
+            "longitude": "0.115668"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "53b900a8f3371e1725905b4481ad02c16e3beabb425d6d0e512bf09d585fa4f7",
+        "id": 106658276,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c7c6049fb7c4683900c070fc8f8ebd5aafe17fccc8b976c71e81a671ad23de49",
+        "id": 106598394,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497550",
+            "street": {
+                "id": 1705911,
+                "name": "On or near Southmere Drive"
+            },
+            "longitude": "0.124073"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7ec84786c8285b5bf7a708f40f58bda2a7392adcb961444fa62b25518d75ca59",
+        "id": 106549173,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506886",
+            "street": {
+                "id": 1705839,
+                "name": "On or near Fieldfare Road"
+            },
+            "longitude": "0.122504"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "3043fbf02f526c7cb3124b60f0fcf2b2f529460110cddc6c95f9a1760f91f201",
+        "id": 106591060,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "ca335a2231f0935b59d9da6743ed3fcf232060237ed9acdec2ece04339f8508e",
+        "id": 106646317,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497264",
+            "street": {
+                "id": 1705315,
+                "name": "On or near Grovebury Road"
+            },
+            "longitude": "0.115040"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5418a0cf6739b621659da419f6ff9e5d590bf7920e128d11ac39ce24acf8300a",
+        "id": 106633239,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "63dcaf4107c201a1a9bd6f2411fa4530c69dd1e44288eefb141de8920d5f0bd9",
+        "id": 106586781,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504881",
+            "street": {
+                "id": 1705338,
+                "name": "On or near Titmuss Avenue"
+            },
+            "longitude": "0.116013"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "187afc631d36b07d22b3035a05c8198870418622cb8b88b0172322ec9e41ebb1",
+        "id": 106650224,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494493",
+            "street": {
+                "id": 1705393,
+                "name": "On or near Throwley Close"
+            },
+            "longitude": "0.117606"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "754a292aaf3476e1c5f51e5d57b49efcb72aedc0a5cdc46850616d0b10f3749f",
+        "id": 106650418,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508236",
+            "street": {
+                "id": 1706210,
+                "name": "On or near Courtland Grove"
+            },
+            "longitude": "0.129397"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "45724ded7e3819728e1c59bac76afb316735623d49056c9bffd4c7cd6e863512",
+        "id": 106582504,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.510437",
+            "street": {
+                "id": 1705836,
+                "name": "On or near Drake Crescent"
+            },
+            "longitude": "0.122554"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "d07df5afc5a30ecedc91f43cb8aeef59cf905aa8cb8cd304dbce9de02d47b92b",
+        "id": 106574452,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506886",
+            "street": {
+                "id": 1705839,
+                "name": "On or near Fieldfare Road"
+            },
+            "longitude": "0.122504"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e027fb4b8197dcdd0521bce6dda7aef523aff0f816771c0c903e39d6819f8088",
+        "id": 106556731,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497548",
+            "street": {
+                "id": 1705886,
+                "name": "On or near Mere Road"
+            },
+            "longitude": "0.123669"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c3f7be7c4df52a8d979ffbf344858c93dee4d34144bdc4b006eab6381190d49d",
+        "id": 106586572,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.499644",
+            "street": {
+                "id": 1705575,
+                "name": "On or near Wolsey Close"
+            },
+            "longitude": "0.119660"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "ee652a14e86da8cc67be05672102aca267bbdf91c15214b9e3f84d08f2e1c427",
+        "id": 106572957,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "7bb3ef8898a23fae453eda25d00ebccb412dd2f541d3990f19f32664ba60ac68",
+        "id": 106594802,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "51516835a4ed12e7b7d1739dd7569e843addce5aad22c4b0bd9f9667492dfebe",
+        "id": 106554682,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504881",
+            "street": {
+                "id": 1705338,
+                "name": "On or near Titmuss Avenue"
+            },
+            "longitude": "0.116013"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7fdeed1b4389398249cff7f7f8b07aa272223eefe5156f4ea37bfe43b9743ba0",
+        "id": 106580281,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495980",
+            "street": {
+                "id": 1705220,
+                "name": "On or near Peterstone Road"
+            },
+            "longitude": "0.114405"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "bbeffb2ee2d2e6cac02d659bfc67583fa5c46efcf7ecdec7ea2f6d9f4badadb4",
+        "id": 106585536,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508236",
+            "street": {
+                "id": 1706210,
+                "name": "On or near Courtland Grove"
+            },
+            "longitude": "0.129397"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "797c8532d6c5b64d352fa98c0385913d846a611786cc5474a979de8a3df596c1",
+        "id": 106585518,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497681",
+            "street": {
+                "id": 1705224,
+                "name": "On or near Mountjoy Close"
+            },
+            "longitude": "0.113835"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "9e7bcd4053453641fd34c7907cbdc10fae6fa6b67fddf7fddb1085cf6c7126c0",
+        "id": 106583779,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Awaiting court outcome",
+            "date": "2022-11"
+        },
+        "persistent_id": "644f31d34a1d2cc6c7a4179955854a277c2706de2d53d3c4473b2840ce54d71b",
+        "id": 106591942,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495877",
+            "street": {
+                "id": 1705970,
+                "name": "On or near Wolvercote Road"
+            },
+            "longitude": "0.126069"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "de69b81a2643ab3336fbedab050c83087538586f13bb7d9eeed707159c2698b4",
+        "id": 106591088,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495556",
+            "street": {
+                "id": 1706247,
+                "name": "On or near Kale Road"
+            },
+            "longitude": "0.131400"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "c0ff7726377be3f2c99f832eb99c995cd61d3a67a4360b6467075471e243addf",
+        "id": 106582302,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494453",
+            "street": {
+                "id": 1705933,
+                "name": "On or near Lensbury Way"
+            },
+            "longitude": "0.124260"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "31469cad262a0eee06e9e4c6224e963ed65c8e624e6661fb4f82fe2a9911257c",
+        "id": 106551277,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "933aeea797dcff72b3e1cdb49ba5173fb8d7c8713fc7dc2037a0149d584322a6",
+        "id": 106575259,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "933aeea797dcff72b3e1cdb49ba5173fb8d7c8713fc7dc2037a0149d584322a6",
+        "id": 106575258,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.494441",
+            "street": {
+                "id": 1706274,
+                "name": "On or near Yarnton Way"
+            },
+            "longitude": "0.136332"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "d9a6a75205f807241f2e8c20f1ce08b224620410d2d951097d90322ad3076b9a",
+        "id": 106545815,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504881",
+            "street": {
+                "id": 1705338,
+                "name": "On or near Titmuss Avenue"
+            },
+            "longitude": "0.116013"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7fdeed1b4389398249cff7f7f8b07aa272223eefe5156f4ea37bfe43b9743ba0",
+        "id": 106580282,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "18a7badc9e1cda700563ee91c099b564f41e59e45a6e8e18e9857634400e7025",
+        "id": 106545083,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504545",
+            "street": {
+                "id": 1704626,
+                "name": "On or near Dean Road"
+            },
+            "longitude": "0.105680"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5373f374ca1579f6aee74f2f12b10b03a80630d2f7bb93929eba04e3bffd8224",
+        "id": 106571196,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497264",
+            "street": {
+                "id": 1705315,
+                "name": "On or near Grovebury Road"
+            },
+            "longitude": "0.115040"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "b0143ea2d809c635a2a82e31c7a390dcb159574d7a47b2d25fbb49b116c3316f",
+        "id": 106585022,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.508976",
+            "street": {
+                "id": 1705556,
+                "name": "On or near Rollesby Way"
+            },
+            "longitude": "0.118811"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "a26ca2fbf750162d3ed5e9a156bbccd331fc905d20e70be41e2e32d8dcdb4b54",
+        "id": 106555266,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498757",
+            "street": {
+                "id": 1706000,
+                "name": "On or near Hartslock Drive"
+            },
+            "longitude": "0.125944"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "4cf7ff7d9664839912be55525280cb89120c1d0460b6839d1a7785d97adbe4cd",
+        "id": 106605173,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.498204",
+            "street": {
+                "id": 1706235,
+                "name": "On or near St Brides Close"
+            },
+            "longitude": "0.130154"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "cfd57770f6165ebd3bb54621dd67c2cb647e403609d6b8ae7cb6082a10e94fe0",
+        "id": 106548330,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504545",
+            "street": {
+                "id": 1704626,
+                "name": "On or near Dean Road"
+            },
+            "longitude": "0.105680"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "718cf5b082b90803e00cb19b5062bf4397bc9bdf292cd5c98b7a8efdcb65404a",
+        "id": 106550101,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.502961",
+            "street": {
+                "id": 1705600,
+                "name": "On or near Byron Close"
+            },
+            "longitude": "0.119252"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "35fa48fc13062596dcba32543a65b0e6d7319eb9d1fb0135a213a2d624b82367",
+        "id": 106617092,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506810",
+            "street": {
+                "id": 1705380,
+                "name": "On or near Holt Close"
+            },
+            "longitude": "0.116736"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "feff7b96b74fbd2c32785b283d06acc24fdedbda9893442bdaad92ef9760df73",
+        "id": 106617723,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.504261",
+            "street": {
+                "id": 1705639,
+                "name": "On or near Poplar Place"
+            },
+            "longitude": "0.119947"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "5c7c58a26dc15e7262c8dde8f65491f521262e7e6b9f3ea1aaaf4f93efd3fcad",
+        "id": 106617990,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.512021",
+            "street": {
+                "id": 1706038,
+                "name": "On or near Carnoustle Close"
+            },
+            "longitude": "0.127960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "1f05f0ebc31d2fae7fbbf5797fef57c66b67ae4df7ebdeb9c46d27746a127a91",
+        "id": 106578860,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.507357",
+            "street": {
+                "id": 1706095,
+                "name": "On or near Ormesby Close"
+            },
+            "longitude": "0.126791"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Investigation complete; no suspect identified",
+            "date": "2022-11"
+        },
+        "persistent_id": "ef94585a405716cd52d1306e6b1458d00c3eefa99bcfc4590c415599b543da91",
+        "id": 106548368,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.493565",
+            "street": {
+                "id": 1706119,
+                "name": "On or near Maran Way"
+            },
+            "longitude": "0.129117"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "e865e7332ae813fdbdf76dd0760fb792436cc2ff1818edd683c70cbe60c61ef5",
+        "id": 106598663,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.497058",
+            "street": {
+                "id": 1705524,
+                "name": "On or near Godstow Road"
+            },
+            "longitude": "0.118445"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "7c83db0ae88473ef5f1db390e6ee146775ac2b2ac48292abcbb9c340081c6bd3",
+        "id": 106643397,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.495991",
+            "street": {
+                "id": 1705531,
+                "name": "On or near "
+            },
+            "longitude": "0.118631"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "74c68c8104947ebb4fa1d0d6dbb47633bce263c1f2719162d25ae86b0d044e03",
+        "id": 106643437,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "violent-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.506145",
+            "street": {
+                "id": 1705837,
+                "name": "On or near Bledlow Close"
+            },
+            "longitude": "0.122700"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "2a6183f072ac1c836587a554c8c61a8ae4df45fa8f0e5928c9e710570cd122b8",
+        "id": 106598508,
+        "location_subtype": "",
+        "month": "2022-11"
+    },
+    {
+        "category": "other-crime",
+        "location_type": "Force",
+        "location": {
+            "latitude": "51.496851",
+            "street": {
+                "id": 1705725,
+                "name": "On or near Tavy Bridge"
+            },
+            "longitude": "0.122960"
+        },
+        "context": "",
+        "outcome_status": {
+            "category": "Under investigation",
+            "date": "2022-11"
+        },
+        "persistent_id": "68135940d5c9acd5096ac5e062ef5e1412e26c943eeeefcd50b32e9880442aa7",
+        "id": 106546778,
+        "location_subtype": "",
+        "month": "2022-11"
+    }
+]

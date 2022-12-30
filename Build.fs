@@ -2,12 +2,9 @@ open Fake.Core
 open Fake.IO
 open Farmer
 open Farmer.Builders
-open Farmer
-open Farmer.Builders
 open Farmer.Search
 
 open Helpers
-open Farmer.Storage
 open System.Text.RegularExpressions
 open Azure.Data.Tables
 
@@ -26,14 +23,14 @@ Target.create "Clean" (fun _ ->
 Target.create "InstallClient" (fun _ -> run npm "install" ".")
 
 Target.create "Bundle" (fun _ ->
-    [ "server", dotnet $"publish -c Release -o \"{deployPath}\" -r linux-x64" serverPath // may need to change
+    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath // may need to change
       "client", dotnet "fable --run webpack -p" clientPath ]
     |> runParallel
 )
 
 Target.create "Azure" (fun _ ->
-    let searchName = "safesearch3-search"
-    let storageName = "safesearch3storage"
+    let searchName : string = "REPLACE WITH AZURE SEARCH NAME"
+    let storageName : string = "REPLACE WITH STORAGE NAME"
 
     let azureSearch = search {
         name searchName
@@ -43,23 +40,20 @@ Target.create "Azure" (fun _ ->
     let storage = storageAccount {
         name storageName
         add_private_container "properties"
-        add_cors_rules [
-            StorageService.Blobs, CorsRule.AllowAll
-        ]
+        add_table "postcodes"
     }
 
     let web = webApp {
-        name "safesearch3"
-        zip_deploy "deploy"
+        name "REPLACE WITH AZURE APP SERVICE NAME"
         always_on
         sku WebApp.Sku.B1
         operating_system Linux
-        automatic_logging_extension false
         runtime_stack Runtime.DotNet50
         setting "storageName" storageName
         setting "storageConnectionString" storage.Key
         setting "searchName" searchName
         setting "searchKey" azureSearch.AdminKey
+        zip_deploy "deploy"
     }
 
     let deployment = arm {
@@ -70,19 +64,29 @@ Target.create "Azure" (fun _ ->
         output "storageConnectionString" storage.Key
     }
 
-    let result =
+    // Deploy above resources to Azure
+    let outputs =
         deployment
-        |> Deploy.execute "tom-safesearch3" Deploy.NoParameters
+        |> Deploy.execute "SAFE Search 3" Deploy.NoParameters
 
-    let connectionString = result.["storageConnectionString"]
-    let m = Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
-    let accountName = m.Groups.["AccountName"].Value
-    let accountKey = m.Groups.["AccountKey"].Value
-    let serviceClient = new TableServiceClient(connectionString)
-    if serviceClient.Query "TableName eq 'postcodes2'" |> Seq.isEmpty then
-        CreateProcess.fromRawCommandLine """AzCopy""" $"""/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes2 /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"""
+    let connectionString = outputs.["storageConnectionString"]
+
+    let accountName, accountKey =
+        let matcher = Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
+        matcher.Groups.["AccountName"].Value, matcher.Groups.["AccountKey"].Value
+
+    let lookupAlreadyExists =
+        let tableClient = TableServiceClient connectionString
+        let destinationTable = tableClient.GetTableClient "postcodes"
+        destinationTable.Query<TableEntity>(maxPerPage = 1) |> Seq.isEmpty
+
+    if not lookupAlreadyExists then
+        printfn "Now seeding postcode / geo-location lookup table. This may take a while (~1.8m entries)"
+        CreateProcess.fromRawCommandLine "AzCopy" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
         |> Proc.run
         |> ignore
+    else
+        printfn "Postcode table already exists, no seeding is required."
 )
 
 Target.create "Run" (fun _ ->
@@ -90,10 +94,6 @@ Target.create "Run" (fun _ ->
     [ "server", dotnet "watch run" serverPath
       "client", dotnet "fable watch --run webpack-dev-server" clientPath ]
     |> runParallel
-)
-
-Target.create "Format" (fun _ ->
-    run dotnet "fantomas . -r" "src"
 )
 
 open Fake.Core.TargetOperators

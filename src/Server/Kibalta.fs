@@ -15,9 +15,8 @@ type SortColumn =
     | ByDistance of field: string * long: float * lat: float * Direction
     member this.StringValue =
         match this with
-        | ByField(field, dir) -> sprintf "%s %s" field dir.StringValue
-        | ByDistance(field, long, lat, dir) ->
-            sprintf "geo.distance(%s, geography'POINT(%f %f)') %s" field long lat dir.StringValue
+        | ByField(field, dir) -> $"{field} {dir.StringValue}"
+        | ByDistance(field, long, lat, dir) -> $"geo.distance({field}, geography'POINT({long} {lat})') {dir.StringValue}"
 
 module Filters =
     /// Combines two filters together using either AND or OR logic.
@@ -68,14 +67,17 @@ module Filters =
 
     let rec eval =
         function
-        | ConstantFilter value -> sprintf "%b" value
+        | ConstantFilter value ->
+            $"%b{value}"
         | FieldFilter(field, comparison, value) ->
             match value with
-            | :? string as s -> sprintf "%s %s '%s'" field comparison.StringValue s
-            | null -> sprintf "%s %s null" field comparison.StringValue
-            | s -> sprintf "%s %s %O" field comparison.StringValue s
+            | :? string as s -> $"{field} {comparison.StringValue} '{s}'"
+            | null -> $"{field} {comparison.StringValue} null"
+            | s -> $"{field} {comparison.StringValue} {s}"
         | GeoDistanceFilter(field, long, lat, comparison, distance) ->
-            let lhs = sprintf "geo.distance(%s, geography'POINT(%f %f)')" field long lat
-            sprintf "%s %s %f" lhs comparison.StringValue distance
-        | BinaryFilter(left, And, right) -> sprintf "%s and %s" (eval left) (eval right)
-        | BinaryFilter(left, Or, right) -> sprintf "%s or %s" (eval left) (eval right)
+            let lhs = $"geo.distance({field}, geography'POINT({long} {lat})')"
+            $"{lhs} {comparison.StringValue} {distance}"
+        | BinaryFilter(left, And, right) ->
+            $"{eval left} and {eval right}"
+        | BinaryFilter(left, Or, right) ->
+            $"{eval left} or {eval right}"

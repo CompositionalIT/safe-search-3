@@ -124,8 +124,20 @@ module LandRegistry =
             let header = [ "TransactionId";"Price";"DateOfTransfer";"PostCode";"PropertyType";"Build";"Contract";"Building";"Street";"Locality";"Town";"District";"County";"Geo" ] |> String.concat ","
             header :: Array.toList lines
 
-        let Csv = (asCsvOutput, processCsvChunk), "csv"
-        let Json = (asJsonOutput, processJsonChunk), "json"
+        /// Exports the bundled PricePaid + Location data into a serialized format.
+        type IPriceDataSerializer<'T> =
+            abstract Serializer : PricePaidAndGeo -> 'T
+            abstract ChunkHandler : 'T array -> string list
+            abstract FileExtension : string
+        let private create serializer chunkHandler extension =
+            { new IPriceDataSerializer<_> with
+                member _.Serializer row = serializer row
+                member _.ChunkHandler chunk = chunkHandler chunk
+                member _.FileExtension = extension }
+        let Csv = create asCsvOutput processCsvChunk "csv"
+        let Json = create asJsonOutput processJsonChunk "json"
+
+    open Exporters
 
     let httpClient = new HttpClient ()
     let getPropertyData requestType cancellationToken =
@@ -143,21 +155,22 @@ module LandRegistry =
         let tasks = [
             for line in rows.Rows do
                 task {
-                    let! postcode =
+                    let! geoData =
                         match line.Postcode with
                         | None -> noOp
                         | Some postcode -> tryGetGeo postcode
-                    return { Property = line; GeoLocation = postcode |> Option.map PostcodeResult }
+                    return { Property = line; GeoLocation = geoData |> Option.map PostcodeResult }
                 }
         ]
         return! Task.WhenAll tasks
     }
 
-    let processIntoChunks (exporter, chunker) rows =
+    /// Splits a set of price paid + geo data into chunks of 25000 rows and serializes them.
+    let processIntoChunks (priceSerializer:IPriceDataSerializer<_>) rows =
         rows
-        |> Array.map exporter
+        |> Array.map priceSerializer.Serializer
         |> Array.chunkBySize 25000
-        |> Array.map chunker
+        |> Array.map priceSerializer.ChunkHandler
         |> Array.indexed
 
     let writeToFile name data = File.WriteAllLines(name, data, Encoding.UTF8)
@@ -168,11 +181,11 @@ module LandRegistry =
         let data = lines |> String.concat "\r" |> BinaryData.FromString
         blob.UploadAsync (data, true, cancellationToken) :> Task
 
-    let writeAllProperties writer (exporter, extension) download = task {
-        let chunks = download.Rows |> processIntoChunks exporter
+    let writeAllProperties writer (priceSerializer:IPriceDataSerializer<_>) download = task {
+        let chunks = download.Rows |> processIntoChunks priceSerializer
         let tasks = [
-            for chunk, (lines:string list) in chunks do
-                yield writer $"%s{download.Hash}-part-%i{chunk}.%s{extension}" lines
+            for chunk, lines in chunks do
+                yield writer $"%s{download.Hash}-part-%i{chunk}.%s{priceSerializer.FileExtension}" lines
         ]
         do! Task.WhenAll tasks
     }
