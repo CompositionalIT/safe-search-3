@@ -197,6 +197,12 @@ open System.Threading.Tasks
 open System
 open Microsoft.Extensions.Configuration
 open System.Diagnostics
+open Azure.Search.Documents.Indexes
+open Azure
+open Helpers
+open Search
+open Azure.Data.Tables
+open Fake.Core
 
 let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refreshType = task {
     let blobWriter = LandRegistry.writeToBlob connectionString cancellationToken
@@ -237,6 +243,14 @@ type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfigura
         let backgroundWork =
             task {
                 let connectionString = config.["storageConnectionString"]
+                let searchEndpoint = Uri $"https://{config.SearchIndexName}.search.windows.net"
+                let searchCredential = AzureKeyCredential config.SearchIndexKey
+                let siCldient = SearchIndexClient(searchEndpoint, searchCredential)
+                if siCldient.GetIndexes() |> Seq.isEmpty then
+                    Management.createIndex(searchEndpoint, searchCredential)
+                    Management.createBlobDataSource connectionString (searchEndpoint, searchCredential)
+                    Management.createCsvIndexer (searchEndpoint, searchCredential)
+
                 logger.LogInformation "Price Paid Data background download worker has started."
 
                 // Put an initial delay for the first check

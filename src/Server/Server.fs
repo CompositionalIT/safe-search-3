@@ -14,13 +14,9 @@ open Serilog
 open Shared
 open System
 open System.Threading
+open Helpers
 
 type Foo = { Name : string }
-
-type IConfiguration with
-    member this.SearchIndexName = this.["searchName"]
-    member this.SearchIndexKey = this.["searchKey"]
-    member this.StorageConnectionString = this.["storageConnectionString"]
 
 let searchApi (context:HttpContext) =
     let config = context.GetService<IConfiguration>()
