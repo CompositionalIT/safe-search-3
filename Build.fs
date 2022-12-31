@@ -1,12 +1,11 @@
+open Azure.Data.Tables
 open Fake.Core
 open Fake.IO
 open Farmer
 open Farmer.Builders
 open Farmer.Search
-
 open Helpers
 open System.Text.RegularExpressions
-open Azure.Data.Tables
 
 initializeContext()
 
@@ -17,13 +16,13 @@ let deployPath = Path.getFullName "deploy"
 
 Target.create "Clean" (fun _ ->
     Shell.cleanDir deployPath
-    run dotnet "fable clean --yes" clientPath // Delete *.fs.js files created by Fable
+    run dotnet "fable clean --yes" clientPath
 )
 
 Target.create "InstallClient" (fun _ -> run npm "install" ".")
 
 Target.create "Bundle" (fun _ ->
-    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath // may need to change
+    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
       "client", dotnet "fable --run webpack -p" clientPath ]
     |> runParallel
 )
@@ -75,18 +74,19 @@ Target.create "Azure" (fun _ ->
         let matcher = Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
         matcher.Groups.["AccountName"].Value, matcher.Groups.["AccountKey"].Value
 
-    let lookupAlreadyExists =
-        let tableClient = TableServiceClient connectionString
-        let destinationTable = tableClient.GetTableClient "postcodes"
+    let lookupNeedsPriming =
+        let destinationTable =
+            let tableClient = TableServiceClient connectionString
+            tableClient.GetTableClient "postcodes"
         destinationTable.Query<TableEntity>(maxPerPage = 1) |> Seq.isEmpty
 
-    if not lookupAlreadyExists then
-        printfn "Now seeding postcode / geo-location lookup table. This may take a while (~1.8m entries)"
-        CreateProcess.fromRawCommandLine "AzCopy" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
+    if lookupNeedsPriming then
+        printfn "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
+        CreateProcess.fromRawCommandLine @"C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
         |> Proc.run
         |> ignore
     else
-        printfn "Postcode table already exists, no seeding is required."
+        printfn "Postcode lookup already exists, no seeding is required."
 )
 
 Target.create "Run" (fun _ ->

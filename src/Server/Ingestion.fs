@@ -249,22 +249,30 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
 
 let DELAY_BETWEEN_CHECKS = TimeSpan.FromDays 7.
 
+let primeSearchIndex (logger:ILogger) (config:IConfiguration) =
+    let searchEndpoint = Uri $"https://{config.SearchIndexName}.search.windows.net"
+    let searchCredential = AzureKeyCredential config.SearchIndexKey
+    let siClient = SearchIndexClient(searchEndpoint, searchCredential)
+
+    logger.LogInformation "Checking if search index exists..."
+    if siClient.GetIndexes() |> Seq.isEmpty then
+        logger.LogInformation "Index does not exist, creating index, data source and indexer..."
+        Management.createIndex(searchEndpoint, searchCredential)
+        Management.createBlobDataSource config.StorageConnectionString (searchEndpoint, searchCredential)
+        Management.createCsvIndexer (searchEndpoint, searchCredential)
+
+    logger.LogInformation "All done!"
+
 /// Regularly checks for new price data
 type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfiguration) =
     inherit BackgroundService ()
     override this.ExecuteAsync cancellationToken =
         let backgroundWork =
             task {
-                let connectionString = config.["storageConnectionString"]
-                let searchEndpoint = Uri $"https://{config.SearchIndexName}.search.windows.net"
-                let searchCredential = AzureKeyCredential config.SearchIndexKey
-                let siCldient = SearchIndexClient(searchEndpoint, searchCredential)
-                if siCldient.GetIndexes() |> Seq.isEmpty then
-                    Management.createIndex(searchEndpoint, searchCredential)
-                    Management.createBlobDataSource connectionString (searchEndpoint, searchCredential)
-                    Management.createCsvIndexer (searchEndpoint, searchCredential)
-
                 logger.LogInformation "Price Paid Data background download worker has started."
+
+                // First check if the search index needs to be primed.
+                primeSearchIndex logger config
 
                 // Put an initial delay for the first check
                 do! Task.Delay (TimeSpan.FromSeconds 30., cancellationToken)
@@ -272,7 +280,7 @@ type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfigura
                 while not cancellationToken.IsCancellationRequested do
                     logger.LogInformation "Trying to refresh latest property prices..."
                     let timer = Stopwatch.StartNew ()
-                    let! result = tryRefreshPrices connectionString cancellationToken logger LatestMonth
+                    let! result = tryRefreshPrices config.StorageConnectionString cancellationToken logger LatestMonth
                     timer.Stop ()
                     match result with
                     | NothingToDo ->
