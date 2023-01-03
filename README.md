@@ -11,11 +11,11 @@ You'll need to install the following pre-requisites in order to build SAFE appli
 
 ## Azure Services pre-requisites
 
-You'll need to following Azure resources provisioned
+You'll need to following Azure resources provisioned (these get created automatically by runing `dotnet run Azure`):
 
 * An Azure Storage account with:
-    * a container called properties.
-    * a table called postcodes.
+    * a container called **properties**.
+    * a table called **postcodes**.
 * An Azure Search instance with:
     * an index created via `Management.createIndex`.
     * a data source created via `Management.createBlobDataSource`.
@@ -26,7 +26,7 @@ You'll need to following Azure resources provisioned
     AzCopy.exe /Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{YOUR_STORAGE_ACCOUNT}.table.core.windows.net/postcodes2 /DestKey:{YOUR_ACCESS_KEY} /Manifest:postcodes /EntityOperation:InsertOrReplace
     ```
 
-## Starting the application
+# Getting started
 
 Before you run the project **for the first time only** you must install dotnet "local tools" with this command:
 
@@ -34,13 +34,26 @@ Before you run the project **for the first time only** you must install dotnet "
 dotnet tool restore
 ```
 
+## Running in Azure (preffered)
+Navigate to the folder containing the code (e.g. C:\\safe-search-3\\) and run the following command to deploy the app to Azure:
+```bash
+dotnet run Azure
+```
+
+The first time you do the deployment it will automatically populate the postcodes and properties (this may take a while).
+
+## Running locally
+Requirements:
+* **This requires an Azure Search instace deployed to Azure**
+* [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio) set up locally
+
 You should also set the following config settings either as environment variables or in [user secrets](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-6.0&tabs=windows#manage-user-secrets-with-visual-studio)
 
 ```json
 {
     // Azure Search resource name
     "searchName": "my-azure-search",
-    // Azure Search access key
+    // Azure Search access key (Search service > Keys > Primary admin key)
     "searchKey": "MYSECRETKEY",
     // Azure Storage account connection string
     "storageConnectionString": "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=MYSECRETKEY"
