@@ -30,6 +30,8 @@ Target.create "Bundle" (fun _ ->
 Target.create "Azure" (fun _ ->
     let searchName : string = "REPLACE WITH AZURE SEARCH NAME"
     let storageName : string = "REPLACE WITH STORAGE NAME"
+    let azCopyPath : string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
+    let appServiceName : string = "REPLACE WITH AZURE APP SERVICE NAME"
 
     let azureSearch = search {
         name searchName
@@ -43,7 +45,7 @@ Target.create "Azure" (fun _ ->
     }
 
     let web = webApp {
-        name "REPLACE WITH AZURE APP SERVICE NAME"
+        name $"{appServiceName}"
         always_on
         sku WebApp.Sku.B1
         operating_system Linux
@@ -82,7 +84,7 @@ Target.create "Azure" (fun _ ->
 
     if lookupNeedsPriming then
         printfn "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
-        CreateProcess.fromRawCommandLine @"C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
+        CreateProcess.fromRawCommandLine $"{azCopyPath}" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
         |> Proc.run
         |> ignore
     else
