@@ -194,7 +194,7 @@ module LandRegistry =
 
     let private noOp = Task.FromResult None
 
-    let private reporter (logger: ILogger) transactions postcodes uniquePostcodes =
+    let private createTransactionCounter (logger: ILogger) transactions postcodes uniquePostcodes =
         MailboxProcessor.Start(fun mailbox ->
             let mutable transactions = transactions
 
@@ -229,8 +229,9 @@ module LandRegistry =
             let postcodes = transactions |> Array.choose (fun t -> t.Postcode)
             let uniquePostcodes = postcodes |> Array.distinct |> Array.length
 
-            let signal =
-                (reporter logger transactions.Length postcodes.Length uniquePostcodes).Post
+            let recordTransaction =
+                (createTransactionCounter logger transactions.Length postcodes.Length uniquePostcodes)
+                    .Post
 
             let output = ResizeArray()
 
@@ -241,9 +242,14 @@ module LandRegistry =
                             let! geoData =
                                 match transaction.Postcode with
                                 | None -> noOp
-                                | Some postcode -> tryGetGeo postcode
+                                | Some postcode ->
+                                    try
+                                        tryGetGeo postcode
+                                    with ex ->
+                                        logger.LogError(ex, "Could not get geo for {postcode}", postcode)
+                                        noOp
 
-                            signal ()
+                            recordTransaction ()
 
                             return {
                                 Property = transaction

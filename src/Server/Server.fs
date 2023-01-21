@@ -32,7 +32,7 @@ let searchApi (context: HttpContext) =
                 let formattedQuery = Search.FormattedQuery.Build request.Text
 
                 logger.LogInformation(
-                    "Free Text search for {QueryText} on index '{SearchIndex}'",
+                    "Free Text search for '{QueryText}' on index '{SearchIndex}'",
                     formattedQuery.Value,
                     config.SearchName
                 )
@@ -61,7 +61,7 @@ let searchApi (context: HttpContext) =
 
                 match geoLookupResult with
                 | Some geo ->
-                    logger.LogInformation("Successfully mapped '{Postcode}' to {Geo}.", request.Postcode, geo)
+                    logger.LogInformation("Successfully mapped '{Postcode}' to {@Geo}.", request.Postcode, geo)
 
                     let! results =
                         Search.locationSearch (geo.Long, geo.Lat) request.Filters config.SearchName config.SearchKey
@@ -80,14 +80,14 @@ let searchApi (context: HttpContext) =
             }
         GetCrimes =
             fun geo -> async {
-                logger.LogInformation("Crime search for '{Geo}'...", geo)
+                logger.LogInformation("Crime search for '{@Geo}'...", geo)
                 let! crimes = getCrimesNearPosition geo
                 logger.LogInformation("Retrieved {Crimes} different crimes.", crimes.Length)
                 return crimes
             }
         GetSuggestions =
             fun searchedTerm -> async {
-                logger.LogInformation("Looking up suggestions for {SearchTerm}...", searchedTerm)
+                logger.LogInformation("Looking up suggestions for '{SearchTerm}'...", searchedTerm)
 
                 let! suggestions =
                     Search.suggestionsSearch searchedTerm config.SearchName config.SearchKey
