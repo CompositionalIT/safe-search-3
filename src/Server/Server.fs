@@ -7,6 +7,7 @@ open Microsoft.ApplicationInsights.Extensibility
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
 open Saturn
 open Serilog
@@ -114,11 +115,6 @@ let webApp =
 type Object with
 
     member _.Ignore() = ()
-
-open OpenTelemetry
-open OpenTelemetry.Trace
-open Microsoft.Extensions.DependencyInjection
-open Microsoft.ApplicationInsights.Extensibility
 
 let app = application {
     webhost_config (fun hostBuilder ->

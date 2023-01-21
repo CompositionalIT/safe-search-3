@@ -44,12 +44,20 @@ Target.create "Azure" (fun _ ->
         add_table "postcodes"
     }
 
+    let logs = logAnalytics { name "isaac-analytics" }
+
+    let insights = appInsights {
+        name "isaac-insights"
+        log_analytics_workspace logs
+    }
+
     let web = webApp {
         name $"{appServiceName}"
         always_on
+        link_to_app_insights insights
         sku WebApp.Sku.B1
         operating_system Linux
-        runtime_stack Runtime.DotNet50
+        runtime_stack Runtime.DotNet60
         setting "storageName" storageName
         setting "storageConnectionString" storage.Key
         setting "searchName" searchName
@@ -59,14 +67,12 @@ Target.create "Azure" (fun _ ->
 
     let deployment = arm {
         location Location.WestEurope
-        add_resource web
-        add_resource azureSearch
-        add_resource storage
+        add_resources [ web; azureSearch; storage; logs; insights ]
         output "storageConnectionString" storage.Key
     }
 
     // Deploy above resources to Azure
-    let outputs = deployment |> Deploy.execute "SAFE Search 3" Deploy.NoParameters
+    let outputs = deployment |> Deploy.execute "isaac-safe-search-3" Deploy.NoParameters
 
     let connectionString = outputs.["storageConnectionString"]
 
@@ -108,7 +114,6 @@ open Fake.Core.TargetOperators
 
 let dependencies = [
     "Clean" ==> "InstallClient" ==> "Bundle" ==> "Azure"
-
     "Clean" ==> "InstallClient" ==> "Run"
 ]
 
