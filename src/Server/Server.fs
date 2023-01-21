@@ -24,18 +24,18 @@ let searchApi (context:HttpContext) =
     {
         FreeText = fun request -> async {
             let formattedQuery = Search.FormattedQuery.Build request.Text
-            logger.LogInformation ("Free Text search for {QueryText} on index '{SearchIndex}'", formattedQuery.Value, config.SearchIndexName)
-            let! results = Search.freeTextSearch formattedQuery request.Filters config.SearchIndexName config.SearchIndexKey |> Async.AwaitTask
+            logger.LogInformation ("Free Text search for {QueryText} on index '{SearchIndex}'", formattedQuery.Value, config.SearchName)
+            let! results = Search.freeTextSearch formattedQuery request.Filters config.SearchName config.SearchKey |> Async.AwaitTask
             logger.LogInformation ("Returned {Results} results for '{QueryText}'.", results.Results.Length, formattedQuery.Value)
             return results
         }
         ByLocation = fun request -> async {
-            logger.LogInformation ("Location search for '{Postcode}' on index '{SearchIndexName}'. Looking up geo-location data.", request.Postcode, config.SearchIndexName)
+            logger.LogInformation ("Location search for '{Postcode}' on index '{SearchIndexName}'. Looking up geo-location data.", request.Postcode, config.SearchName)
             let! geoLookupResult = tryGetGeoCache request.Postcode |> Async.AwaitTask
             match geoLookupResult with
             | Some geo ->
                 logger.LogInformation ("Successfully mapped '{Postcode}' to {Geo}.", request.Postcode, geo)
-                let! results = Search.locationSearch (geo.Long, geo.Lat) request.Filters config.SearchIndexName config.SearchIndexKey |> Async.AwaitTask
+                let! results = Search.locationSearch (geo.Long, geo.Lat) request.Filters config.SearchName config.SearchKey |> Async.AwaitTask
                 logger.LogInformation ("Returned {Results} results for '{Postcode}'.", results.Results.Length, request.Postcode)
                 return Ok results
             | None ->
@@ -51,7 +51,7 @@ let searchApi (context:HttpContext) =
         GetSuggestions = fun searchedTerm -> async {
             logger.LogInformation ("Looking up suggestions for {SearchTerm}...", searchedTerm)
             let! suggestions =
-                Search.suggestionsSearch searchedTerm config.SearchIndexName config.SearchIndexKey
+                Search.suggestionsSearch searchedTerm config.SearchName config.SearchKey
                 |> Async.AwaitTask
             logger.LogInformation ("Identified {Suggestions} suggestions.", suggestions.Length)
             return

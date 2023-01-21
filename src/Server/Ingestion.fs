@@ -13,7 +13,6 @@ module LandRegistry =
     open FSharp.Data
     open System.Security.Cryptography
     open System
-    open System.Collections.Generic
     open System.IO
     open System.Threading.Tasks
     open System.Text
@@ -151,6 +150,7 @@ module LandRegistry =
         use stream = new MemoryStream (propertyData)
         stream.Position <- 0L
         let rows = PricePaid.Load stream
+
         let tasks = [
             for line in rows.Rows do
                 task {
@@ -213,8 +213,6 @@ open Azure.Search.Documents.Indexes
 open Azure
 open Helpers
 open Search
-open Azure.Data.Tables
-open Fake.Core
 
 let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refreshType = task {
     let blobWriter = LandRegistry.writeToBlob connectionString cancellationToken
@@ -230,7 +228,7 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
             return LandRegistry.DataAlreadyExists
         else
             let tryGetGeo = (GeoLookup.createTryGetGeoCached connectionString cancellationToken).Value
-            logger.LogInformation "Enriching properties with geo location information"
+            logger.LogInformation "New dataset - enriching properties with geo location information"
             let! encoded = LandRegistry.enrichPropertiesWithGeoLocation tryGetGeo propertyData
             return NewDataAvailable { Hash = latestHash; Rows = encoded }
     }
@@ -249,9 +247,9 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
 let DELAY_BETWEEN_CHECKS = TimeSpan.FromDays 7.
 
 let primeSearchIndex (logger:ILogger) (config:IConfiguration) =
-    logger.LogInformation $"Connecting to search index: '{config.SearchIndexName}'."
-    let searchEndpoint = Uri $"https://{config.SearchIndexName}.search.windows.net"
-    let searchCredential = AzureKeyCredential config.SearchIndexKey
+    logger.LogInformation $"Connecting to search index: '{config.SearchName}'."
+    let searchEndpoint = Uri $"https://{config.SearchName}.search.windows.net"
+    let searchCredential = AzureKeyCredential config.SearchKey
     let siClient = SearchIndexClient(searchEndpoint, searchCredential)
 
     logger.LogInformation "Checking if search index exists..."
@@ -260,8 +258,10 @@ let primeSearchIndex (logger:ILogger) (config:IConfiguration) =
         Management.createIndex(searchEndpoint, searchCredential)
         Management.createBlobDataSource config.StorageConnectionString (searchEndpoint, searchCredential)
         Management.createCsvIndexer (searchEndpoint, searchCredential)
+        logger.LogInformation "Created index."
+    else
+        logger.LogInformation "Index already exists, nothing to do."
 
-    logger.LogInformation "All done!"
 
 /// Regularly checks for new price data
 type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfiguration) =
@@ -293,6 +293,6 @@ type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfigura
                 do! Task.Delay (DELAY_BETWEEN_CHECKS, cancellationToken)
         }
         backgroundWork
-        //     .ContinueWith (
-        //         (fun (_:Task) -> logger.LogInformation "Price Paid Data background download worker has gracefully shut down."),
-        //         TaskContinuationOptions.OnlyOnCanceled)
+            .ContinueWith (
+                (fun (_:Task) -> logger.LogInformation "Price Paid Data background download worker has gracefully shut down."),
+                TaskContinuationOptions.OnlyOnCanceled)
