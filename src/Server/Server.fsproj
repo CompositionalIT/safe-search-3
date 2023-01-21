@@ -7,10 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="Helpers.fs" />
     <Compile Include="GeoLookup.fs" />
-    <Compile Include="Ingestion.fs" />
     <Compile Include="Kibalta.fs" />
     <Compile Include="AzureSearch.fs" />
+    <Compile Include="Ingestion.fs" />
     <Compile Include="Transaction.fs" />
     <Compile Include="Crime.fs" />
     <Compile Include="Server.fs" />

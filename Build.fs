@@ -1,9 +1,11 @@
+open Azure.Data.Tables
 open Fake.Core
 open Fake.IO
 open Farmer
 open Farmer.Builders
-
+open Farmer.Search
 open Helpers
+open System.Text.RegularExpressions
 
 initializeContext()
 
@@ -14,45 +16,79 @@ let deployPath = Path.getFullName "deploy"
 
 Target.create "Clean" (fun _ ->
     Shell.cleanDir deployPath
-    run dotnet "fable clean --yes" clientPath // Delete *.fs.js files created by Fable
+    run dotnet "fable clean --yes" clientPath
 )
 
 Target.create "InstallClient" (fun _ -> run npm "install" ".")
 
 Target.create "Bundle" (fun _ ->
-    [ "server", dotnet $"publish -c Release -o \"{deployPath}\" -r linux-x64" serverPath // may need to change
+    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
       "client", dotnet "fable --run webpack -p" clientPath ]
     |> runParallel
 )
 
-
 Target.create "Azure" (fun _ ->
-    let searchKey = Environment.environVarOrFail "searchKey"
-    let searchName = Environment.environVarOrFail "searchName"
-    let storageConnectionString = Environment.environVarOrFail "storageConnectionString"
+    let searchName : string = "REPLACE WITH AZURE SEARCH NAME"
+    let storageName : string = "REPLACE WITH STORAGE NAME"
+    let azCopyPath : string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
+    let appServiceName : string = "REPLACE WITH AZURE APP SERVICE NAME"
+
+    let azureSearch = search {
+        name searchName
+        sku Basic
+    }
+
+    let storage = storageAccount {
+        name storageName
+        add_private_container "properties"
+        add_table "postcodes"
+    }
 
     let web = webApp {
-        name "safesearch3"
-        zip_deploy "deploy"
+        name $"{appServiceName}"
         always_on
         sku WebApp.Sku.B1
         operating_system Linux
-        automatic_logging_extension false
         runtime_stack Runtime.DotNet50
-        setting "searchKey" searchKey
+        setting "storageName" storageName
+        setting "storageConnectionString" storage.Key
         setting "searchName" searchName
-        setting "storageConnectionString" storageConnectionString
-
+        setting "searchKey" azureSearch.AdminKey
+        zip_deploy "deploy"
     }
 
     let deployment = arm {
         location Location.WestEurope
         add_resource web
+        add_resource azureSearch
+        add_resource storage
+        output "storageConnectionString" storage.Key
     }
 
-    deployment
-    |> Deploy.execute "safesearch3" Deploy.NoParameters
-    |> ignore
+    // Deploy above resources to Azure
+    let outputs =
+        deployment
+        |> Deploy.execute "SAFE Search 3" Deploy.NoParameters
+
+    let connectionString = outputs.["storageConnectionString"]
+
+    let accountName, accountKey =
+        let matcher = Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
+        matcher.Groups.["AccountName"].Value, matcher.Groups.["AccountKey"].Value
+
+    let lookupNeedsPriming =
+        let destinationTable =
+            let tableClient = TableServiceClient connectionString
+            tableClient.GetTableClient "postcodes"
+        destinationTable.Query<TableEntity>(maxPerPage = 1) |> Seq.isEmpty
+
+    if lookupNeedsPriming then
+        printfn "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
+        CreateProcess.fromRawCommandLine $"{azCopyPath}" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
+        |> Proc.run
+        |> ignore
+    else
+        printfn "Postcode lookup already exists, no seeding is required."
 )
 
 Target.create "Run" (fun _ ->
@@ -60,10 +96,6 @@ Target.create "Run" (fun _ ->
     [ "server", dotnet "watch run" serverPath
       "client", dotnet "fable watch --run webpack-dev-server" clientPath ]
     |> runParallel
-)
-
-Target.create "Format" (fun _ ->
-    run dotnet "fantomas . -r" "src"
 )
 
 open Fake.Core.TargetOperators

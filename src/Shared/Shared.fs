@@ -4,7 +4,7 @@ open System
 
 module Route =
     let builder typeName methodName =
-        sprintf "/api/%s/%s" typeName methodName
+        $"/api/%s{typeName}/%s{methodName}"
 
 type PropertyType =
     | Detached

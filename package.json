@@ -21,8 +21,8 @@
     },
     "dependencies": {
         "@tippyjs/react": "^4.2.5",
-        "ag-grid-community": "^24.1.0",
-        "ag-grid-react": "^24.1.1",
+        "ag-grid-community": "25.3.0",
+        "ag-grid-react": "25.3.0",
         "bulma": "^0.9.3",
         "bulma-quickview": "^2.0.0",
         "bulma-slider": "^2.0.4",
