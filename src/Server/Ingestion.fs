@@ -1,5 +1,7 @@
 module Ingestion
 
+open System.Reactive.Disposables
+open System.Threading
 open FSharp.Control
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
@@ -146,13 +148,16 @@ module LandRegistry =
         httpClient.GetByteArrayAsync (uri, cancellationToken)
 
     let private noOp = Task.FromResult None
-    let enrichPropertiesWithGeoLocation tryGetGeo (propertyData:byte array) = task {
+    let enrichPropertiesWithGeoLocation (logger:ILogger) (cancellationToken:CancellationToken) tryGetGeo (propertyData:byte array) = task {
         use stream = new MemoryStream (propertyData)
         stream.Position <- 0L
-        let rows = PricePaid.Load stream
+        let transactions = PricePaid.Load stream |> fun r -> r.Rows |> Seq.toArray
+        let postcodes = transactions |> Array.choose(fun t -> t.Postcode)
+        let uniquePostcodes = postcodes |> Array.distinct |> Array.length
+        logger.LogInformation("{transactions} transactions in total - {uniquePostcodes} unique postcodes ({duplicatePostcodes} duplicates) and {propertiesWithoutPostcodes} transactions without postcodes.", transactions.Length, uniquePostcodes, postcodes.Length - uniquePostcodes, transactions.Length - postcodes.Length)
 
         let tasks = [
-            for line in rows.Rows do
+            for line in transactions do
                 task {
                     let! geoData =
                         match line.Postcode with
@@ -161,7 +166,7 @@ module LandRegistry =
                     return { Property = line; GeoLocation = geoData |> Option.map PostcodeResult }
                 }
         ]
-        return! Task.WhenAll tasks
+        return! Task.WhenAll(tasks).WaitAsync(cancellationToken)
     }
 
     /// Splits a set of price paid + geo data into chunks of 25000 rows and serializes them.
@@ -220,16 +225,15 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
     let! download = task {
         logger.LogInformation "Downloading latest price paid data..."
         let! propertyData = LandRegistry.getPropertyData refreshType cancellationToken
-
         let! existingHashes = LandRegistry.getAllHashes connectionString cancellationToken
-        let latestHash = propertyData |> LandRegistry.asHash
+        let latestHash = LandRegistry.asHash propertyData
         logger.LogInformation("Comparing latest hash '{LatestHash}' against {Count} existing hashes.", latestHash, existingHashes.Count)
         if existingHashes.Contains latestHash then
             return LandRegistry.DataAlreadyExists
         else
             let tryGetGeo = (GeoLookup.createTryGetGeoCached connectionString cancellationToken).Value
             logger.LogInformation "New dataset - enriching properties with geo location information"
-            let! encoded = LandRegistry.enrichPropertiesWithGeoLocation tryGetGeo propertyData
+            let! encoded = LandRegistry.enrichPropertiesWithGeoLocation logger cancellationToken tryGetGeo propertyData
             return NewDataAvailable { Hash = latestHash; Rows = encoded }
     }
 
