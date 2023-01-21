@@ -148,25 +148,43 @@ module LandRegistry =
         httpClient.GetByteArrayAsync (uri, cancellationToken)
 
     let private noOp = Task.FromResult None
+    let private reporter (logger:ILogger) transactions postcodes uniquePostcodes = MailboxProcessor.Start (fun mailbox ->
+        let mutable transactions = transactions
+        logger.LogInformation("{transactions} transactions in total - {uniquePostcodes} unique postcodes ({duplicatePostcodes} duplicates) and {propertiesWithoutPostcodes} transactions without postcodes.", transactions, uniquePostcodes, postcodes - uniquePostcodes, transactions - postcodes)
+        async {
+            while true do
+                do! mailbox.Receive()
+                transactions <- transactions - 1
+                if transactions % 5000 = 0 then
+                    logger.LogInformation ("{transactions} remaining", transactions)
+
+        }
+    )
     let enrichPropertiesWithGeoLocation (logger:ILogger) (cancellationToken:CancellationToken) tryGetGeo (propertyData:byte array) = task {
         use stream = new MemoryStream (propertyData)
         stream.Position <- 0L
         let transactions = PricePaid.Load stream |> fun r -> r.Rows |> Seq.toArray
         let postcodes = transactions |> Array.choose(fun t -> t.Postcode)
         let uniquePostcodes = postcodes |> Array.distinct |> Array.length
-        logger.LogInformation("{transactions} transactions in total - {uniquePostcodes} unique postcodes ({duplicatePostcodes} duplicates) and {propertiesWithoutPostcodes} transactions without postcodes.", transactions.Length, uniquePostcodes, postcodes.Length - uniquePostcodes, transactions.Length - postcodes.Length)
+        let signal = (reporter logger transactions.Length postcodes.Length uniquePostcodes).Post
 
-        let tasks = [
-            for line in transactions do
-                task {
-                    let! geoData =
-                        match line.Postcode with
-                        | None -> noOp
-                        | Some postcode -> tryGetGeo postcode
-                    return { Property = line; GeoLocation = geoData |> Option.map PostcodeResult }
-                }
-        ]
-        return! Task.WhenAll(tasks).WaitAsync(cancellationToken)
+        let output = ResizeArray()
+        for chunk in transactions |> Array.chunkBySize 500 do
+            let tasks = [
+                for transaction in chunk do
+                    task {
+                        let! geoData =
+                            match transaction.Postcode with
+                            | None -> noOp
+                            | Some postcode -> tryGetGeo postcode
+                        signal ()
+                        return { Property = transaction; GeoLocation = geoData |> Option.map PostcodeResult }
+                    }
+            ]
+            let! results = Task.WhenAll(tasks).WaitAsync(cancellationToken)
+            output.Add results
+
+        return output |> Seq.concat |> Seq.toArray
     }
 
     /// Splits a set of price paid + geo data into chunks of 25000 rows and serializes them.
@@ -231,8 +249,8 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
         if existingHashes.Contains latestHash then
             return LandRegistry.DataAlreadyExists
         else
-            let tryGetGeo = (GeoLookup.createTryGetGeoCached connectionString cancellationToken).Value
             logger.LogInformation "New dataset - enriching properties with geo location information"
+            let tryGetGeo = (GeoLookup.createTryGetGeoCached connectionString cancellationToken).Value
             let! encoded = LandRegistry.enrichPropertiesWithGeoLocation logger cancellationToken tryGetGeo propertyData
             return NewDataAvailable { Hash = latestHash; Rows = encoded }
     }
@@ -278,7 +296,7 @@ type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfigura
             primeSearchIndex logger config
 
             // Put an initial delay for the first check
-            do! Task.Delay (TimeSpan.FromSeconds 30., cancellationToken)
+            do! Task.Delay (TimeSpan.FromSeconds 0., cancellationToken)
 
             while not cancellationToken.IsCancellationRequested do
                 logger.LogInformation "Trying to refresh latest property prices..."
