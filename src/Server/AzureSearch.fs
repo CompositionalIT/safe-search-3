@@ -5,7 +5,6 @@ open Azure.Core.Serialization
 open Azure.Search.Documents
 open Azure.Search.Documents.Indexes
 open Azure.Search.Documents.Models
-open FSharp.Control.Tasks
 open Kibalta
 open Microsoft.Spatial
 open Shared
@@ -196,33 +195,33 @@ module Management =
     open Azure.Search.Documents.Indexes.Models
 
     /// Build and configure the search index store itself
-    let createIndex indexConnection =
+    let createIndex (endpoint:Uri, credential:AzureKeyCredential) =
         let searchIndex =
             let fieldBuilder = FieldBuilder ()
             let searchFields = fieldBuilder.Build typeof<SearchableProperty>
             SearchIndex (PROPERTIES_INDEX, searchFields)
         searchIndex.Suggesters.Add (SearchSuggester (SUGGESTER_NAME, Fields.STREET, Fields.LOCALITY, Fields.TOWN, Fields.DISTRICT, Fields.COUNTY))
 
-        let indexClient = SearchIndexClient (fst indexConnection, snd indexConnection)
+        let indexClient = SearchIndexClient (endpoint, credential)
         indexClient.DeleteIndex searchIndex |> ignore
         indexClient.CreateOrUpdateIndex searchIndex |> ignore
 
     let BLOB_DATA_SOURCE = "blob-transactions"
 
     /// Create the data source of the JSON blobs of properties
-    let createBlobDataSource connectionString indexConnection =
+    let createBlobDataSource connectionString (endpoint:Uri, credential:AzureKeyCredential) =
         let blobConnection =
             SearchIndexerDataSourceConnection(
                 BLOB_DATA_SOURCE,
                 SearchIndexerDataSourceType.AzureBlob,
                 connectionString,
                 SearchIndexerDataContainer PROPERTIES_INDEX)
-        let searchIndexer = SearchIndexerClient (fst indexConnection, snd indexConnection)
+        let searchIndexer = SearchIndexerClient (endpoint, credential)
         searchIndexer.DeleteDataSourceConnection blobConnection |> ignore
         searchIndexer.CreateDataSourceConnection blobConnection |> ignore
 
     /// Create the indexer
-    let createCsvIndexer indexConnection =
+    let createCsvIndexer (endpoint:Uri, credential:AzureKeyCredential) =
         let indexer =
             let indexingParameters =
                 IndexingParameters(
@@ -238,6 +237,6 @@ module Management =
                 Schedule = IndexingSchedule(TimeSpan.FromHours 1.),
                 Parameters = indexingParameters
             )
-        let searchIndexer = SearchIndexerClient (fst indexConnection, snd indexConnection)
+        let searchIndexer = SearchIndexerClient (endpoint, credential)
         searchIndexer.DeleteIndexer indexer |> ignore
         searchIndexer.CreateIndexer indexer |> ignore

@@ -8,15 +8,17 @@ nuget Azure.Storage.Blobs
 nuget Fable.Remoting.Giraffe
 nuget FSharp.Control.AsyncSeq
 nuget FSharp.Data
-nuget FSharp.Core
+nuget FSharp.Core ~> 6
 nuget Microsoft.Azure.Core.Spatial
 nuget Microsoft.Spatial
 nuget OpenTelemetry.Exporter.Console
 nuget OpenTelemetry.Extensions.Hosting
 nuget OpenTelemetry.Instrumentation.AspNetCore
+nuget Microsoft.AspNetCore.Authentication.JwtBearer ~> 6
 nuget Serilog.AspNetCore
 nuget Serilog.Sinks.Console
 nuget Saturn
+nuget System.Text.Encodings.Web ~> 6
 
 nuget Expecto
 

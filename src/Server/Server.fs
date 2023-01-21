@@ -6,9 +6,7 @@ open Fable.Remoting.Server
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Configuration
-open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
-open OpenTelemetry.Trace
 open Saturn
 open Serilog
 open Shared
@@ -78,21 +76,30 @@ let webApp =
 type Object with
     member _.Ignore() = ()
 
+open OpenTelemetry
+open OpenTelemetry.Trace
+open Microsoft.Extensions.DependencyInjection
+
 let app =
     application {
-        webhost_config (fun config -> config.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
-        logging (fun cfg -> cfg.AddSerilog().Ignore())
-        host_config (fun config -> config.UseSerilog((fun _ _ config ->
-            config
-                .WriteTo.Console()
-                .WriteTo.File(Formatting.Json.JsonFormatter(closingDelimiter = ",", renderMessage = true), "log.json", rollingInterval = RollingInterval.Hour)
-                .Ignore()
-            ))
+        webhost_config (fun hostBuilder ->
+            hostBuilder.ConfigureAppConfiguration(fun builder -> builder.AddUserSecrets<Foo>() |> ignore))
+        logging (fun loggingBuilder -> loggingBuilder.AddSerilog().Ignore())
+        host_config (fun config ->
+            config.UseSerilog(fun _ _ loggerConfig ->
+                loggerConfig
+                    .WriteTo.Console()
+                    .WriteTo.File(Formatting.Json.JsonFormatter(closingDelimiter = ",", renderMessage = true), "log.json", rollingInterval = RollingInterval.Hour)
+                    .Ignore()
+            )
         )
-        service_config (fun config ->
-            config
-                .AddOpenTelemetryMetrics()
-                .AddOpenTelemetryTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
+        service_config (fun services ->
+            services
+                .AddOpenTelemetry()
+                .WithMetrics()
+                .WithTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
+                .StartWithHost()
+                .Services
                 .AddHostedService<Ingestion.PricePaidDownloader>()
         )
         memory_cache

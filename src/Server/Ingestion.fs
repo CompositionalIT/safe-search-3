@@ -1,7 +1,6 @@
 module Ingestion
 
 open FSharp.Control
-open FSharp.Control.Tasks
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open System.Net.Http
@@ -250,6 +249,7 @@ let tryRefreshPrices connectionString cancellationToken (logger:ILogger) refresh
 let DELAY_BETWEEN_CHECKS = TimeSpan.FromDays 7.
 
 let primeSearchIndex (logger:ILogger) (config:IConfiguration) =
+    logger.LogInformation $"Connecting to search index: '{config.SearchIndexName}'."
     let searchEndpoint = Uri $"https://{config.SearchIndexName}.search.windows.net"
     let searchCredential = AzureKeyCredential config.SearchIndexKey
     let siClient = SearchIndexClient(searchEndpoint, searchCredential)
@@ -267,33 +267,32 @@ let primeSearchIndex (logger:ILogger) (config:IConfiguration) =
 type PricePaidDownloader (logger:ILogger<PricePaidDownloader>, config:IConfiguration) =
     inherit BackgroundService ()
     override this.ExecuteAsync cancellationToken =
-        let backgroundWork =
-            task {
-                logger.LogInformation "Price Paid Data background download worker has started."
+        let backgroundWork = task {
+            logger.LogInformation "Price Paid Data background download worker has started."
 
-                // First check if the search index needs to be primed.
-                primeSearchIndex logger config
+            // First check if the search index needs to be primed.
+            primeSearchIndex logger config
 
-                // Put an initial delay for the first check
-                do! Task.Delay (TimeSpan.FromSeconds 30., cancellationToken)
+            // Put an initial delay for the first check
+            do! Task.Delay (TimeSpan.FromSeconds 30., cancellationToken)
 
-                while not cancellationToken.IsCancellationRequested do
-                    logger.LogInformation "Trying to refresh latest property prices..."
-                    let timer = Stopwatch.StartNew ()
-                    let! result = tryRefreshPrices config.StorageConnectionString cancellationToken logger LatestMonth
-                    timer.Stop ()
-                    match result with
-                    | NothingToDo ->
-                        logger.LogInformation "Check was successful - nothing to do."
-                    | Completed stats ->
-                        logger.LogInformation ("Successfully ingested {Rows} (hash: {Hash})!", stats.Rows, stats.Hash)
-                    logger.LogInformation ("Check took {Seconds} seconds. Now sleeping until next check due in {TimeToNextCheck} hours ({NextCheckDate}).",
-                        timer.Elapsed.TotalSeconds,
-                        DELAY_BETWEEN_CHECKS.TotalHours,
-                        DateTime.UtcNow.Add DELAY_BETWEEN_CHECKS)
-                    do! Task.Delay (DELAY_BETWEEN_CHECKS, cancellationToken)
-            }
+            while not cancellationToken.IsCancellationRequested do
+                logger.LogInformation "Trying to refresh latest property prices..."
+                let timer = Stopwatch.StartNew ()
+                let! result = tryRefreshPrices config.StorageConnectionString cancellationToken logger LatestMonth
+                timer.Stop ()
+                match result with
+                | NothingToDo ->
+                    logger.LogInformation "Check was successful - nothing to do."
+                | Completed stats ->
+                    logger.LogInformation ("Successfully ingested {Rows} (hash: {Hash})!", stats.Rows, stats.Hash)
+                logger.LogInformation ("Check took {Seconds} seconds. Now sleeping until next check due in {TimeToNextCheck} hours ({NextCheckDate}).",
+                    timer.Elapsed.TotalSeconds,
+                    DELAY_BETWEEN_CHECKS.TotalHours,
+                    DateTime.UtcNow.Add DELAY_BETWEEN_CHECKS)
+                do! Task.Delay (DELAY_BETWEEN_CHECKS, cancellationToken)
+        }
         backgroundWork
-            .ContinueWith (
-                (fun (_:Task) -> logger.LogInformation "Price Paid Data background download worker has gracefully shut down."),
-                TaskContinuationOptions.OnlyOnCanceled)
+        //     .ContinueWith (
+        //         (fun (_:Task) -> logger.LogInformation "Price Paid Data background download worker has gracefully shut down."),
+        //         TaskContinuationOptions.OnlyOnCanceled)

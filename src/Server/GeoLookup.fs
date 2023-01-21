@@ -1,7 +1,6 @@
 module GeoLookup
 
 open Azure.Data.Tables
-open FSharp.Control.Tasks
 open System.Threading.Tasks
 open Microsoft.Extensions.Caching.Memory
 open Shared

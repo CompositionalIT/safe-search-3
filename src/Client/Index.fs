@@ -816,7 +816,7 @@ module Search =
                     AgGrid.defaultColDef [
                         ColumnDef.resizable true
                         ColumnDef.sortable true
-                        ColumnDef.editable (fun _ -> false)
+                        ColumnDef.editable (fun _ _ -> false)
                     ]
                     AgGrid.domLayout AutoHeight
                     AgGrid.columnDefs [
