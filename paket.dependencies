@@ -1,27 +1,23 @@
 source https://api.nuget.org/v3/index.json
-framework: net5.0
+framework: net6.0
 storage: none
 
 nuget Azure.Data.Tables
 nuget Azure.Search.Documents
 nuget Azure.Storage.Blobs
 nuget Fable.Remoting.Giraffe
-nuget Feliz.AgGrid
-nuget Feliz.Bulma.QuickView
-nuget Feliz.Bulma.Slider
-nuget Feliz.PigeonMaps
-nuget Feliz.ReactLoadingSkeleton
-nuget Feliz.Recharts
-nuget Feliz.Tippy
-nuget Feliz.UseElmish
 nuget FSharp.Control.AsyncSeq
 nuget FSharp.Data
+nuget FSharp.Core
 nuget Microsoft.Azure.Core.Spatial
 nuget Microsoft.Spatial
 nuget OpenTelemetry.Exporter.Console
 nuget OpenTelemetry.Extensions.Hosting
 nuget OpenTelemetry.Instrumentation.AspNetCore
+nuget Serilog.AspNetCore
+nuget Serilog.Sinks.Console
 nuget Saturn
+
 nuget Expecto
 
 nuget Fable.Core
@@ -33,12 +29,19 @@ nuget Fable.FontAwesome.Free
 nuget Fable.Mocha
 nuget Fable.React
 nuget Fable.Remoting.Client
+
 nuget Feliz
 nuget Feliz.Bulma
+nuget Feliz.AgGrid
+nuget Feliz.Bulma.QuickView
+nuget Feliz.Bulma.Slider
+nuget Feliz.PigeonMaps
+nuget Feliz.ReactLoadingSkeleton
+nuget Feliz.Recharts
+nuget Feliz.Tippy
+nuget Feliz.UseElmish
 nuget Fulma
 
 nuget Fake.Core.Target
 nuget Fake.IO.FileSystem
 nuget Farmer
-nuget Serilog.AspNetCore
-nuget Serilog.Sinks.Console
