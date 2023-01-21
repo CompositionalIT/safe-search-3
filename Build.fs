@@ -7,7 +7,7 @@ open Farmer.Search
 open Helpers
 open System.Text.RegularExpressions
 
-initializeContext()
+initializeContext ()
 
 let sharedPath = Path.getFullName "src/Shared"
 let serverPath = Path.getFullName "src/Server"
@@ -16,22 +16,22 @@ let deployPath = Path.getFullName "deploy"
 
 Target.create "Clean" (fun _ ->
     Shell.cleanDir deployPath
-    run dotnet "fable clean --yes" clientPath
-)
+    run dotnet "fable clean --yes" clientPath)
 
 Target.create "InstallClient" (fun _ -> run npm "install" ".")
 
 Target.create "Bundle" (fun _ ->
-    [ "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
-      "client", dotnet "fable --run webpack -p" clientPath ]
-    |> runParallel
-)
+    [
+        "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
+        "client", dotnet "fable --run webpack -p" clientPath
+    ]
+    |> runParallel)
 
 Target.create "Azure" (fun _ ->
-    let searchName : string = "REPLACE WITH AZURE SEARCH NAME"
-    let storageName : string = "REPLACE WITH STORAGE NAME"
-    let azCopyPath : string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
-    let appServiceName : string = "REPLACE WITH AZURE APP SERVICE NAME"
+    let searchName: string = "REPLACE WITH AZURE SEARCH NAME"
+    let storageName: string = "REPLACE WITH STORAGE NAME"
+    let azCopyPath: string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
+    let appServiceName: string = "REPLACE WITH AZURE APP SERVICE NAME"
 
     let azureSearch = search {
         name searchName
@@ -66,49 +66,50 @@ Target.create "Azure" (fun _ ->
     }
 
     // Deploy above resources to Azure
-    let outputs =
-        deployment
-        |> Deploy.execute "SAFE Search 3" Deploy.NoParameters
+    let outputs = deployment |> Deploy.execute "SAFE Search 3" Deploy.NoParameters
 
     let connectionString = outputs.["storageConnectionString"]
 
     let accountName, accountKey =
-        let matcher = Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
+        let matcher =
+            Regex.Match(connectionString, "AccountName=(?<AccountName>.*);.*AccountKey=(?<AccountKey>.*)(;|$)")
+
         matcher.Groups.["AccountName"].Value, matcher.Groups.["AccountKey"].Value
 
     let lookupNeedsPriming =
         let destinationTable =
             let tableClient = TableServiceClient connectionString
             tableClient.GetTableClient "postcodes"
+
         destinationTable.Query<TableEntity>(maxPerPage = 1) |> Seq.isEmpty
 
     if lookupNeedsPriming then
-        printfn "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
-        CreateProcess.fromRawCommandLine $"{azCopyPath}" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
+        printfn
+            "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
+
+        CreateProcess.fromRawCommandLine
+            $"{azCopyPath}"
+            $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
         |> Proc.run
         |> ignore
     else
-        printfn "Postcode lookup already exists, no seeding is required."
-)
+        printfn "Postcode lookup already exists, no seeding is required.")
 
 Target.create "Run" (fun _ ->
     run dotnet "build" sharedPath
-    [ "server", dotnet "watch run" serverPath
-      "client", dotnet "fable watch --run webpack-dev-server" clientPath ]
-    |> runParallel
-)
+
+    [
+        "server", dotnet "watch run" serverPath
+        "client", dotnet "fable watch --run webpack-dev-server" clientPath
+    ]
+    |> runParallel)
 
 open Fake.Core.TargetOperators
 
 let dependencies = [
-    "Clean"
-        ==> "InstallClient"
-        ==> "Bundle"
-        ==> "Azure"
+    "Clean" ==> "InstallClient" ==> "Bundle" ==> "Azure"
 
-    "Clean"
-        ==> "InstallClient"
-        ==> "Run"
+    "Clean" ==> "InstallClient" ==> "Run"
 ]
 
 [<EntryPoint>]
