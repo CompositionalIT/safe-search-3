@@ -3,6 +3,7 @@ module Server
 open Crime
 open Fable.Remoting.Giraffe
 open Fable.Remoting.Server
+open Microsoft.ApplicationInsights.Extensibility
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Configuration
@@ -117,6 +118,7 @@ type Object with
 open OpenTelemetry
 open OpenTelemetry.Trace
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.ApplicationInsights.Extensibility
 
 let app = application {
     webhost_config (fun hostBuilder ->
@@ -125,9 +127,13 @@ let app = application {
     logging (fun loggingBuilder -> loggingBuilder.AddSerilog().Ignore())
 
     host_config (fun config ->
-        config.UseSerilog(fun _ _ loggerConfig ->
+        config.UseSerilog(fun _ serviceProvider loggerConfig ->
             loggerConfig.WriteTo
                 .Console()
+                .WriteTo.ApplicationInsights(
+                    serviceProvider.GetRequiredService<TelemetryConfiguration>(),
+                    TelemetryConverter.Traces
+                )
                 .WriteTo.File(
                     Formatting.Json.JsonFormatter(closingDelimiter = ",", renderMessage = true),
                     "log.json",
@@ -137,11 +143,8 @@ let app = application {
 
     service_config (fun services ->
         services
-            .AddOpenTelemetry()
-            .WithMetrics()
-            .WithTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
-            .StartWithHost()
-            .Services.AddHostedService<Ingestion.PricePaidDownloader>())
+            .AddHostedService<Ingestion.PricePaidDownloader>()
+            .AddApplicationInsightsTelemetry())
 
     memory_cache
     use_static "public"
