@@ -14,18 +14,7 @@ let serverPath = Path.getFullName "src/Server"
 let clientPath = Path.getFullName "src/Client"
 let deployPath = Path.getFullName "deploy"
 
-Target.create "Clean" (fun _ ->
-    Shell.cleanDir deployPath
-    run dotnet "fable clean --yes" clientPath)
 
-Target.create "InstallClient" (fun _ -> run npm "install" ".")
-
-Target.create "Bundle" (fun _ ->
-    [
-        "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
-        "client", dotnet "fable --run webpack -p" clientPath
-    ]
-    |> runParallel)
 
 Target.create "Azure" (fun _ ->
     let searchName: string = "REPLACE WITH AZURE SEARCH NAME"
@@ -101,21 +90,28 @@ Target.create "Azure" (fun _ ->
     else
         printfn "Postcode lookup already exists, no seeding is required.")
 
+
+Target.create "Bundle" (fun _ ->
+    run npm "install --prefer-offline --no-audit --progress=false" "."
+
+    [
+        "server", dotnet $"publish -c Release -o \"{deployPath}\"" serverPath
+        "client", dotnet "fable --run vite build" clientPath
+    ]
+    |> runParallel)
+
 Target.create "Run" (fun _ ->
     run dotnet "build" sharedPath
 
     [
         "server", dotnet "watch run" serverPath
-        "client", dotnet "fable watch --run webpack-dev-server" clientPath
+        "client", dotnet "fable watch -s --run vite" clientPath
     ]
     |> runParallel)
 
 open Fake.Core.TargetOperators
 
-let dependencies = [
-    "Clean" ==> "InstallClient" ==> "Bundle" ==> "Azure"
-    "Clean" ==> "InstallClient" ==> "Run"
-]
+let dependencies = [ "Bundle" ==> "Azure" ]
 
 [<EntryPoint>]
 let main args = runOrDefault args
