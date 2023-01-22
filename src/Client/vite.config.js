@@ -1,3 +1,4 @@
+import { splitVendorChunkPlugin } from 'vite'
 export default ({
     // proxy API calls to the backend
     server: {
@@ -8,5 +9,6 @@ export default ({
     // needed for fable watch
     define: {
         global: {}
-    }
+    },
+    plugins: [splitVendorChunkPlugin()]
 })

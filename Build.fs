@@ -14,56 +14,8 @@ let serverPath = Path.getFullName "src/Server"
 let clientPath = Path.getFullName "src/Client"
 let deployPath = Path.getFullName "deploy"
 
-
-
-Target.create "Azure" (fun _ ->
-    let searchName: string = "REPLACE WITH AZURE SEARCH NAME"
-    let storageName: string = "REPLACE WITH STORAGE NAME"
-    let azCopyPath: string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
-    let appServiceName: string = "REPLACE WITH AZURE APP SERVICE NAME"
-
-    let azureSearch = search {
-        name searchName
-        sku Basic
-    }
-
-    let storage = storageAccount {
-        name storageName
-        add_private_container "properties"
-        add_table "postcodes"
-    }
-
-    let logs = logAnalytics { name "isaac-analytics" }
-
-    let insights = appInsights {
-        name "isaac-insights"
-        log_analytics_workspace logs
-    }
-
-    let web = webApp {
-        name $"{appServiceName}"
-        always_on
-        link_to_app_insights insights
-        sku WebApp.Sku.B1
-        operating_system Linux
-        runtime_stack Runtime.DotNet60
-        setting "storageName" storageName
-        setting "storageConnectionString" storage.Key
-        setting "searchName" searchName
-        setting "searchKey" azureSearch.AdminKey
-        zip_deploy "deploy"
-    }
-
-    let deployment = arm {
-        location Location.WestEurope
-        add_resources [ web; azureSearch; storage; logs; insights ]
-        output "storageConnectionString" storage.Key
-    }
-
-    // Deploy above resources to Azure
-    let outputs = deployment |> Deploy.execute "isaac-safe-search-3" Deploy.NoParameters
-
-    let connectionString = outputs.["storageConnectionString"]
+let tryPrimePostcodeLookup connectionString =
+    let azCopyPath = @"C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe"
 
     let accountName, accountKey =
         let matcher =
@@ -88,8 +40,74 @@ Target.create "Azure" (fun _ ->
         |> Proc.run
         |> ignore
     else
-        printfn "Postcode lookup already exists, no seeding is required.")
+        printfn "Postcode lookup already exists, no seeding is required."
 
+let createAzureResources (storageName: string) (searchName: string) (appServiceName: string) =
+    let azureSearch = search {
+        name searchName
+        sku Basic
+    }
+
+    let storage = storageAccount {
+        name storageName
+        add_private_container "properties"
+        add_table "postcodes"
+    }
+
+    let logs = logAnalytics { name "isaac-analytics" }
+
+    let insights = appInsights {
+        name "isaac-insights"
+        log_analytics_workspace logs
+    }
+
+    let web = webApp {
+        name appServiceName
+        always_on
+        link_to_app_insights insights
+        sku WebApp.Sku.B1
+        operating_system Linux
+        runtime_stack Runtime.DotNet60
+        setting "storageName" storageName
+        setting "searchName" searchName
+        setting "storageConnectionString" storage.Key
+        setting "searchKey" azureSearch.AdminKey
+        zip_deploy "deploy"
+    }
+
+    let deployment = arm {
+        location Location.WestEurope
+        add_resources [ web; azureSearch; storage; logs; insights ]
+        output "storageConnectionString" storage.Key
+        output "searchKey" azureSearch.AdminKey
+    }
+
+    deployment |> Deploy.execute "isaac-safe-search-3" Deploy.NoParameters
+
+let createDevSettings storageName storageConnectionString searchName searchKey =
+    printfn "Setting user secrets for server with storage and search keys for local development"
+
+    let setSecret key value =
+        dotnet $"user-secrets set \"{key}\" \"{value}\"" serverPath
+        |> Proc.run
+        |> ignore
+
+    setSecret "storageName" storageName
+    setSecret "storageConnectionString" storageConnectionString
+    setSecret "searchName" searchName
+    setSecret "searchKey" searchKey
+
+Target.create "Azure" (fun _ ->
+    let searchName = "isaac-safesearch-index"
+    let storageName = "isaacsafestorage"
+    let appServiceName = "isaac-safesearch-web"
+
+    let storageConnectionString, searchKey =
+        let outputs = createAzureResources storageName searchName appServiceName
+        outputs.["storageConnectionString"], outputs.["searchKey"]
+
+    tryPrimePostcodeLookup storageConnectionString
+    createDevSettings storageName storageConnectionString searchName searchKey)
 
 Target.create "Bundle" (fun _ ->
     run npm "install --prefer-offline --no-audit --progress=false" "."
