@@ -400,7 +400,7 @@ type PricePaidDownloader(logger: ILogger<PricePaidDownloader>, config: IConfigur
             primeSearchIndex logger config
 
             // Put an initial delay for the first check
-            do! Task.Delay(TimeSpan.FromSeconds 0., cancellationToken)
+            do! Task.Delay(TimeSpan.FromSeconds 30., cancellationToken)
 
             while not cancellationToken.IsCancellationRequested do
                 logger.LogInformation "Trying to refresh latest property prices..."

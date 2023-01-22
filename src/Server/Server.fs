@@ -130,11 +130,6 @@ let app = application {
                     serviceProvider.GetRequiredService<TelemetryConfiguration>(),
                     TelemetryConverter.Traces
                 )
-                .WriteTo.File(
-                    Formatting.Json.JsonFormatter(closingDelimiter = ",", renderMessage = true),
-                    "log.json",
-                    rollingInterval = RollingInterval.Hour
-                )
                 .Ignore()))
 
     service_config (fun services ->
