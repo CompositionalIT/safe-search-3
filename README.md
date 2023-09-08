@@ -34,7 +34,7 @@ Before you run the project **for the first time only** you must install dotnet "
 dotnet tool restore
 ```
 
-## Running in Azure (preffered)
+## Running in Azure (preferred)
 **Set the names for web app, Azure Search, and storage instances, as well as the path to [AzCopy](https://docs.microsoft.com/en-us/previous-versions/azure/storage/storage-use-azcopy#azcopy-with-table-support-v73) in Build.fs:31-34.**
 Navigate to the folder containing the code (e.g. C:\\safe-search-3\\) and run the following command to deploy the app to Azure:
 ```bash
