@@ -3,19 +3,19 @@
   "isRoot": true,
   "tools": {
     "paket": {
-      "version": "6.0.0-rc002",
+      "version": "7.2.1",
       "commands": [
         "paket"
       ]
     },
     "fable": {
-      "version": "3.7.20",
+      "version": "3.7.22",
       "commands": [
         "fable"
       ]
     },
     "fantomas": {
-      "version": "5.2.0",
+      "version": "6.1.2",
       "commands": [
         "fantomas"
       ]
