@@ -33,6 +33,10 @@ Target.create "Azure" (fun _ ->
     let azCopyPath : string = @"REPLACE WITH PATH TO AZCOPY.EXE" //e.g C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe
     let appServiceName : string = "REPLACE WITH AZURE APP SERVICE NAME"
 
+    let azCopyPath =
+        ProcessUtils.tryFindFileOnPath "azcopy"
+        |> Option.defaultWith (fun _ -> failwith "No azcopy package on your path")
+
     let azureSearch = search {
         name searchName
         sku Basic
@@ -49,7 +53,7 @@ Target.create "Azure" (fun _ ->
         always_on
         sku WebApp.Sku.B1
         operating_system Linux
-        runtime_stack Runtime.DotNet50
+        runtime_stack Runtime.DotNet60
         setting "storageName" storageName
         setting "storageConnectionString" storage.Key
         setting "searchName" searchName
@@ -84,7 +88,7 @@ Target.create "Azure" (fun _ ->
 
     if lookupNeedsPriming then
         printfn "No data found - now seeding postcode / geo-location lookup table with ~1.8m entries. This will take a few minutes."
-        CreateProcess.fromRawCommandLine $"{azCopyPath}" $"/Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{accountName}.table.core.windows.net/postcodes /DestKey:{accountKey} /Manifest:postcodes /EntityOperation:InsertOrReplace"
+        CreateProcess.fromRawCommandLine $"{azCopyPath}" $"copy https://compositionalit.blob.core.windows.net/postcodedata https://{storageName}.table.core.windows.net/postcodes --recursive"
         |> Proc.run
         |> ignore
     else
