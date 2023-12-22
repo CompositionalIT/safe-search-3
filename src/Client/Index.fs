@@ -458,11 +458,11 @@ module Search =
 
                 model, Cmd.none
             | ValueChanged value ->
-                let asyncMsg = async {
+                let asyncMsg value = async {
                     do! Async.Sleep model.Delay;
-                    return Debounced value }
+                    return value }
 
-                { model with Value = value }, Cmd.OfAsyncImmediate.result asyncMsg
+                { model with Value = value }, Cmd.OfAsync.perform asyncMsg value Debounced
 
         let useDebouncer value onDone delay =
             let current, dispatch = Feliz.React.useElmish (init value onDone delay, update, [||])

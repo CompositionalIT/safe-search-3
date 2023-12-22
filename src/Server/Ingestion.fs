@@ -1,6 +1,5 @@
 module Ingestion
 
-open System.Reactive.Disposables
 open System.Threading
 open FSharp.Control
 open Microsoft.Extensions.Hosting

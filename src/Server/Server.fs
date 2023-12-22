@@ -98,7 +98,6 @@ let app =
                 .AddOpenTelemetry()
                 .WithMetrics()
                 .WithTracing(fun cfg -> cfg.AddAspNetCoreInstrumentation().AddConsoleExporter() |> ignore)
-                .StartWithHost()
                 .Services
                 .AddHostedService<Ingestion.PricePaidDownloader>()
         )
