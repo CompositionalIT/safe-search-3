@@ -822,7 +822,7 @@ module Search =
                     AgGrid.columnDefs [
                         ColumnDef.create<string> [
                             ColumnDef.onCellClicked (fun _ row -> dispatch (ViewProperty row))
-                            ColumnDef.cellRendererFramework (fun _ _ -> Html.a [ Html.text "View" ])
+                            ColumnDef.cellRenderer (fun _ _ -> Html.a [ Html.text "View" ])
                         ]
                         ColumnDef.create<DateTime> [
                             ColumnDef.filter Date
@@ -858,7 +858,7 @@ module Search =
                             match searchKind with
                             | FreeTextSearch ->
                                 ColumnDef.onCellClicked (fun _ row -> dispatch (DoPostcodeSearch (Option.toObj row.Address.PostCode)))
-                                ColumnDef.cellRendererFramework (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
+                                ColumnDef.cellRenderer (fun _ x -> Html.a [ Html.text (Option.toObj x.Address.PostCode) ])
                             | LocationSearch _ ->
                                 ColumnDef.valueGetter (fun x -> Option.toObj x.Address.PostCode)
                         ]

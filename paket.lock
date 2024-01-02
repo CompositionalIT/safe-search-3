@@ -154,7 +154,7 @@ NUGET
       Fable.ReactDom.Types (>= 18.2)
       Feliz.CompilerPlugins (>= 2.2)
       FSharp.Core (>= 4.7.2)
-    Feliz.AgGrid (0.0.5)
+    Feliz.AgGrid (0.0.7)
       Fable.Core (>= 3.7.1)
       Feliz (>= 1.65)
     Feliz.Bulma (2.19)

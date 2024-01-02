@@ -19,27 +19,5 @@ export default defineConfig({
                 changeOrigin: true,
             }
         }
-    },
-    //aliases added to resolve issue with Feliz.AgGrid using old ag-grid-community package
-    //which is not compatible with React 18. In newer version of ag-grid-community the styles
-    //have been moved (see 1) and you may need to create the files for (see 1)
-    resolve: {
-        alias: [
-            //1
-            {
-                find: "ag-grid-community/dist/styles/ag-theme-alpine-dark.css",
-                replacement: "ag-grid-community/custom/ag-theme-alpine-dark.css"
-            },
-            //1
-            {
-                find: "ag-grid-community/dist/styles/ag-theme-balham-dark.css",
-                replacement: "ag-grid-community/custom/ag-theme-balham-dark.css"
-            },
-            //3
-            {
-                find: "ag-grid-community/dist/styles/",
-                replacement: "ag-grid-community/styles/"
-            },
-        ]
     }
 });
