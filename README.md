@@ -21,10 +21,17 @@ You'll need to following Azure resources provisioned (these get created automati
     * a data source created via `Management.createBlobDataSource`.
     * an indexer created via `Management.createCsvIndexer`.
 * Postcodes should be inserted into table storage before properties are imported
-  * The fastest way to import these is to use [AzCopy 7.3](https://docs.microsoft.com/en-us/previous-versions/azure/storage/storage-use-azcopy#azcopy-with-table-support-v73) then run the following command:
+  * The fastest way to import these is to use [AzCopy 7.3](https://docs.microsoft.com/en-us/previous-versions/azure/storage/storage-use-azcopy#azcopy-with-table-support-v73) - (Windows only) then run the following command:
     ```bash
     AzCopy.exe /Source:https://compositionalit.blob.core.windows.net/postcodedata /Dest:https://{YOUR_STORAGE_ACCOUNT}.table.core.windows.net/postcodes2 /DestKey:{YOUR_ACCESS_KEY} /Manifest:postcodes /EntityOperation:InsertOrReplace
     ```
+
+  * Alternatively you can use [Azure Storage Explorer](https://azure.microsoft.com/en-gb/products/storage/storage-explorer) - (Windows, Mac, Linux) and do the following steps.
+
+    - Connect to https://compositionalit.blob.core.windows.net/postcodedata
+    - Download the postcodes.csv file
+    - Connect to your newly created table storage account and the table called **postcodes**
+    - Import the postcode.csv file
 
 # Getting started
 
