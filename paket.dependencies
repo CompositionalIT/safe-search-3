@@ -13,10 +13,10 @@ nuget Microsoft.Spatial
 nuget OpenTelemetry.Exporter.Console
 nuget OpenTelemetry.Extensions.Hosting
 nuget OpenTelemetry.Instrumentation.AspNetCore
-nuget Microsoft.AspNetCore.Authentication.JwtBearer ~> 6
+nuget Microsoft.AspNetCore.Authentication.JwtBearer
 nuget Serilog.AspNetCore
 nuget Serilog.Sinks.Console
-nuget System.Text.Encodings.Web ~> 6
+nuget System.Text.Encodings.Web
 
 nuget FSharp.Core ~> 8
 nuget Fable.Remoting.Giraffe ~> 5

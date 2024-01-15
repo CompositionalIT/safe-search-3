@@ -5,14 +5,14 @@
         "npm": "~9 || ~10"
     },
     "scripts": {
-        "start": "webpack-dev-server",
-        "build": "webpack -p",
-        "test:live": "webpack-dev-server --config webpack.tests.config.js"
+        "start": "npx vite src/Client",
+        "build": "npx vite build src/Client"
     },
     "devDependencies": {
         "@types/node": "^20.9.1",
         "@vitejs/plugin-react": "^4.2.0",
         "autoprefixer": "^10.4.16",
+        "mocha": "^8.3.2",
         "postcss": "^8.4.31",
         "remotedev": "^0.2.9",
         "sass": "^1.69.5",
@@ -27,11 +27,12 @@
         "bulma-quickview": "^2.0.0",
         "bulma-slider": "^2.0.4",
         "css-spinners-react": "^1.0.2",
-        "pigeon-maps": "^0.19.7",
+        "pigeon-maps": "^0.21.0",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-loading-skeleton": "^3.3.1",
-        "recharts": "^2.10.3"
+        "recharts": "^2.10.3",
+        "use-sync-external-store": "^1.2.0"
     }
 }
