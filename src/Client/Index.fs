@@ -845,12 +845,12 @@ module Search =
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
                             ColumnDef.headerName "Town"
-                            ColumnDef.valueGetter (fun x -> x.Address.TownCity)
+                            ColumnDef.valueGetter (_.Address.TownCity)
                         ]
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
                             ColumnDef.headerName "County"
-                            ColumnDef.valueGetter (fun x -> x.Address.County)
+                            ColumnDef.valueGetter (_.Address.County)
                         ]
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
@@ -885,7 +885,7 @@ module Search =
                     bar.legendType.star
                     bar.isAnimationActive true
                     bar.animationEasing.ease
-                    bar.dataKey (fun point -> point.Incidents)
+                    bar.dataKey (_.Incidents)
                     bar.fill "#3298dc"
                 ]
             ]
@@ -932,7 +932,7 @@ module Search =
                     ]
                 ]
             ]
-        let geoLocationOpt = results |> List.tryPick (fun r -> r.Address.GeoLocation)
+        let geoLocationOpt = results |> List.tryPick (_.Address.GeoLocation)
         React.fragment [
             Bulma.tabs [
                 Html.ul [
