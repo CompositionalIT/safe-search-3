@@ -599,7 +599,7 @@ module Search =
 
         let useDebouncer value onDone delay =
             let current, dispatch =
-                Feliz.React.useElmish (init value onDone delay, update, [||])
+                React.useElmish (init value onDone delay, update, [||])
 
             current.Value, (ValueChanged >> dispatch)
 
@@ -923,12 +923,12 @@ module Search =
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
                             ColumnDef.headerName "Town"
-                            ColumnDef.valueGetter (_.Address.TownCity)
+                            ColumnDef.valueGetter (fun x -> x.Address.TownCity)
                         ]
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
                             ColumnDef.headerName "County"
-                            ColumnDef.valueGetter (_.Address.County)
+                            ColumnDef.valueGetter (fun x -> x.Address.County)
                         ]
                         ColumnDef.create<string> [
                             ColumnDef.filter Text
@@ -962,7 +962,7 @@ module Search =
                     bar.legendType.star
                     bar.isAnimationActive true
                     bar.animationEasing.ease
-                    bar.dataKey (_.Incidents)
+                    bar.dataKey (fun x -> x.Incidents)
                     bar.fill "#3298dc"
                 ]
             ]
@@ -996,7 +996,7 @@ module Search =
                 ]
             ]
 
-        let geoLocationOpt = results |> List.tryPick (_.Address.GeoLocation)
+        let geoLocationOpt = results |> List.tryPick (fun x -> x.Address.GeoLocation)
 
         React.fragment [
             Bulma.tabs [
