@@ -4,6 +4,7 @@ namespace Kibalta
 type Direction =
     | Ascending
     | Descending
+
     member this.StringValue =
         match this with
         | Ascending -> "asc"
@@ -13,10 +14,12 @@ type Direction =
 type SortColumn =
     | ByField of field: string * Direction
     | ByDistance of field: string * long: float * lat: float * Direction
+
     member this.StringValue =
         match this with
         | ByField(field, dir) -> $"{field} {dir.StringValue}"
-        | ByDistance(field, long, lat, dir) -> $"geo.distance({field}, geography'POINT({long} {lat})') {dir.StringValue}"
+        | ByDistance(field, long, lat, dir) ->
+            $"geo.distance({field}, geography'POINT({long} {lat})') {dir.StringValue}"
 
 module Filters =
     /// Combines two filters together using either AND or OR logic.
@@ -32,6 +35,7 @@ module Filters =
         | Lt
         | Ge
         | Le
+
         member this.StringValue =
             match this with
             | Eq -> "eq"
@@ -48,16 +52,17 @@ module Filters =
         | BinaryFilter of FilterExpr * FilterCombiner * FilterExpr
 
         /// ANDs two filters together
-        static member (+) (a, b) = BinaryFilter(a, And, b)
+        static member (+)(a, b) = BinaryFilter(a, And, b)
 
         /// ORs two filters together
-        static member (*) (a, b) = BinaryFilter(a, Or, b)
+        static member (*)(a, b) = BinaryFilter(a, Or, b)
 
     let DefaultFilter = ConstantFilter true
     // A helper to create a basic field filter.
     let where a comp b = FieldFilter(a, comp, b)
     // A helper to create a basic geo filter.
-    let whereGeoDistance field (long, lat) comp b = GeoDistanceFilter(field, long, lat, comp, b)
+    let whereGeoDistance field (long, lat) comp b =
+        GeoDistanceFilter(field, long, lat, comp, b)
 
     /// Combines two filters by ANDing them together.
     let combine = List.fold (+) DefaultFilter
@@ -67,8 +72,7 @@ module Filters =
 
     let rec eval =
         function
-        | ConstantFilter value ->
-            $"%b{value}"
+        | ConstantFilter value -> $"%b{value}"
         | FieldFilter(field, comparison, value) ->
             match value with
             | :? string as s -> $"{field} {comparison.StringValue} '{s}'"
@@ -77,7 +81,5 @@ module Filters =
         | GeoDistanceFilter(field, long, lat, comparison, distance) ->
             let lhs = $"geo.distance({field}, geography'POINT({long} {lat})')"
             $"{lhs} {comparison.StringValue} {distance}"
-        | BinaryFilter(left, And, right) ->
-            $"{eval left} and {eval right}"
-        | BinaryFilter(left, Or, right) ->
-            $"{eval left} or {eval right}"
+        | BinaryFilter(left, And, right) -> $"{eval left} and {eval right}"
+        | BinaryFilter(left, Or, right) -> $"{eval left} or {eval right}"
