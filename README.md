@@ -24,10 +24,10 @@ You'll need to following Azure resources provisioned (these get created automati
 
   * Alternatively you can use [Azure Storage Explorer](https://azure.microsoft.com/en-gb/products/storage/storage-explorer) - (Windows, Mac, Linux) and do the following steps.
 
-    - Connect to https://compositionalit.blob.core.windows.net/postcodedata
-    - Download the postcodes.csv file
-    - Connect to your newly created table storage account and the table called **postcodes**
-    - Import the postcode.csv file
+    - Connect to https://compositionalit.blob.core.windows.net/postcodes, which contains a CSV representation of all postcodes.
+    - Download the `postcodes.csv` file
+    - Connect to your newly created table storage account and the table called `postcodes`
+    - Import the `postcode.csv` file
 
 # Getting started
 
