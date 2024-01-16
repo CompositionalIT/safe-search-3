@@ -1,23 +1,23 @@
-﻿
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <UserSecretsId>e31940e2-49dc-4737-92a7-5c095d02866a</UserSecretsId>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="paket.references" />
-    <Compile Include="Helpers.fs" />
-    <Compile Include="GeoLookup.fs" />
-    <Compile Include="Kibalta.fs" />
-    <Compile Include="AzureSearch.fs" />
-    <Compile Include="Ingestion.fs" />
-    <Compile Include="Transaction.fs" />
-    <Compile Include="Crime.fs" />
-    <Compile Include="Server.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <UserSecretsId>e31940e2-49dc-4737-92a7-5c095d02866a</UserSecretsId>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="paket.references" />
+        <Compile Include="Helpers.fs" />
+        <Compile Include="GeoLookup.fs" />
+        <Compile Include="Kibalta.fs" />
+        <Compile Include="AzureSearch.fs" />
+        <Compile Include="Ingestion.fs" />
+        <Compile Include="Transaction.fs" />
+        <Compile Include="Crime.fs" />
+        <Compile Include="Server.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Shared\Shared.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

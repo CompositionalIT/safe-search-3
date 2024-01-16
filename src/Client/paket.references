@@ -3,12 +3,9 @@ Fable.Elmish
 Fable.Elmish.React
 Fable.Elmish.Debugger
 Fable.Elmish.HMR
-Fable.FontAwesome.Free
-Fable.React
 Fable.Remoting.Client
 Feliz
 Feliz.Bulma
-Fulma
 Feliz.AgGrid
 Feliz.PigeonMaps
 Feliz.Tippy
@@ -17,3 +14,4 @@ Feliz.Bulma.Slider
 Feliz.ReactLoadingSkeleton
 Feliz.Recharts
 Feliz.UseElmish
+Fulma
