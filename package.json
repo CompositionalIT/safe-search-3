@@ -4,11 +4,12 @@
         "node": "~18 || ~20",
         "npm": "~9 || ~10"
     },
-    "scripts": { },
+    "scripts": {},
     "devDependencies": {
         "@types/node": "^20.9.1",
         "@vitejs/plugin-react": "^4.2.0",
         "autoprefixer": "^10.4.16",
+        "daisyui": "^4.6.0",
         "mocha": "^8.3.2",
         "postcss": "^8.4.33",
         "remotedev": "^0.2.9",
