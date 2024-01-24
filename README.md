@@ -1,9 +1,13 @@
+## Demo
+
+You can see it running on Microsoft Azure at https://safesearch.azurewebsites.net/.
+
 ## Install pre-requisites
 
 You'll need to install the following pre-requisites in order to build SAFE applications
 
-* [.NET Core SDK](https://www.microsoft.com/net/download) 5.0 or higher
-* [Node LTS](https://nodejs.org/en/download/)
+* [.NET Core SDK](https://www.microsoft.com/net/download) 8.0 or higher
+* [Node LTS](https://nodejs.org/en/download/) node 18 or higher, npm 9 or higher
 
 ## Azure Services pre-requisites
 
