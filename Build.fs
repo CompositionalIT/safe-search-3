@@ -49,7 +49,7 @@ Target.create "Azure" (fun _ ->
         always_on
         sku WebApp.Sku.B1
         operating_system Linux
-        runtime_stack (Runtime.DotNet "8.0")
+        runtime_stack Runtime.DotNet80
         setting "storageName" storageName
         setting "storageConnectionString" storage.Key
         setting "searchName" searchName
