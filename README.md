@@ -1,3 +1,7 @@
+## Demo
+
+You can see it running on Microsoft Azure at https://safesearch.azurewebsites.net/.
+
 ## Install pre-requisites
 
 You'll need to install the following pre-requisites in order to build SAFE applications
