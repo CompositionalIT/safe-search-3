@@ -391,21 +391,21 @@ open Fable.Core.JsInterop
 open Feliz.Recharts
 open Feliz.ReactLoadingSkeleton
 open Feliz.UseElmish
-
-importAll "./styles.scss"
+open Feliz.DaisyUI
 
 module Heading =
     let title =
-        Bulma.title.h3 [
-            Bulma.icon [
-                prop.classes [ "has-text-info" ]
-                prop.children [ Html.i [ prop.className "fas fa-home" ] ]
+        Html.h3 [
+            color.textPrimary
+            prop.className "text-lg"
+            prop.children [
+                Html.i [ prop.className "fas fa-home" ]
+                Html.span [ Html.text " SAFE Search" ]
             ]
-            Html.span [ Html.text " SAFE Search" ]
         ]
 
     let subtitle =
-        Bulma.subtitle.h5 [ Html.text "Find your unaffordable property in the UK!" ]
+        Html.h5 [ Html.text "Find your unaffordable property in the UK!" ]
 
 module Facets =
     let fromPluralToSingular =

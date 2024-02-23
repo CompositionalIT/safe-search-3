@@ -5,6 +5,7 @@ storage: none
 nuget Azure.Data.Tables
 nuget Azure.Search.Documents
 nuget Azure.Storage.Blobs
+nuget Feliz.DaisyUI
 nuget FSharp.Control.AsyncSeq
 nuget FSharp.Data
 nuget Fulma
